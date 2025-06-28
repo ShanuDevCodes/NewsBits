@@ -1,18 +1,14 @@
 package com.shanudevcodes.newsbits.ui.screens
 
-import android.R.attr.label
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -25,7 +21,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.ButtonGroupDefaults
@@ -34,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
@@ -52,30 +48,19 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsList
-import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 
-data class CarouselItem(
-    val id: Int,
-    val imageResId: Int,
-    val contentDescription: String,
-    val writer: String,
-    val timeAgo: String,
-    val headline: String
-)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollBehavior) {
     val baseItems = NewsList
 
 
@@ -109,11 +94,9 @@ fun HomeScreen(navController: NavHostController) {
         state.scrollToItem(0)
     }
 
-    LazyColumn {
-
-        item{
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+    LazyColumn(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) {
 
         item {
             Row(
