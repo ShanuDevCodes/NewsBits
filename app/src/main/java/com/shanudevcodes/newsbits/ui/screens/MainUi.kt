@@ -45,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -192,6 +193,7 @@ fun MainUi(navController: NavHostController) {
                         windowInsets = WindowInsets(0),
                     )
                     ExpandedFullScreenSearchBar(
+                        tonalElevation = 48.dp,
                         state = searchBarState,
                         inputField = inputField,
                         modifier = Modifier
