@@ -4,17 +4,21 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -66,7 +70,6 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
         )
     )
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
-
     val peekHeight = screenHeightDp
     Box(
         modifier = Modifier
@@ -76,7 +79,7 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
             topBar = {},
             scaffoldState = scaffoldState,
             sheetMaxWidth = 1000.dp,
-            sheetPeekHeight = if (isPortrait) (peekHeight * 0.8f) else (peekHeight * 0.6f),
+            sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),
             sheetContent = {
                 Column {
                     Row(
@@ -147,13 +150,20 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(16f / 9f)
+                    .aspectRatio(16f / 12f)
             ) {
+                val overlayColor = MaterialTheme.colorScheme.surface
                 Image(
                     painter = painterResource(id = news.imageResId),
                     contentDescription = news.contentDescription,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+                        .background(overlayColor.copy(alpha = 0.75f))
                 )
             }
         }

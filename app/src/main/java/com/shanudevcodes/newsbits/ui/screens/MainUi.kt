@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun MainUi(navController: NavHostController) {
+fun MainUi(navController: NavHostController, openNavDraw:() -> Unit) {
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -76,9 +76,11 @@ fun MainUi(navController: NavHostController) {
                 leadingIcon = {
                     if (searchBarState.currentValue == SearchBarValue.Expanded) {
                         IconButton(
-                            onClick = { scope.launch {
-                                searchBarState.animateToCollapsed()
-                            } }
+                            onClick = {
+                                scope.launch {
+                                    searchBarState.animateToCollapsed()
+                                }
+                            }
                         ) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
                         }
@@ -114,7 +116,7 @@ fun MainUi(navController: NavHostController) {
                 TopAppBar(
                     navigationIcon = {
                         IconButton(
-                            onClick = { },
+                            onClick = { openNavDraw() },
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
@@ -143,7 +145,7 @@ fun MainUi(navController: NavHostController) {
                             ) {
                                 IconButton(
                                     onClick = { },
-                                    modifier = Modifier.offset(x=6.dp)
+                                    modifier = Modifier.offset(x = 6.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Notifications,
@@ -163,7 +165,7 @@ fun MainUi(navController: NavHostController) {
                                     }
                                     Box(
                                         modifier = Modifier
-                                            .offset(x= 1.dp, y = -5.dp)
+                                            .offset(x = 1.dp, y = -5.dp)
                                             .size(18.dp)
                                             .clip(CircleShape)
                                             .background(Color.White)
@@ -212,12 +214,13 @@ fun MainUi(navController: NavHostController) {
             }
         },
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .padding(start = 12.dp, end = 12.dp)
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(start = 12.dp, end = 12.dp)
         ) {
             // Screen content goes here
-            HomeScreen(navController,scrollBehavior)
+            HomeScreen(navController, scrollBehavior)
         }
     }
 }
