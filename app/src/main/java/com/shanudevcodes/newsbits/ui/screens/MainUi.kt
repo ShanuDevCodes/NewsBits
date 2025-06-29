@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,10 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +57,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainUi(navController: NavHostController) {
+
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     val textFieldState = rememberTextFieldState()
     val searchBarState = rememberSearchBarState()
@@ -68,7 +76,9 @@ fun MainUi(navController: NavHostController) {
                 leadingIcon = {
                     if (searchBarState.currentValue == SearchBarValue.Expanded) {
                         IconButton(
-                            onClick = { scope.launch { searchBarState.animateToCollapsed() } }
+                            onClick = { scope.launch {
+                                searchBarState.animateToCollapsed()
+                            } }
                         ) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
                         }
@@ -104,7 +114,6 @@ fun MainUi(navController: NavHostController) {
                 TopAppBar(
                     navigationIcon = {
                         IconButton(
-                            modifier = Modifier.padding(0.dp),
                             onClick = { },
                         ) {
                             Icon(
@@ -173,6 +182,7 @@ fun MainUi(navController: NavHostController) {
                             }
                         }
                     },
+                    modifier = Modifier.padding(0.dp)
                 )
                 Box {
                     TopSearchBar(
@@ -184,6 +194,17 @@ fun MainUi(navController: NavHostController) {
                     ExpandedFullScreenSearchBar(
                         state = searchBarState,
                         inputField = inputField,
+                        modifier = Modifier
+                            .then(
+                                if (!isPortrait) {
+                                    Modifier
+                                        .widthIn(max = 490.dp)
+                                        .heightIn(max = 450.dp)
+                                        .clip(RoundedCornerShape(24.dp))
+                                } else {
+                                    Modifier // no additional constraints
+                                },
+                            )
                     ) {
                     }
                 }
