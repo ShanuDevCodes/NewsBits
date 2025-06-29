@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,7 +53,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsList
 import kotlin.math.absoluteValue
@@ -62,8 +65,6 @@ import kotlin.math.absoluteValue
 @Composable
 fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollBehavior) {
     val baseItems = NewsList
-
-
     // Create a large repeated list AFTER the base items
     val repeatFactor = 100  // Enough for looping
     val items = List(baseItems.size * repeatFactor + baseItems.size) {
@@ -147,7 +148,15 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(205.dp),
+                        .height(205.dp)
+                        .clickable(
+                            onClick = {
+                                navController.navigate(Destination.NEWSDETAILSCREEN(currentItem.id)){
+                                    popUpTo(navController.graph.findStartDestination().id)
+                                    launchSingleTop = true
+                                }
+                            }
+                        ),
                 ) {
                     // Image with rounded corners
                     Image(
@@ -246,17 +255,25 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
         }
 
         itemsIndexed (items) { index, news ->
-            NewsListItem(news = news)
+            NewsListItem(news = news, navController = navController)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 @Composable
-fun NewsListItem(news: News) {
+fun NewsListItem(news: News, navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = 12.dp)
+            .clickable(
+                onClick = {
+                    navController.navigate(Destination.NEWSDETAILSCREEN(news.id)){
+                        popUpTo(navController.graph.findStartDestination().id)
+                        launchSingleTop = true
+                    }
+                }
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Thumbnail Image (landscape rectangle)

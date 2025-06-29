@@ -6,18 +6,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.DataStoreManager
-import com.shanudevcodes.newsbits.data.NewsList
+import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
 import com.shanudevcodes.newsbits.ui.screens.MainUi
 import com.shanudevcodes.newsbits.ui.screens.NewsDetailScreen
@@ -34,7 +40,6 @@ class MainActivity : ComponentActivity() {
             } else {
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }
-            var isBookMarked by rememberSaveable { mutableStateOf(false) }
             val configuration = LocalConfiguration.current
             val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
             val dataStore = DataStoreManager(applicationContext)
@@ -44,26 +49,84 @@ class MainActivity : ComponentActivity() {
                 themeOption = themeOption,
                 dynamicColor = false
             ) {
-                if (!isPortrait) {
-                    Box() {
-                        Row {
-                            Box(modifier = Modifier.weight(0.35f)) {
+                Box() {
+                    Row {
+                        Box(modifier = Modifier.weight(0.35f)) {
+                            if (!isPortrait) {
                                 MainUi(navController)
+                            }else{
+                                NavHost(
+                                    startDestination = Destination.HOMESCREEN,
+                                    navController = navController,
+                                    enterTransition = {
+                                        slideIntoContainer(
+                                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                            animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                        ) + fadeIn(initialAlpha = 0.8f)
+                                    },
+                                    exitTransition = { ExitTransition.None },
+                                    popEnterTransition = { EnterTransition.None },
+                                    popExitTransition = {
+                                        slideOutOfContainer(
+                                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                            animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                        ) + fadeOut(targetAlpha = 0.9f)
+                                    }
+                                ) {
+                                    composable<Destination.HOMESCREEN> {
+                                        if(isPortrait) {
+                                            MainUi(navController)
+                                        }else{
+                                            EmptyScreen()
+                                        }
+                                    }
+                                    composable<Destination.NEWSDETAILSCREEN> {
+                                        NewsDetailScreen(it.arguments?.getInt("newsId") ?: 1, navController)
+                                    }
+                                }
                             }
+                        }
+                        if (!isPortrait) {
                             Box(
                                 modifier = Modifier.weight(0.65f)
                             ) {
-                                NewsDetailScreen(news = NewsList[6])
+                                NavHost(
+                                    startDestination = Destination.HOMESCREEN,
+                                    navController = navController,
+                                    enterTransition = {
+                                        slideIntoContainer(
+                                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                            animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                        ) + fadeIn(initialAlpha = 0.8f)
+                                    },
+                                    exitTransition = { ExitTransition.None },
+                                    popEnterTransition = { EnterTransition.None },
+                                    popExitTransition = {
+                                        slideOutOfContainer(
+                                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                            animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                        ) + fadeOut(targetAlpha = 0.9f)
+                                    }
+                                ) {
+                                    composable<Destination.HOMESCREEN> {
+                                        if (isPortrait) {
+                                            MainUi(navController)
+                                        } else {
+                                            EmptyScreen()
+                                        }
+                                    }
+                                    composable<Destination.NEWSDETAILSCREEN> {
+                                        NewsDetailScreen(it.arguments?.getInt("newsId") ?: 1, navController)
+                                    }
+                                }
                             }
                         }
                     }
-                }else{
-                    NewsDetailScreen(news = NewsList[1])
                 }
             }
         }
     }
-    private fun isTablet(): Boolean {
+    fun isTablet(): Boolean {
         return resources.configuration.smallestScreenWidthDp >= 600
     }
 }
