@@ -57,7 +57,6 @@ fun NewsBitsTheme(
         isDarkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
