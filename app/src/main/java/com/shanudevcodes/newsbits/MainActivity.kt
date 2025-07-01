@@ -10,7 +10,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
@@ -44,6 +47,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +69,7 @@ import com.shanudevcodes.newsbits.ui.screens.NewsDetailScreen
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -89,7 +94,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
-            var selected by remember { mutableStateOf(0) }
+            var selected by remember { mutableIntStateOf(0) }
             LaunchedEffect(Unit) {
                 dataStore.themeFlow.first()
                 dataStore.dynamicColorFlow.first()
@@ -100,17 +105,12 @@ class MainActivity : ComponentActivity() {
                 themeOption = themeOption,
                 dynamicColor = dynamicColor
             ) {
-                BackHandler {
-                    if(drawerState.isOpen) {
-                        scope.launch {
-                            drawerState.close()
-                        }
-                    }
-                }
                 ModalNavigationDrawer(
                     drawerState = drawerState,
                     drawerContent = {
-                        ModalDrawerSheet {
+                        ModalDrawerSheet(
+                            modifier = Modifier.width(300.dp)
+                        ) {
                             Box(
                                 modifier = Modifier.fillMaxSize().padding(8.dp)
                             ) {
@@ -162,8 +162,8 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 imageVector = when (themeOption) {
                                                     ThemeOptions.SYSTEM_DEFAULT -> Icons.Default.Contrast
-                                                    ThemeOptions.LIGHT -> Icons.Default.DarkMode
-                                                    ThemeOptions.DARK ->Icons.Default.LightMode
+                                                    ThemeOptions.LIGHT -> Icons.Default.LightMode
+                                                    ThemeOptions.DARK ->Icons.Default.DarkMode
                                                 },
                                                 contentDescription = "Theme Change"
                                             )
@@ -186,93 +186,67 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) {
-                    Box() {
+                    Box(){
                         Row {
-                            Box(modifier = Modifier.weight(0.35f)) {
+                            val animatedWeight = remember { Animatable(0f) }
+                            LaunchedEffect(isPortrait) {
                                 if (!isPortrait) {
-                                    MainUi(navController, openNavDraw = {scope.launch { drawerState.open() }})
+                                    delay(100)
+                                    animatedWeight.animateTo(
+                                        targetValue = 0.35f,
+                                        animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+                                    )
                                 } else {
-                                    NavHost(
-                                        startDestination = Destination.HOMESCREEN,
-                                        navController = navController,
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                                animationSpec = tween(
-                                                    400,
-                                                    easing = FastOutSlowInEasing
-                                                )
-                                            ) + fadeIn(initialAlpha = 0.8f)
-                                        },
-                                        exitTransition = { ExitTransition.None },
-                                        popEnterTransition = { EnterTransition.None },
-                                        popExitTransition = {
-                                            slideOutOfContainer(
-                                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                                animationSpec = tween(
-                                                    400,
-                                                    easing = FastOutSlowInEasing
-                                                )
-                                            ) + fadeOut(targetAlpha = 0.9f)
-                                        }
-                                    ) {
-                                        composable<Destination.HOMESCREEN> {
-                                            if (isPortrait) {
-                                                MainUi(navController,openNavDraw = {scope.launch { drawerState.open() }})
-                                            } else {
-                                                EmptyScreen()
-                                            }
-                                        }
-                                        composable<Destination.NEWSDETAILSCREEN> {
-                                            NewsDetailScreen(
-                                                it.arguments?.getInt("newsId") ?: 1,
-                                                navController
-                                            )
-                                        }
-                                    }
+                                    animatedWeight.snapTo(0f)
                                 }
                             }
-                            if (!isPortrait) {
-                                Box(
-                                    modifier = Modifier.weight(0.65f)
-                                ) {
-                                    NavHost(
-                                        startDestination = Destination.HOMESCREEN,
-                                        navController = navController,
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                                animationSpec = tween(
-                                                    400,
-                                                    easing = FastOutSlowInEasing
-                                                )
-                                            ) + fadeIn(initialAlpha = 0.8f)
-                                        },
-                                        exitTransition = { ExitTransition.None },
-                                        popEnterTransition = { EnterTransition.None },
-                                        popExitTransition = {
-                                            slideOutOfContainer(
-                                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                                animationSpec = tween(
-                                                    400,
-                                                    easing = FastOutSlowInEasing
-                                                )
-                                            ) + fadeOut(targetAlpha = 0.9f)
-                                        }
-                                    ) {
-                                        composable<Destination.HOMESCREEN> {
-                                            if (isPortrait) {
-                                                MainUi(navController,openNavDraw = {scope.launch { drawerState.open() }})
-                                            } else {
-                                                EmptyScreen()
-                                            }
-                                        }
-                                        composable<Destination.NEWSDETAILSCREEN> {
-                                            NewsDetailScreen(
-                                                it.arguments?.getInt("newsId") ?: 1,
-                                                navController
+                            if (animatedWeight.value > 0f) {
+                                Box(modifier = Modifier.weight(animatedWeight.value)) {
+                                    MainUi(
+                                        navController,
+                                        openNavDraw = { scope.launch { drawerState.open() } }
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier.weight(0.65f)
+                            ){
+                                NavHost(
+                                    startDestination = Destination.HOMESCREEN,
+                                    navController = navController,
+                                    enterTransition = {
+                                        slideIntoContainer(
+                                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                            animationSpec = tween(
+                                                400,
+                                                easing = FastOutSlowInEasing
                                             )
+                                        ) + fadeIn(initialAlpha = 0.8f)
+                                    },
+                                    exitTransition = { ExitTransition.None },
+                                    popEnterTransition = { EnterTransition.None },
+                                    popExitTransition = {
+                                        slideOutOfContainer(
+                                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                            animationSpec = tween(
+                                                400,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        ) + fadeOut(targetAlpha = 0.9f)
+                                    }
+                                ) {
+                                    composable<Destination.HOMESCREEN> {
+                                        if (isPortrait) {
+                                            MainUi(navController,openNavDraw = {scope.launch { drawerState.open() }})
+                                        } else {
+                                            EmptyScreen()
                                         }
+                                    }
+                                    composable<Destination.NEWSDETAILSCREEN> {
+                                        NewsDetailScreen(
+                                            it.arguments?.getInt("newsId") ?: 1,
+                                            navController
+                                        )
                                     }
                                 }
                             }
