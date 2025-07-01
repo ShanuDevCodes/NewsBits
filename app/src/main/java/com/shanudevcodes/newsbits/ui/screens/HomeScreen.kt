@@ -22,9 +22,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -148,15 +151,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(205.dp)
-                        .clickable(
-                            onClick = {
-                                navController.navigate(Destination.NEWSDETAILSCREEN(currentItem.id)){
-                                    popUpTo(navController.graph.findStartDestination().id)
-                                    launchSingleTop = true
-                                }
-                            }
-                        ),
+                        .height(205.dp),
                 ) {
                     // Image with rounded corners
                     Image(
@@ -184,6 +179,14 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                                     startY = 100f,
                                     endY = Float.POSITIVE_INFINITY
                                 )
+                            )
+                            .clickable(
+                                onClick = {
+                                    navController.navigate(Destination.NEWSDETAILSCREEN(currentItem.id)){
+                                        popUpTo(navController.graph.findStartDestination().id)
+                                        launchSingleTop = true
+                                    }
+                                }
                             )
                     )
 
@@ -237,7 +240,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
 //                    shapes =
 //                        when (index) {
 //                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-//                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+////                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
 //                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
 //                        },
                         colors = ToggleButtonDefaults.toggleButtonColors(
@@ -248,6 +251,19 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                         Text(label)
                     }
                 }
+                item {
+                    ToggleButton(
+                        checked = false,
+                        onCheckedChange = {},
+                        shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                        colors = ToggleButtonDefaults.toggleButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                            checkedContainerColor = MaterialTheme.colorScheme.primary,
+                        )
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                    }
+                }
             }
         }
         item {
@@ -255,8 +271,28 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
         }
 
         itemsIndexed (items) { index, news ->
-            NewsListItem(news = news, navController = navController)
-            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            onClick = {
+                                navController.navigate(Destination.NEWSDETAILSCREEN(news.id)){
+                                    popUpTo(navController.graph.findStartDestination().id)
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
+                ) {
+                    NewsListItem(news = news, navController = navController)
+                }
+            }
         }
     }
 }
@@ -265,15 +301,7 @@ fun NewsListItem(news: News, navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
-            .clickable(
-                onClick = {
-                    navController.navigate(Destination.NEWSDETAILSCREEN(news.id)){
-                        popUpTo(navController.graph.findStartDestination().id)
-                        launchSingleTop = true
-                    }
-                }
-            ),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Thumbnail Image (landscape rectangle)

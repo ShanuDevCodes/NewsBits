@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -71,6 +72,7 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
     )
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
     val peekHeight = screenHeightDp
+    val screenWidthDp = configuration.screenWidthDp.dp
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -78,7 +80,7 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
         BottomSheetScaffold(
             topBar = {},
             scaffoldState = scaffoldState,
-            sheetMaxWidth = 1000.dp,
+            sheetMaxWidth = screenWidthDp,
             sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),
             sheetContent = {
                 Column {
@@ -162,8 +164,15 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
-                        .background(overlayColor.copy(alpha = 0.75f))
+                        .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()+20.dp)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    overlayColor.copy(alpha = 0.4f),
+                                    overlayColor.copy(alpha = 0f)
+                                )
+                            )
+                        )
                 )
             }
         }
