@@ -2,6 +2,7 @@ package com.shanudevcodes.newsbits.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Base colors
 val Red = Color(0xFFFF0000)
 val Yellow = Color(0xFFFF9900)
 val Blue = Color(0xFF027FC0)

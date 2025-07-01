@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -13,6 +14,7 @@ private val Context.dataStore by preferencesDataStore(name = "settings")
 class DataStoreManager(private val context: Context) {
     companion object {
         val THEME_KEY = stringPreferencesKey("theme_option")
+        val DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color_scheme")
     }
 
     val themeFlow: Flow<ThemeOptions> = context.dataStore.data.map { preferences ->
@@ -22,6 +24,16 @@ class DataStoreManager(private val context: Context) {
     suspend fun saveThemeOption(theme: ThemeOptions) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = theme.name
+        }
+    }
+
+    val dynamicColorFlow: Flow<Boolean> = context.dataStore.data.map{ preferences->
+        preferences[DYNAMIC_COLOR_KEY] ?: false
+    }
+
+    suspend fun setDynamicColor(dynamicColor: Boolean){
+        context.dataStore.edit { preferences->
+            preferences[DYNAMIC_COLOR_KEY] = dynamicColor
         }
     }
 }
