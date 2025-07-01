@@ -41,6 +41,7 @@ import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -56,26 +57,24 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.News
+import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.NewsList
+import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlin.math.absoluteValue
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollBehavior) {
-    val baseItems = NewsList
-    // Create a large repeated list AFTER the base items
-    val repeatFactor = 100  // Enough for looping
-    val items = List(baseItems.size * repeatFactor + baseItems.size) {
-        baseItems[it % baseItems.size]
-    }
-
-    val state = rememberCarouselState { items.size }
-    val animationScope = rememberCoroutineScope()
+fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollBehavior,viewModel: NewsViewModel) {
+    val newsList by viewModel.allNews.collectAsState()
+    val state = rememberCarouselState { newsList.size }
     val options = listOf(
         "All",
         "Science",
@@ -136,7 +135,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                     .height(180.dp),
                 itemSpacing = 8.dp,
             ) { index ->
-                val currentItem = items[index]
+                val currentItem = newsList[index]
                 val activeIndex = state.currentItem
 
                 val offsetFraction = (index - activeIndex).toFloat().coerceIn(-1f, 1f).absoluteValue
@@ -151,11 +150,12 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(205.dp),
+                        .height(205.dp)
+                        .clip(MaterialTheme.shapes.extraLarge),
                 ) {
                     // Image with rounded corners
                     Image(
-                        painter = painterResource(currentItem.imageResId),
+                        painter = if (currentItem.image_url != null) rememberAsyncImagePainter(model = currentItem.image_url) else painterResource(R.drawable.img_6),
                         contentDescription = "item $index",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -182,7 +182,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                             )
                             .clickable(
                                 onClick = {
-                                    navController.navigate(Destination.NEWSDETAILSCREEN(currentItem.id)){
+                                    navController.navigate(Destination.NEWSDETAILSCREEN(index)){
                                         popUpTo(navController.graph.findStartDestination().id)
                                         launchSingleTop = true
                                     }
@@ -200,7 +200,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                         verticalArrangement = Arrangement.Bottom
                     ) {
                         Text(
-                            text = currentItem.headline,
+                            text = currentItem.title,
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 2,
                             color = Color.White
@@ -210,13 +210,13 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = currentItem.writer, // mock writer
+                                text = currentItem.source_name, // mock writer
                                 color = Color.Gray,
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Text(
-                                text = currentItem.timeAgo, // mock time
+                                text = currentItem.pubDateTZ, // mock time
                                 color = MaterialTheme.colorScheme.primary, // soft orange
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -270,7 +270,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        itemsIndexed (items) { index, news ->
+        itemsIndexed (newsList) { index, news ->
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -283,7 +283,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                         .fillMaxWidth()
                         .clickable(
                             onClick = {
-                                navController.navigate(Destination.NEWSDETAILSCREEN(news.id)){
+                                navController.navigate(Destination.NEWSDETAILSCREEN(index)){
                                     popUpTo(navController.graph.findStartDestination().id)
                                     launchSingleTop = true
                                 }
@@ -297,7 +297,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
     }
 }
 @Composable
-fun NewsListItem(news: News, navController: NavHostController) {
+fun NewsListItem(news: NewsArticle, navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -306,8 +306,8 @@ fun NewsListItem(news: News, navController: NavHostController) {
     ) {
         // Thumbnail Image (landscape rectangle)
         Image(
-            painter = painterResource(news.imageResId),
-            contentDescription = news.contentDescription,
+            painter = if (news.image_url != null) rememberAsyncImagePainter(model = news.image_url) else painterResource(R.drawable.img_6),
+            contentDescription = news.description,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .width(120.dp)
@@ -323,7 +323,7 @@ fun NewsListItem(news: News, navController: NavHostController) {
         ) {
             // Headline
             Text(
-                text = news.headline,
+                text = news.title,
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 2
             )
@@ -342,7 +342,7 @@ fun NewsListItem(news: News, navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = news.writer,
+                    text = news.source_name,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -372,7 +372,7 @@ fun NewsListItem(news: News, navController: NavHostController) {
                 }
 
                 Text(
-                    text = news.timeAgo,
+                    text = news.pubDate,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

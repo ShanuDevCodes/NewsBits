@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -66,8 +67,10 @@ import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
 import com.shanudevcodes.newsbits.ui.screens.MainUi
 import com.shanudevcodes.newsbits.ui.screens.NewsDetailScreen
+//import com.shanudevcodes.newsbits.ui.screens.NewsDetailScreen
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
+import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -95,6 +98,8 @@ class MainActivity : ComponentActivity() {
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             var selected by remember { mutableIntStateOf(0) }
+            val newsViewModel: NewsViewModel = viewModel()
+            newsViewModel.loadAllNews()
             LaunchedEffect(Unit) {
                 dataStore.themeFlow.first()
                 dataStore.dynamicColorFlow.first()
@@ -176,7 +181,7 @@ class MainActivity : ComponentActivity() {
                                             .fillMaxWidth()
                                     )
                                     Text(
-                                        text = "Powered By NewsAPI",
+                                        text = "Powered By NewsData.io",
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -204,7 +209,8 @@ class MainActivity : ComponentActivity() {
                                 Box(modifier = Modifier.weight(animatedWeight.value)) {
                                     MainUi(
                                         navController,
-                                        openNavDraw = { scope.launch { drawerState.open() } }
+                                        openNavDraw = { scope.launch { drawerState.open() } },
+                                        newsViewModel
                                     )
                                 }
                             }
@@ -237,7 +243,7 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     composable<Destination.HOMESCREEN> {
                                         if (isPortrait) {
-                                            MainUi(navController,openNavDraw = {scope.launch { drawerState.open() }})
+                                            MainUi(navController,openNavDraw = {scope.launch { drawerState.open() }},newsViewModel)
                                         } else {
                                             EmptyScreen()
                                         }
@@ -245,7 +251,8 @@ class MainActivity : ComponentActivity() {
                                     composable<Destination.NEWSDETAILSCREEN> {
                                         NewsDetailScreen(
                                             it.arguments?.getInt("newsId") ?: 1,
-                                            navController
+                                            navController,
+                                            newsViewModel
                                         )
                                     }
                                 }

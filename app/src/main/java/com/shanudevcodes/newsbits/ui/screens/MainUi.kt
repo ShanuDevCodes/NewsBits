@@ -51,12 +51,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun MainUi(navController: NavHostController, openNavDraw:() -> Unit) {
+fun MainUi(navController: NavHostController, openNavDraw:() -> Unit,newsViewModel: NewsViewModel ) {
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -220,7 +222,7 @@ fun MainUi(navController: NavHostController, openNavDraw:() -> Unit) {
                 .padding(start = 12.dp, end = 12.dp)
         ) {
             // Screen content goes here
-            HomeScreen(navController, scrollBehavior)
+            HomeScreen(navController, scrollBehavior, newsViewModel)
         }
     }
 }
