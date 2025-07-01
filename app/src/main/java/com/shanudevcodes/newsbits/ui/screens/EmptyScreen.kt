@@ -76,7 +76,7 @@ fun EmptyScreen(){
                         color = MaterialTheme.colorScheme.tertiary
                     )
                     Text(
-                        text = "Powered by NewsAPI",
+                        text = "Powered by NewsData.io",
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }

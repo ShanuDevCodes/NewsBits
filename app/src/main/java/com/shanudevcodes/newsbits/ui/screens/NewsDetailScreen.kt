@@ -38,6 +38,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,15 +54,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.News
+import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.NewsList
+import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
-    val news: News = NewsList.firstOrNull { it.id == newsId } ?: NewsList[1]
+fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: NewsViewModel) {
+    val allNews by viewModel.allNews.collectAsState()
+
+    // Safe access to news item
+    val news: NewsArticle? = allNews.getOrNull(newsIndex)
+
+    if (news == null) {
+        // Show error state when news isn't available
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("News content not available", style = MaterialTheme.typography.bodyLarge)
+        }
+        return
+    }
     var isBookMarked by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -103,7 +120,7 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = news.headline,
+                                text = news.title,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMediumEmphasized,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -133,13 +150,13 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
                         .padding(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = news.writer,
+                            text = news.source_name,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = news.timeAgo,
+                            text = news.pubDate,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -156,8 +173,8 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
             ) {
                 val overlayColor = MaterialTheme.colorScheme.surface
                 Image(
-                    painter = painterResource(id = news.imageResId),
-                    contentDescription = news.contentDescription,
+                    painter = if (news.image_url != null) rememberAsyncImagePainter(model = news.image_url) else painterResource(R.drawable.img_6),
+                    contentDescription = news.source_id,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -193,7 +210,7 @@ fun NewsDetailScreen(newsId: Int,navController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContent(news: News){
+fun BottomSheetContent(news: NewsArticle){
     val listState = rememberLazyListState()
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
@@ -209,7 +226,7 @@ fun BottomSheetContent(news: News){
         ){
             item {
                 Text(
-                    text = news.Content,
+                    text = news.description?:"",
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Start
                 )

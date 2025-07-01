@@ -68,4 +68,5 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.core.splashscreen)
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }
