@@ -7,5 +7,5 @@ sealed class Destination {
     @Serializable
     object HOMESCREEN : Destination()
     @Serializable
-    data class NEWSDETAILSCREEN(val newsId : Int) : Destination()
+    data class NEWSDETAILSCREEN(val newsId : Int, val news: String) : Destination()
 }
