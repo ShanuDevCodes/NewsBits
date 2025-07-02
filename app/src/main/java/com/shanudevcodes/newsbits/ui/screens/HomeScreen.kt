@@ -39,11 +39,14 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -57,7 +60,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -65,8 +67,11 @@ import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
-import com.shanudevcodes.newsbits.data.NewsList
+import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 
@@ -74,7 +79,8 @@ import kotlin.math.absoluteValue
 @Composable
 fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollBehavior,viewModel: NewsViewModel) {
     val newsList by viewModel.allNews.collectAsState()
-    val state = rememberCarouselState { newsList.size }
+    val newsTopList by viewModel.topNews.collectAsState()
+    val state = rememberCarouselState { newsTopList.size }
     val options = listOf(
         "All",
         "Science",
@@ -91,207 +97,243 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
         "Art",
     )
     var selectedIndex by remember { mutableIntStateOf(0) }
-
-    // ✅ Start at the true beginning (index 0, img_1)
-    LaunchedEffect(Unit) {
-        state.scrollToItem(0)
-    }
-
-    LazyColumn(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+    var isRefreshing by remember { mutableStateOf(false) }
+    var scope = rememberCoroutineScope()
+    var pullToRefreshState = rememberPullToRefreshState()
+    PullToRefreshBox(
+        state = pullToRefreshState,
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            scope.launch {
+                isRefreshing = true
+                delay(1000)
+                viewModel.loadTopNews()
+                viewModel.loadAllNews()
+                delay(1000)
+                isRefreshing = false
+            }
+        },
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        },
     ) {
+        LazyColumn(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        ) {
 
-        item {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Latest News",
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(
-                    onClick = {},
-                    modifier = Modifier.offset(x = 15.dp)
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "All Latest News",
-                        tint = MaterialTheme.colorScheme.secondary
+                    Text(
+                        text = "Top News",
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.weight(1f)
                     )
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.offset(x = 15.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "All Latest News",
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
             }
-        }
 
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-        item {
-            HorizontalCenteredHeroCarousel(
-                state = state,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp),
-                itemSpacing = 8.dp,
-            ) { index ->
-                val currentItem = newsList[index]
-                val activeIndex = state.currentItem
-
-                val offsetFraction = (index - activeIndex).toFloat().coerceIn(-1f, 1f).absoluteValue
-
-                val targetAlpha = (1f - offsetFraction).coerceIn(0f, 1f)
-                val animatedAlpha by animateFloatAsState(
-                    targetValue = targetAlpha,
-                    animationSpec = tween(durationMillis = 500),
-                    label = "carouselAlpha"
-                )
-
-                Box(
+            item {
+                HorizontalCenteredHeroCarousel(
+                    state = state,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(205.dp)
-                        .clip(MaterialTheme.shapes.extraLarge),
-                ) {
-                    // Image with rounded corners
-                    Image(
-                        painter = if (currentItem.image_url != null) rememberAsyncImagePainter(model = currentItem.image_url) else painterResource(R.drawable.img_6),
-                        contentDescription = "item $index",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .maskClip(MaterialTheme.shapes.extraLarge)
+                        .height(180.dp),
+                    itemSpacing = 8.dp,
+                ) { index ->
+                    val currentItem = newsTopList[index]
+                    val activeIndex = state.currentItem
+
+                    val offsetFraction =
+                        (index - activeIndex).toFloat().coerceIn(-1f, 1f).absoluteValue
+
+                    val targetAlpha = (1f - offsetFraction).coerceIn(0f, 1f)
+                    val animatedAlpha by animateFloatAsState(
+                        targetValue = targetAlpha,
+                        animationSpec = tween(durationMillis = 500),
+                        label = "carouselAlpha"
                     )
 
-                    // Gradient overlay (black at bottom, transparent at top)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp)
-                            .maskClip(MaterialTheme.shapes.extraLarge)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color(0xCC000000) // more visible black
-                                    ),
-                                    startY = 100f,
-                                    endY = Float.POSITIVE_INFINITY
+                            .height(205.dp)
+                            .clip(MaterialTheme.shapes.extraLarge),
+                    ) {
+                        // Image with rounded corners
+                        Image(
+                            painter = if (currentItem.image_url != null) rememberAsyncImagePainter(
+                                model = currentItem.image_url
+                            ) else painterResource(R.drawable.img_6),
+                            contentDescription = "item $index",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .maskClip(MaterialTheme.shapes.extraLarge)
+                        )
+
+                        // Gradient overlay (black at bottom, transparent at top)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .maskClip(MaterialTheme.shapes.extraLarge)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color(0xCC000000) // more visible black
+                                        ),
+                                        startY = 100f,
+                                        endY = Float.POSITIVE_INFINITY
+                                    )
                                 )
+                                .clickable(
+                                    onClick = {
+                                        navController.navigate(
+                                            Destination.NEWSDETAILSCREEN(
+                                                index,
+                                                News.NEWS_TOP.name
+                                            )
+                                        ) {
+                                            popUpTo(navController.graph.findStartDestination().id)
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                        )
+
+                        // Text content over image and gradient
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .padding(12.dp)
+                                .alpha(animatedAlpha), // padding inside image
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            Text(
+                                text = currentItem.title,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 2,
+                                color = Color.White
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = shortenName(currentItem.source_name), // mock writer
+                                    color = Color.Gray,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = formatDateString(currentItem.pubDate), // mock time
+                                    color = MaterialTheme.colorScheme.primary, // soft orange
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+                ) {
+                    itemsIndexed(options) { index, label ->
+                        ToggleButton(
+                            checked = selectedIndex == index,
+                            onCheckedChange = { selectedIndex = index },
+                            shapes =
+                                when (index) {
+                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+//                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                },
+                            colors = ToggleButtonDefaults.toggleButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+                            )
+                        ) {
+                            Text(label)
+                        }
+                    }
+                    item {
+                        ToggleButton(
+                            checked = false,
+                            onCheckedChange = {},
+                            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                            colors = ToggleButtonDefaults.toggleButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+                            )
+                        ) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                        }
+                    }
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            itemsIndexed(newsList) { index, news ->
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .clickable(
                                 onClick = {
-                                    navController.navigate(Destination.NEWSDETAILSCREEN(index)){
+                                    navController.navigate(
+                                        Destination.NEWSDETAILSCREEN(
+                                            index,
+                                            News.NEWS_ALL.name
+                                        )
+                                    ) {
                                         popUpTo(navController.graph.findStartDestination().id)
                                         launchSingleTop = true
                                     }
                                 }
                             )
-                    )
-
-                    // Text content over image and gradient
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .padding(12.dp)
-                            .alpha(animatedAlpha), // padding inside image
-                        verticalArrangement = Arrangement.Bottom
                     ) {
-                        Text(
-                            text = currentItem.title,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 2,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = currentItem.source_name, // mock writer
-                                color = Color.Gray,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = currentItem.pubDateTZ, // mock time
-                                color = MaterialTheme.colorScheme.primary, // soft orange
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
+                        NewsListItem(news = news, navController = navController)
                     }
                 }
             }
-        }
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
 
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
-            ) {
-                itemsIndexed(options) { index, label ->
-                    ToggleButton(
-                        checked = selectedIndex == index,
-                        onCheckedChange = { selectedIndex = index },
-//                    shapes =
-//                        when (index) {
-//                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-////                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-//                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-//                        },
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                            checkedContainerColor = MaterialTheme.colorScheme.primary,
-                        )
-                    ) {
-                        Text(label)
-                    }
-                }
-                item {
-                    ToggleButton(
-                        checked = false,
-                        onCheckedChange = {},
-                        shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                            checkedContainerColor = MaterialTheme.colorScheme.primary,
-                        )
-                    ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
-                    }
-                }
-            }
-        }
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        itemsIndexed (newsList) { index, news ->
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(
-                            onClick = {
-                                navController.navigate(Destination.NEWSDETAILSCREEN(index)){
-                                    popUpTo(navController.graph.findStartDestination().id)
-                                    launchSingleTop = true
-                                }
-                            }
-                        )
-                ) {
-                    NewsListItem(news = news, navController = navController)
-                }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -372,7 +414,7 @@ fun NewsListItem(news: NewsArticle, navController: NavHostController) {
                 }
 
                 Text(
-                    text = news.pubDate,
+                    text = formatDateString(news.pubDate),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

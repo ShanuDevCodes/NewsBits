@@ -26,7 +26,9 @@ private val DarkColorScheme = darkColorScheme(
     surfaceContainerLow = Black80,
     surfaceContainerHigh = Black80,
     secondaryContainer = Color(0xFFFFD18A).copy(alpha = 0.5f),
-    onSecondaryContainer = Color(0xFF3A2600)
+    onSecondaryContainer = Color(0xFF3A2600),
+    primaryContainer = Color(0xFFFCB76F),
+    onPrimaryContainer = Color(0xFF212734)
 
 )
 
@@ -38,7 +40,9 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerLow = White80,
     surfaceContainerHigh = White80,
     secondaryContainer = Color(0xFFFFD18A).copy(alpha = 0.5f),
-    onSecondaryContainer = Color(0xFF3A2600)
+    onSecondaryContainer = Color(0xFF3A2600),
+    primaryContainer = Color(0xFFFAAB5B),
+    onPrimaryContainer = Color(0xFFDAE4FF)
 )
 
 @Composable

@@ -51,7 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.launch
@@ -111,6 +110,7 @@ fun MainUi(navController: NavHostController, openNavDraw:() -> Unit,newsViewMode
         }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             val notificationCount = 11 // Replace with actual notification count
@@ -179,7 +179,7 @@ fun MainUi(navController: NavHostController, openNavDraw:() -> Unit,newsViewMode
                                             color = MaterialTheme.colorScheme.tertiary,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.offset(y = -3.dp)
+                                            modifier = Modifier.offset(y = -5.dp)
                                         )
                                     }
                                 }

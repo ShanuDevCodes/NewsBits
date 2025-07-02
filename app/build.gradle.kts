@@ -15,7 +15,7 @@ android {
         minSdk = 30
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0.1"
+        versionName = "2.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -68,5 +68,6 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.core.splashscreen)
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation(libs.coil.compose)
+    implementation (libs.accompanist.swiperefresh)
 }

@@ -1,8 +1,11 @@
 package com.shanudevcodes.newsbits.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,10 +28,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BookmarkAdded
+import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,30 +55,37 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
-import com.shanudevcodes.newsbits.data.NewsList
+import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: NewsViewModel) {
+fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: NewsViewModel,news: String) {
+    val context = LocalContext.current
     val allNews by viewModel.allNews.collectAsState()
-
+    val topNews by viewModel.topNews.collectAsState()
     // Safe access to news item
-    val news: NewsArticle? = allNews.getOrNull(newsIndex)
+    var newsArticle: NewsArticle? = allNews.getOrNull(newsIndex)
 
-    if (news == null) {
+    when(news){
+        News.NEWS_ALL.name -> newsArticle = allNews.getOrNull(newsIndex)
+        News.NEWS_TOP.name -> newsArticle = topNews.getOrNull(newsIndex)
+    }
+
+    if (newsArticle == null) {
         // Show error state when news isn't available
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("News content not available", style = MaterialTheme.typography.bodyLarge)
@@ -120,7 +133,7 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = news.title,
+                                text = newsArticle.title,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMediumEmphasized,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -150,19 +163,19 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
                         .padding(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = news.source_name,
+                            text = newsArticle.source_name,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = news.pubDate,
+                            text = formatDateString(newsArticle.pubDate),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
 
-                    BottomSheetContent(news)
+                    BottomSheetContent(newsArticle)
                 }
             },
         ) {paddingValues ->
@@ -173,15 +186,17 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
             ) {
                 val overlayColor = MaterialTheme.colorScheme.surface
                 Image(
-                    painter = if (news.image_url != null) rememberAsyncImagePainter(model = news.image_url) else painterResource(R.drawable.img_6),
-                    contentDescription = news.source_id,
+                    painter = if (newsArticle.image_url != null) rememberAsyncImagePainter(model = newsArticle.image_url) else painterResource(R.drawable.img_6),
+                    contentDescription = newsArticle.source_id,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()+20.dp)
+                        .height(
+                            WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 20.dp
+                        )
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
@@ -206,6 +221,26 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
             }
         }
     }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 24.dp, end = 8.dp, start = 8.dp),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        ExtendedFloatingActionButton(
+            onClick = {
+                openUrlInBrowser(context, newsArticle.link)
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.LocalLibrary, // your icon
+                    contentDescription = "Read Article"
+                )
+            },
+            text = { Text(text = "Read Full Article") },
+            elevation = FloatingActionButtonDefaults.elevation(2.dp)
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -218,22 +253,50 @@ fun BottomSheetContent(news: NewsArticle){
             .fillMaxSize()
             .padding(top = 16.dp, start = 8.dp, end = 8.dp)
     ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .nestedScroll(scrollInterop)
-                .fillMaxSize()
-        ){
-            item {
+        if (news.description != null) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .nestedScroll(scrollInterop)
+                    .fillMaxSize()
+            ) {
+                item {
+                    Text(
+                        text = news.description,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Start
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(84.dp))
+                }
+            }
+        } else {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Spacer(modifier = Modifier.height(500.dp))
                 Text(
-                    text = news.description?:"",
+                    text = "No description available",
                     color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
         }
+    }
+}
+fun openUrlInBrowser(context: Context, url: String) {
+    var finalUrl = url
+    // Ensure the URL starts with http:// or https://
+    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+        finalUrl = "http://$finalUrl"
+    }
+    val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
+    // Check if there is an app to handle the intent
+    try {
+        context.startActivity(browserIntent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "No browser found to open the link.", Toast.LENGTH_SHORT).show()
     }
 }
