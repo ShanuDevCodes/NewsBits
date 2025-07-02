@@ -407,7 +407,7 @@ fun NewsListItem(news: NewsArticle) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Innovation", // You can make this dynamic
+                        text = news.category.joinToString(", "), // You can make this dynamic
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
