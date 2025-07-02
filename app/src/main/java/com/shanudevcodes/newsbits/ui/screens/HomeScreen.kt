@@ -327,7 +327,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                                 }
                             )
                     ) {
-                        NewsListItem(news = news, navController = navController)
+                        NewsListItem(news = news)
                     }
                 }
             }
@@ -339,7 +339,7 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
     }
 }
 @Composable
-fun NewsListItem(news: NewsArticle, navController: NavHostController) {
+fun NewsListItem(news: NewsArticle) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
