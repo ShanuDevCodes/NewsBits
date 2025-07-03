@@ -15,6 +15,16 @@ class DataStoreManager(private val context: Context) {
     companion object {
         val THEME_KEY = stringPreferencesKey("theme_option")
         val DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color_scheme")
+        val FirstLaunchKey = booleanPreferencesKey("first_launch")
+    }
+
+    val firstLaunch:Flow<Boolean> = context.dataStore.data.map { preferences->
+        preferences[FirstLaunchKey] ?: true
+    }
+    suspend fun setFirstLaunch(firstLaunch:Boolean){
+        context.dataStore.edit { preferences->
+            preferences[FirstLaunchKey] = firstLaunch
+        }
     }
 
     val themeFlow: Flow<ThemeOptions> = context.dataStore.data.map { preferences ->

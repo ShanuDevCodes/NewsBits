@@ -51,7 +51,6 @@ class FirestorePagingSource(
         return try {
             val currentKey = params.key
 
-            // Initial page (no cursor)
             val currentQuery = if (currentKey == null) {
                 query.orderBy("pubDate", Query.Direction.DESCENDING)
                     .limit(pageSize)
@@ -65,11 +64,13 @@ class FirestorePagingSource(
             val documents = snapshot.documents
 
             val items = documents.mapNotNull { it.toObject(NewsArticle::class.java) }
-            val nextKey = documents.lastOrNull() // Cursor for next page
+
+            // 🔥 FIX: Stop pagination if we receive fewer items than requested
+            val nextKey = if (documents.size < pageSize) null else documents.lastOrNull()
 
             LoadResult.Page(
                 data = items,
-                prevKey = null,     // Paging backward is not supported here
+                prevKey = null,     // Not paging backward
                 nextKey = nextKey   // Cursor for next load
             )
         } catch (e: Exception) {
