@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.News
@@ -75,13 +76,13 @@ import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 @Composable
 fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: NewsViewModel,news: String) {
     val context = LocalContext.current
-    val allNews by viewModel.allNews.collectAsState()
+    val allNews = viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val topNews by viewModel.topNews.collectAsState()
     // Safe access to news item
-    var newsArticle: NewsArticle? = allNews.getOrNull(newsIndex)
+    var newsArticle: NewsArticle? = allNews[newsIndex]
 
     when(news){
-        News.NEWS_ALL.name -> newsArticle = allNews.getOrNull(newsIndex)
+        News.NEWS_ALL.name -> newsArticle = allNews[newsIndex]
         News.NEWS_TOP.name -> newsArticle = topNews.getOrNull(newsIndex)
     }
 
