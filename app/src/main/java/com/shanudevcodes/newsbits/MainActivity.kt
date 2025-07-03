@@ -6,17 +6,16 @@ import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +42,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
@@ -98,16 +99,43 @@ class MainActivity : ComponentActivity() {
             val scope = rememberCoroutineScope()
             var selected by remember { mutableIntStateOf(0) }
             val newsViewModel: NewsViewModel = viewModel()
+            newsViewModel.loadTopNews()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
             LaunchedEffect(Unit) {
+                val isFirstLaunch = dataStore.firstLaunch.first()
+                delay(300)
+                if (!isOnline(applicationContext)) {
+                    if (!isFirstLaunch) {
+                        Toast.makeText(
+                            applicationContext,
+                            "You're offline. Showing old news.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }else{
+                        Toast.makeText(
+                            applicationContext,
+                            "You're offline",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                dataStore.setFirstLaunch(false)
+            }
+            LaunchedEffect(Unit) {
+                var refreshTime = 0
                 while (!isNewsLoaded.value) {
                     if (isOnline(applicationContext)) {
                         newsViewModel.loadTopNews()
                         newsList.refresh()
                         newsViewModel.newsLoaded()
+                        delay(300)
+                        if (refreshTime > 0){
+                            Toast.makeText(applicationContext, "You're online now. Showing recent news.", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    delay(1000)
+                    refreshTime++
+                    delay(2000)
                 }
             }
             LaunchedEffect(Unit) {
@@ -224,8 +252,17 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
+                            if (!isPortrait) {
+                                VerticalDivider(
+                                    modifier = Modifier
+                                        .width(1.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                )
+                            }
                             Box(
-                                modifier = Modifier.weight(0.65f)
+                                modifier = Modifier
+                                    .weight(0.65f)
+                                    .clipToBounds()
                             ){
                                 NavHost(
                                     startDestination = Destination.HOMESCREEN,
@@ -234,21 +271,37 @@ class MainActivity : ComponentActivity() {
                                         slideIntoContainer(
                                             towards = AnimatedContentTransitionScope.SlideDirection.Left,
                                             animationSpec = tween(
-                                                400,
+                                                200,
                                                 easing = FastOutSlowInEasing
                                             )
-                                        ) + fadeIn(initialAlpha = 0.8f)
+                                        )
                                     },
-                                    exitTransition = { ExitTransition.None },
-                                    popEnterTransition = { EnterTransition.None },
+                                    exitTransition = {
+                                        slideOutHorizontally(
+                                            targetOffsetX = { -200 }, // Slide left by 50 pixels
+                                            animationSpec = tween(
+                                                durationMillis = 200,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        )
+                                    },
+                                    popEnterTransition = {
+                                        slideInHorizontally(
+                                            initialOffsetX = { -200 },
+                                            animationSpec = tween(
+                                                durationMillis = 200,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        )
+                                    },
                                     popExitTransition = {
                                         slideOutOfContainer(
                                             towards = AnimatedContentTransitionScope.SlideDirection.Right,
                                             animationSpec = tween(
-                                                400,
+                                                200,
                                                 easing = FastOutSlowInEasing
                                             )
-                                        ) + fadeOut(targetAlpha = 0.9f)
+                                        )
                                     }
                                 ) {
                                     composable<Destination.HOMESCREEN> {
@@ -274,16 +327,15 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    fun isOnline(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
     fun isTablet(): Boolean {
         return resources.configuration.smallestScreenWidthDp >= 600
     }
+}
+fun isOnline(context: Context): Boolean {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork ?: return false
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }

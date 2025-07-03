@@ -1,5 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens
 
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -19,16 +21,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -44,6 +48,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -59,10 +64,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
@@ -80,6 +87,7 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScrollBehavior, viewModel: NewsViewModel) {
+    val context = LocalContext.current
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
     val state = rememberCarouselState { newsTopList.size }
@@ -100,8 +108,9 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
     )
     var selectedIndex by remember { mutableIntStateOf(0) }
     var isRefreshing by remember { mutableStateOf(false) }
-    var scope = rememberCoroutineScope()
-    var pullToRefreshState = rememberPullToRefreshState()
+    val scope = rememberCoroutineScope()
+    val pullToRefreshState = rememberPullToRefreshState()
+    val lazyColumnSate = rememberLazyListState()
     PullToRefreshBox(
         state = pullToRefreshState,
         isRefreshing = isRefreshing,
@@ -109,6 +118,11 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
             scope.launch {
                 isRefreshing = true
                 delay(1000)
+                navController.popBackStack(
+                    route = navController.graph.startDestinationRoute
+                        ?: navController.graph.findStartDestination().route!!,
+                    inclusive = false
+                )
                 viewModel.loadTopNews()
                 state.animateScrollToItem(0)
                 newsList.refresh()
@@ -125,6 +139,7 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
         },
     ) {
         LazyColumn(
+            state = lazyColumnSate,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
 
@@ -307,7 +322,6 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
 
             items(newsList.itemCount) { index ->
                 val news = newsList[index]
-
                 if (news != null) {
                     Card(
                         shape = RoundedCornerShape(24.dp),
@@ -334,16 +348,69 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
                             NewsListItem(news = news)
                         }
                     }
-                } else {
-                    // Optional: show shimmer or loading placeholder
+                }
+            }
+
+            item{
+                val appendState = newsList.loadState.append
+                if (appendState is LoadState.Error) {
+                    Log.d("NewsBits", "Append failed: ${appendState.error}")
+                }
+                if (newsList.loadState.append is LoadState.Loading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(90.dp)
-                            .padding(vertical = 8.dp),
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            CircularWavyProgressIndicator()
+                            val visible = remember { mutableStateOf(false) }
+                            LaunchedEffect(Unit) {
+                                delay(5000)
+                                visible.value = true
+                            }
+                            AnimatedVisibility(
+                                visible = visible.value
+                            ) {
+                                Button(onClick = {
+                                    scope.launch {
+                                        lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
+                                        newsList.refresh()
+                                    }
+                                }) {
+                                    Text(text = "Refresh")
+                                }
+                            }
+                        }
+                    }
+                }
+                else{
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "Network Error")
+                            Button(onClick = {
+                                scope.launch {
+                                    lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
+                                    newsList.refresh()
+                                }
+                            }) {
+                                Text(text = "Refresh")
+                            }
+                        }
                     }
                 }
             }
