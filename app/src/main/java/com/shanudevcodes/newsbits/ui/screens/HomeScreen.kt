@@ -87,7 +87,6 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScrollBehavior, viewModel: NewsViewModel) {
-    val context = LocalContext.current
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
     val state = rememberCarouselState { newsTopList.size }
