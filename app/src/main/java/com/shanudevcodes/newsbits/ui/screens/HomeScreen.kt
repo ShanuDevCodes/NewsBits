@@ -64,7 +64,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -110,6 +109,7 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
     val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyColumnSate = rememberLazyListState()
+    val visible = remember { mutableStateOf(false) }
     PullToRefreshBox(
         state = pullToRefreshState,
         isRefreshing = isRefreshing,
@@ -368,11 +368,13 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             CircularWavyProgressIndicator()
-                            val visible = remember { mutableStateOf(false) }
-                            LaunchedEffect(Unit) {
-                                delay(5000)
-                                visible.value = true
+                            LaunchedEffect(newsList.loadState.append) {
+                                if (newsList.loadState.append is LoadState.Loading) {
+                                    delay(5000)
+                                    visible.value = true // Show button if it takes too long
+                                }
                             }
+                            Spacer(modifier = Modifier.height(8.dp))
                             AnimatedVisibility(
                                 visible = visible.value
                             ) {
@@ -389,6 +391,7 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
                     }
                 }
                 else{
+                    visible.value = false
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

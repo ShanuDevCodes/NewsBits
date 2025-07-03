@@ -128,8 +128,8 @@ class MainActivity : ComponentActivity() {
                     if (isOnline(applicationContext)) {
                         newsViewModel.loadTopNews()
                         newsList.refresh()
-                        newsViewModel.newsLoaded()
                         delay(300)
+                        newsViewModel.newsLoaded()
                         if (refreshTime > 0){
                             Toast.makeText(applicationContext, "You're online now. Showing recent news.", Toast.LENGTH_SHORT).show()
                         }
@@ -143,7 +143,7 @@ class MainActivity : ComponentActivity() {
                 dataStore.themeFlow.first()
                 themeLoaded = true
             }
-            splashScreen.setKeepOnScreenCondition { !themeLoaded }
+            splashScreen.setKeepOnScreenCondition { !themeLoaded && !isNewsLoaded.value}
             NewsBitsTheme(
                 themeOption = themeOption,
                 dynamicColor = dynamicColor
