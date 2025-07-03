@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -62,6 +63,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.Destination
@@ -77,8 +79,8 @@ import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollBehavior,viewModel: NewsViewModel) {
-    val newsList by viewModel.allNews.collectAsState()
+fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScrollBehavior, viewModel: NewsViewModel) {
+    val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
     val state = rememberCarouselState { newsTopList.size }
     val options = listOf(
@@ -108,7 +110,8 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                 isRefreshing = true
                 delay(1000)
                 viewModel.loadTopNews()
-                viewModel.loadAllNews()
+                state.animateScrollToItem(0)
+                newsList.refresh()
                 delay(1000)
                 isRefreshing = false
             }
@@ -302,19 +305,21 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            itemsIndexed(newsList) { index, news ->
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                ) {
-                    Box(
+            items(newsList.itemCount) { index ->
+                val news = newsList[index]
+
+                if (news != null) {
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(
-                                onClick = {
+                            .padding(bottom = 8.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
                                     navController.navigate(
                                         Destination.NEWSDETAILSCREEN(
                                             index,
@@ -325,9 +330,20 @@ fun HomeScreen(navController: NavHostController,scrollBehavior: SearchBarScrollB
                                         launchSingleTop = true
                                     }
                                 }
-                            )
+                        ) {
+                            NewsListItem(news = news)
+                        }
+                    }
+                } else {
+                    // Optional: show shimmer or loading placeholder
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(90.dp)
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        NewsListItem(news = news)
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
                     }
                 }
             }
@@ -407,7 +423,7 @@ fun NewsListItem(news: NewsArticle) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = news.category.joinToString(", "), // You can make this dynamic
+                        text = shortenName(news.category.joinToString(", ")), // You can make this dynamic
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )

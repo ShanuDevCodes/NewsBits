@@ -1,7 +1,10 @@
 package com.shanudevcodes.newsbits
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -59,6 +62,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.News
@@ -94,8 +98,18 @@ class MainActivity : ComponentActivity() {
             val scope = rememberCoroutineScope()
             var selected by remember { mutableIntStateOf(0) }
             val newsViewModel: NewsViewModel = viewModel()
-            newsViewModel.loadAllNews()
-            newsViewModel.loadTopNews()
+            val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
+            val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
+            LaunchedEffect(Unit) {
+                while (!isNewsLoaded.value) {
+                    if (isOnline(applicationContext)) {
+                        newsViewModel.loadTopNews()
+                        newsList.refresh()
+                        newsViewModel.newsLoaded()
+                    }
+                    delay(1000)
+                }
+            }
             LaunchedEffect(Unit) {
                 dataStore.dynamicColorFlow.first()
                 dataStore.themeFlow.first()
@@ -259,6 +273,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    fun isOnline(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
     fun isTablet(): Boolean {
         return resources.configuration.smallestScreenWidthDp >= 600
