@@ -203,6 +203,7 @@ fun MainUi(navController: NavHostController, openNavDraw:() -> Unit,newsViewMode
                             .then(
                                 if (!isPortrait) {
                                     Modifier
+                                        .padding()
                                         .widthIn(max = 490.dp)
                                         .heightIn(max = 450.dp)
                                         .clip(RoundedCornerShape(24.dp))

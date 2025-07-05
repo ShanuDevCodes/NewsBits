@@ -42,11 +42,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -60,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
@@ -67,13 +66,24 @@ import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
+import java.util.TimeZone
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: NewsViewModel,news: String) {
     val context = LocalContext.current
+    val db = AppDatabase.getInstance(context)
+    val dao = db.RoomDao()
+    val roomViewModel: RoomViewModel = viewModel(
+        factory = RoomViewModelFactory(dao)
+    )
+    val viewModelState = roomViewModel.state.collectAsState()
     val allNews = viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val topNews by viewModel.topNews.collectAsState()
     // Safe access to news item
@@ -91,7 +101,7 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
         }
         return
     }
-    var isBookMarked by remember { mutableStateOf(false) }
+    val isBookMarked = viewModelState.value.isArticleSaved
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val scaffoldState = rememberBottomSheetScaffoldState(
@@ -102,6 +112,10 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
+    val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
+    LaunchedEffect(newsArticle.article_id) {
+        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle))
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,7 +157,20 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
                         IconButton(
                             onClick = {
                                 Log.d("BookmarkToggle", "Clicked! isBookMarked = $isBookMarked")
-                                isBookMarked = !isBookMarked
+                                if (isBookMarked){
+                                    roomViewModel.onEvent(
+                                        RoomEvents.DeleteArticle(
+                                            article = newsArticle
+                                        )
+                                    )
+                                }else {
+                                    roomViewModel.onEvent(
+                                        RoomEvents.SaveArticle(
+                                            article = newsArticle
+                                        )
+                                    )
+                                }
+                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle))
                             }
                         ) {
                             Icon(
@@ -169,6 +196,11 @@ fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: 
                         )
                         Text(
                             text = formatDateString(newsArticle.pubDate),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = " $timeZoneAbbreviation",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
