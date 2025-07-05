@@ -5,7 +5,9 @@ package com.shanudevcodes.newsbits.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -45,6 +47,7 @@ private val LightColorScheme = lightColorScheme(
     onPrimaryContainer = Color(0xFFDAE4FF)
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NewsBitsTheme(
     themeOption: ThemeOptions,
@@ -86,9 +89,10 @@ fun NewsBitsTheme(
         }
     }
 
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
+        motionScheme = MotionScheme.expressive()
     )
 }
