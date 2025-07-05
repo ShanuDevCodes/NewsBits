@@ -21,6 +21,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
@@ -45,6 +47,8 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -66,13 +70,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -318,7 +325,7 @@ class MainActivity : ComponentActivity() {
                                             color = MaterialTheme.colorScheme.tertiary,
                                             modifier = Modifier.padding(16.dp)
                                         )
-                                        HorizontalDivider()
+                                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                                         Spacer(modifier = Modifier.height(8.dp))
                                         items.forEachIndexed { index, item ->
                                             Box(
@@ -358,7 +365,9 @@ class MainActivity : ComponentActivity() {
                                                     },
                                                     label = { Text(text = item) },
                                                     selected = selectedItem == index,
-                                                    onClick = { selectedItem = index },
+                                                    onClick = {
+                                                        selectedItem = index
+                                                    },
                                                     colors = NavigationDrawerItemDefaults.colors(
                                                         selectedContainerColor = Color.Transparent,
                                                         selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -369,6 +378,97 @@ class MainActivity : ComponentActivity() {
                                                 )
                                             }
                                         }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        var isDropDownEnabled by remember { mutableStateOf(false) }
+                                        val regions = listOf("Global", "India", "USA", "Canada", "Germany", "Japan")
+                                        var selectedRegion by remember { mutableStateOf(regions.first()) }
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 8.dp)
+                                                    .clip(shape = RoundedCornerShape(48.dp))
+                                                    .clickable {
+                                                        isDropDownEnabled = !isDropDownEnabled
+                                                    }, // toggles dropdown
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = 16.dp)
+                                                        .fillMaxWidth(),
+                                                    verticalAlignment = Alignment.CenterVertically
+
+                                                ) {
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                    ) {
+                                                        Text(
+                                                            text = "Region",
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            style = MaterialTheme.typography.labelLarge
+                                                        )
+                                                        Text(
+                                                            text = selectedRegion,
+                                                            style = MaterialTheme.typography.bodySmallEmphasized
+                                                        )
+                                                    }
+
+                                                    IconButton(
+                                                        onClick = {
+                                                            isDropDownEnabled = !isDropDownEnabled
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.ArrowDropDown,
+                                                            contentDescription = "Change Region"
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            DropdownMenu(
+                                                shape = RoundedCornerShape(24.dp),
+                                                expanded = isDropDownEnabled,
+                                                onDismissRequest = {
+                                                    isDropDownEnabled = false
+                                                },
+                                                modifier = Modifier
+                                                    .width(200.dp)
+                                                    .align(Alignment.Center),
+                                            ) {
+                                                regions.forEach { region ->
+                                                    DropdownMenuItem(
+                                                        text = {
+                                                            Text(
+                                                                text = region,
+                                                                style = MaterialTheme.typography.bodySmallEmphasized,
+                                                                modifier = Modifier.padding(start = 16.dp),
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                        },
+                                                        onClick = {
+                                                            selectedRegion = region
+                                                            isDropDownEnabled = false
+                                                        },
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                         Spacer(modifier = Modifier.weight(1f))
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
@@ -426,7 +526,11 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        Box {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
                             Row {
                                 val animatedWeight = remember { Animatable(0f) }
                                 LaunchedEffect(isPortrait) {
@@ -483,7 +587,7 @@ class MainActivity : ComponentActivity() {
                                         },
                                         exitTransition = {
                                             slideOutHorizontally(
-                                                targetOffsetX = { -350 },
+                                                targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
                                                 animationSpec = tween(
                                                     durationMillis = 600,
                                                     easing = ExpressiveEasing.Emphasized
@@ -492,10 +596,10 @@ class MainActivity : ComponentActivity() {
                                         },
                                         popEnterTransition = {
                                             slideInHorizontally(
-                                                initialOffsetX = { -350 },
+                                                initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
                                                 animationSpec = tween(
                                                     durationMillis = 300,
-                                                    easing = ExpressiveEasing.EmphasizedDecelerate
+                                                    easing = ExpressiveEasing.Emphasized
                                                 )
                                             )
                                         },
@@ -504,7 +608,7 @@ class MainActivity : ComponentActivity() {
                                                 towards = AnimatedContentTransitionScope.SlideDirection.Right,
                                                 animationSpec = tween(
                                                     durationMillis = 300,
-                                                    easing = ExpressiveEasing.EmphasizedDecelerate
+                                                    easing = ExpressiveEasing.Emphasized
                                                 )
                                             )
                                         }

@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [SavedArticle::class],
     version = 1,
+    exportSchema = false
 )
 abstract class AppDatabase: RoomDatabase() {
     abstract fun RoomDao(): RoomDao
