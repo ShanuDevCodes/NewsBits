@@ -1,4 +1,4 @@
-package com.shanudevcodes.newsbits.ui.screens
+package com.shanudevcodes.newsbits.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -76,7 +76,7 @@ import java.util.TimeZone
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NewsDetailScreen(newsIndex: Int,navController: NavHostController,viewModel: NewsViewModel,news: String) {
+fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel: NewsViewModel, news: String) {
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
     val dao = db.RoomDao()

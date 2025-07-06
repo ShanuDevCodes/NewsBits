@@ -8,120 +8,32 @@ import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.Interaction
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Contrast
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingToolbarDefaults.animationSpec
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.layout.AnimatedPane
-import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
-import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.shanudevcodes.newsbits.data.BookmarkDestination
 import com.shanudevcodes.newsbits.data.DataStoreManager
-import com.shanudevcodes.newsbits.data.Destination
-import com.shanudevcodes.newsbits.data.HomeDestination
-import com.shanudevcodes.newsbits.data.News
-import com.shanudevcodes.newsbits.data.items
-import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
-import com.shanudevcodes.newsbits.ui.screens.BookMarksScreen
-import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
-import com.shanudevcodes.newsbits.ui.screens.MainUi
-import com.shanudevcodes.newsbits.ui.screens.NewsDetailScreen
+import com.shanudevcodes.newsbits.ui.screens.AppMainUI
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlin.text.contains
 
 class MainActivity : ComponentActivity() {
 
@@ -149,7 +61,6 @@ class MainActivity : ComponentActivity() {
             val currentDestination = navBackStackEntry?.destination
 //            val wideNavigationRailState = rememberWideNavigationRailState(initialValue = WideNavigationRailValue.Collapsed)
             val scope = rememberCoroutineScope()
-            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val newsViewModel: NewsViewModel = viewModel()
             newsViewModel.loadTopNews()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
@@ -165,7 +76,7 @@ class MainActivity : ComponentActivity() {
                             "You're offline. Showing old news.",
                             Toast.LENGTH_SHORT
                         ).show()
-                    }else{
+                    } else {
                         Toast.makeText(
                             applicationContext,
                             "You're offline",
@@ -183,8 +94,12 @@ class MainActivity : ComponentActivity() {
                         newsList.refresh()
                         delay(300)
                         newsViewModel.newsLoaded()
-                        if (refreshTime > 0){
-                            Toast.makeText(applicationContext, "You're online now. Showing recent news.", Toast.LENGTH_SHORT).show()
+                        if (refreshTime > 0) {
+                            Toast.makeText(
+                                applicationContext,
+                                "You're online now. Showing recent news.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     refreshTime++
@@ -196,586 +111,20 @@ class MainActivity : ComponentActivity() {
                 dataStore.themeFlow.first()
                 themeLoaded = true
             }
-            if (drawerState.isOpen){
-                BackHandler {
-                    scope.launch {
-                        drawerState.close()
-                    }
-                }
-            }
-            splashScreen.setKeepOnScreenCondition { !themeLoaded && !isNewsLoaded.value}
+            splashScreen.setKeepOnScreenCondition { !themeLoaded && !isNewsLoaded.value }
             NewsBitsTheme(
                 themeOption = themeOption,
                 dynamicColor = dynamicColor
             ) {
-//                Box {
-//                    ModalWideNavigationRail(
-//                        state = wideNavigationRailState,
-//                        header = {
-//                            Column {
-//                                IconButton(
-//                                    onClick = {
-//                                        scope.launch {
-//                                            if (wideNavigationRailState.targetValue == WideNavigationRailValue.Expanded)
-//                                                wideNavigationRailState.collapse()
-//                                            else wideNavigationRailState.expand()
-//                                        }
-//                                    }
-//                                ) {
-//                                    Icon(
-//                                        imageVector = if (wideNavigationRailState.targetValue == WideNavigationRailValue.Expanded) Icons.AutoMirrored.Filled.MenuOpen else Icons.Filled.Menu,
-//                                        contentDescription = "Menu",
-//                                        modifier = Modifier
-//                                            .padding(start = 8.dp),
-//                                    )
-//                                }
-//                                Text(
-//                                    "News Bits",
-//                                    color = MaterialTheme.colorScheme.tertiary,
-//                                    modifier = Modifier.padding(16.dp)
-//                                )
-//                                HorizontalDivider()
-//                            }
-//                        },
-//                        colors = WideNavigationRailDefaults.colors(
-//                            modalContainerColor = if (!dynamicColor) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainer,
-//                        ),
-//                        hideOnCollapse = true
-//                    ) {
-//                        Box(
-//                            modifier = Modifier.fillMaxSize()
-//                        ) {
-//                            Column {
-//                                items.forEachIndexed { index, item ->
-//                                    AnimatedWideNavigationRailItem(
-//                                        label = item,
-//                                        selected = selectedItem == index,
-//                                        onClick = { selectedItem = index },
-//                                        icon = {
-//                                            Icon(
-//                                                if (selectedItem == index) selectedIcons[index] else unselectedIcons[index],
-//                                                contentDescription = null
-//                                            )
-//                                        },
-//                                    )
-//                                }
-//                                Spacer(modifier = Modifier.weight(1f))
-//                                Row(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    horizontalArrangement = Arrangement.Center
-//                                ) {
-//                                    IconButton(
-//                                        onClick = {
-//                                            scope.launch {
-//                                                dataStore.setDynamicColor(!dynamicColor)
-//                                            }
-//                                        }
-//                                    ) {
-//                                        Icon(
-//                                            imageVector = if (dynamicColor) Icons.Filled.Palette else Icons.Outlined.Palette,
-//                                            contentDescription = "Color Scheme Change"
-//                                        )
-//                                    }
-//                                    IconButton(
-//                                        onClick = {
-//                                            scope.launch {
-//                                                dataStore.saveThemeOption(
-//                                                    when (themeOption) {
-//                                                        ThemeOptions.SYSTEM_DEFAULT -> ThemeOptions.LIGHT
-//                                                        ThemeOptions.LIGHT -> ThemeOptions.DARK
-//                                                        ThemeOptions.DARK -> ThemeOptions.SYSTEM_DEFAULT
-//                                                    }
-//                                                )
-//                                            }
-//                                        }
-//                                    ) {
-//                                        Icon(
-//                                            imageVector = when (themeOption) {
-//                                                ThemeOptions.SYSTEM_DEFAULT -> Icons.Default.Contrast
-//                                                ThemeOptions.LIGHT -> Icons.Default.LightMode
-//                                                ThemeOptions.DARK -> Icons.Default.DarkMode
-//                                            },
-//                                            contentDescription = "Theme Change"
-//                                        )
-//                                    }
-//                                }
-//                                Text(
-//                                    text = "Version: ${BuildConfig.VERSION_NAME}",
-//                                    textAlign = TextAlign.Center,
-//                                    modifier = Modifier
-//                                        .fillMaxWidth()
-//                                )
-//                                Text(
-//                                    text = "Powered By NewsData.io",
-//                                    textAlign = TextAlign.Center,
-//                                    modifier = Modifier
-//                                        .fillMaxWidth()
-//                                )
-//                                Spacer(
-//                                    modifier = Modifier.height(
-//                                        WindowInsets.navigationBars.asPaddingValues()
-//                                            .calculateBottomPadding() * 2
-//                                    )
-//                                )
-//                            }
-//                        }
-//                    }
-                ModalNavigationDrawer(
-                    drawerState = drawerState,
-                    drawerContent = {
-                        ModalDrawerSheet(
-                            modifier = Modifier.width(300.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Column {
-                                    Text(
-                                        "News Bits",
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier.padding(16.dp)
-                                    )
-                                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    items.forEachIndexed { index, item ->
-                                        val isSelected = currentDestination?.hierarchy?.any { it.route == item.destination::class.qualifiedName } == true
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(
-                                                    horizontal = 8.dp,
-                                                    vertical = 4.dp
-                                                ) // Provide space for scale animation
-                                                .height(56.dp)
-                                        ) {
-                                            val scale by animateFloatAsState(
-                                                targetValue = if (isSelected) 1f else 0f,
-                                                animationSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                                    stiffness = Spring.StiffnessMedium
-                                                ),
-                                                label = "scale"
-                                            )
-
-                                            // Animated background
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .scale(scaleX = scale, scaleY = 1f)
-                                                    .alpha(scale)
-                                                    .background(
-                                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                                        shape = RoundedCornerShape(48.dp)
-                                                    )
-                                            )
-
-                                            // Navigation item
-                                            NavigationDrawerItem(
-                                                icon = {
-                                                    Icon(
-                                                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                                        contentDescription = item.title
-                                                    )
-                                                },
-                                                label = { Text(text = item.title) },
-                                                selected = isSelected,
-                                                onClick = {
-                                                    scope.launch {
-                                                        navController.navigate(item.destination) {
-                                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                                saveState = true
-                                                            }
-                                                            launchSingleTop = true
-                                                            restoreState = true
-                                                        }
-                                                        delay(300)
-                                                        drawerState.close()
-                                                    }
-                                                },
-                                                colors = NavigationDrawerItemDefaults.colors(
-                                                    selectedContainerColor = Color.Transparent,
-                                                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                ),
-                                                interactionSource = NoRippleInteractionSource,
-                                                modifier = Modifier.fillMaxSize()
-                                            )
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    var isDropDownEnabled by remember { mutableStateOf(false) }
-                                    val regions = listOf(
-                                        "Global",
-                                        "India",
-                                        "USA",
-                                        "Canada",
-                                        "Germany",
-                                        "Japan"
-                                    )
-                                    var selectedRegion by remember { mutableStateOf(regions.first()) }
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 8.dp)
-                                                .clip(shape = RoundedCornerShape(48.dp))
-                                                .clickable {
-                                                    isDropDownEnabled = !isDropDownEnabled
-                                                }, // toggles dropdown
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .padding(horizontal = 16.dp)
-                                                    .fillMaxWidth(),
-                                                verticalAlignment = Alignment.CenterVertically
-
-                                            ) {
-                                                Column(
-                                                    modifier = Modifier
-                                                        .weight(1f)
-                                                ) {
-                                                    Text(
-                                                        text = "Region",
-                                                        color = MaterialTheme.colorScheme.primary,
-                                                        style = MaterialTheme.typography.labelLarge
-                                                    )
-                                                    Text(
-                                                        text = selectedRegion,
-                                                        style = MaterialTheme.typography.bodySmallEmphasized
-                                                    )
-                                                }
-
-                                                IconButton(
-                                                    onClick = {
-                                                        isDropDownEnabled = !isDropDownEnabled
-                                                    }
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.ArrowDropDown,
-                                                        contentDescription = "Change Region"
-                                                    )
-                                                }
-                                            }
-                                        }
-                                        DropdownMenu(
-                                            shape = RoundedCornerShape(24.dp),
-                                            expanded = isDropDownEnabled,
-                                            onDismissRequest = {
-                                                isDropDownEnabled = false
-                                            },
-                                            modifier = Modifier
-                                                .width(200.dp)
-                                                .align(Alignment.Center),
-                                        ) {
-                                            regions.forEach { region ->
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Text(
-                                                            text = region,
-                                                            style = MaterialTheme.typography.bodySmallEmphasized,
-                                                            modifier = Modifier.padding(start = 16.dp),
-                                                            maxLines = 1,
-                                                            overflow = TextOverflow.Ellipsis
-                                                        )
-                                                    },
-                                                    onClick = {
-                                                        selectedRegion = region
-                                                        isDropDownEnabled = false
-                                                    },
-                                                    modifier = Modifier.fillMaxWidth()
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-                                        IconButton(
-                                            onClick = {
-                                                scope.launch {
-                                                    dataStore.setDynamicColor(!dynamicColor)
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = if (dynamicColor) Icons.Filled.Palette else Icons.Outlined.Palette,
-                                                contentDescription = "Color Scheme Change"
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = {
-                                                scope.launch {
-                                                    dataStore.saveThemeOption(
-                                                        when (themeOption) {
-                                                            ThemeOptions.SYSTEM_DEFAULT -> ThemeOptions.LIGHT
-                                                            ThemeOptions.LIGHT -> ThemeOptions.DARK
-                                                            ThemeOptions.DARK -> ThemeOptions.SYSTEM_DEFAULT
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = when (themeOption) {
-                                                    ThemeOptions.SYSTEM_DEFAULT -> Icons.Default.Contrast
-                                                    ThemeOptions.LIGHT -> Icons.Default.LightMode
-                                                    ThemeOptions.DARK -> Icons.Default.DarkMode
-                                                },
-                                                contentDescription = "Theme Change"
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = "Version: ${BuildConfig.VERSION_NAME}",
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                    Text(
-                                        text = "Powered By NewsData.io",
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                }
-                            }
-                        }
-                    }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        Row {
-                            val animatedWeight = remember { Animatable(0f) }
-                            LaunchedEffect(isPortrait) {
-                                if (!isPortrait) {
-                                    delay(100)
-                                    animatedWeight.animateTo(
-                                        targetValue = 0.35f,
-                                        animationSpec = tween(
-                                            durationMillis = 600,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    )
-                                } else {
-                                    animatedWeight.snapTo(0f)
-                                }
-                            }
-                            if (animatedWeight.value > 0f) {
-                                Box(modifier = Modifier.weight(animatedWeight.value)) {
-                                    MainUi(
-                                        navController,
-                                        openNavDraw = {
-                                            scope.launch {
-                                                drawerState.open()
-//                                                    wideNavigationRailState.expand()
-                                            }
-                                        },
-                                        newsViewModel
-                                    )
-                                }
-                            }
-                            if (!isPortrait) {
-                                VerticalDivider(
-                                    modifier = Modifier
-                                        .width(1.dp),
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .weight(0.65f)
-                                    .clipToBounds()
-                            ) {
-                                NavHost(
-                                    startDestination = Destination.HOME,
-                                    navController = navController,
-                                ) {
-                                    navigation<Destination.BOOKMARKS>(
-                                        startDestination = BookmarkDestination.BOOKMARKSCREEN,
-                                    ){
-                                        composable<BookmarkDestination.BOOKMARKSCREEN> {
-                                            BookMarksScreen(
-                                                openNavDraw = {
-                                                    scope.launch {
-                                                        drawerState.open()
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                    navigation<Destination.HOME>(
-                                        startDestination = HomeDestination.HOMESCREEN,
-                                        enterTransition = {
-                                            val from = initialState.destination.route
-                                            val to = targetState.destination.route
-                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                                slideIntoContainer(
-                                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                                    animationSpec = tween(
-                                                        durationMillis = 600,
-                                                        easing = ExpressiveEasing.Emphasized
-                                                    )
-                                                )
-                                            }else{
-                                                null
-                                            }
-                                        },
-                                        exitTransition = {
-                                            val from = initialState.destination.route
-                                            val to = targetState.destination.route
-                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                                slideOutHorizontally(
-                                                    targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-                                                    animationSpec = tween(
-                                                        durationMillis = 600,
-                                                        easing = ExpressiveEasing.Emphasized
-                                                    )
-                                                )
-                                            }else{
-                                                null
-                                            }
-                                        },
-                                        popEnterTransition = {
-                                            val from = initialState.destination.route
-                                            val to = targetState.destination.route
-                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                                slideInHorizontally(
-                                                    initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-                                                    animationSpec = tween(
-                                                        durationMillis = 300,
-                                                        easing = ExpressiveEasing.Emphasized
-                                                    )
-                                                )
-                                            }else{
-                                                null
-                                            }
-                                        },
-                                        popExitTransition = {
-                                            val from = initialState.destination.route
-                                            val to = targetState.destination.route
-                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                                slideOutOfContainer(
-                                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                                    animationSpec = tween(
-                                                        durationMillis = 300,
-                                                        easing = ExpressiveEasing.Emphasized
-                                                    )
-                                                )
-                                            }else{
-                                                null
-                                            }
-                                        }
-                                    ){
-                                        composable<HomeDestination.HOMESCREEN> {
-                                            if (isPortrait) {
-                                                MainUi(navController, openNavDraw = {
-                                                    scope.launch {
-                                                        drawerState.open()
-                                                    }
-                                                }, newsViewModel)
-                                            } else {
-                                                EmptyScreen()
-                                            }
-                                        }
-                                        composable<HomeDestination.NEWSDETAILSCREEN> {
-                                            NewsDetailScreen(
-                                                it.arguments?.getInt("newsId") ?: 1,
-                                                navController,
-                                                newsViewModel,
-                                                it.arguments?.getString("news")
-                                                    ?: News.NEWS_ALL.name
-                                            )
-                                        }
-//                                        composable<HomeDestination.HOMESCREEN> {
-//                                            NavigableListDetailPaneScaffold(
-//                                                navigator = listDetailNavigator,
-//                                                listPane = {
-//                                                    AnimatedPane(
-//                                                        enterTransition = slideInHorizontally(
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            )
-//                                                        ),
-//                                                        exitTransition = slideOutHorizontally (
-//                                                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            )
-//                                                        ),
-//                                                    ) {
-//                                                        MainUi(
-//                                                            navigator = listDetailNavigator,
-//                                                            openNavDraw = {
-//                                                                scope.launch {
-//                                                                    drawerState.open()
-////                                                    wideNavigationRailState.expand()
-//                                                                }
-//                                                            },
-//                                                            newsViewModel
-//                                                        )
-//                                                    }
-//                                                },
-//                                                detailPane = {
-//                                                    AnimatedPane(
-//                                                        enterTransition = slideInHorizontally(
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            ),
-//                                                            initialOffsetX = { fullWidth -> fullWidth }
-//                                                        ),
-//                                                        exitTransition = slideOutHorizontally (
-//                                                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            )
-//                                                        ),
-//                                                    ) {
-//                                                        // Show the detail pane content if selected item is available
-//                                                        listDetailNavigator.currentDestination?.contentKey?.let {
-//                                                            val contentKey = it
-//                                                            val (type, indexStr) = contentKey.toString()
-//                                                                .split("::")
-//                                                            NewsDetailScreen(
-//                                                                indexStr.toInt(),
-//                                                                navController,
-//                                                                newsViewModel,
-//                                                                type
-//                                                            )
-//                                                        }?:EmptyScreen()
-//                                                    }
-//                                                },
-//                                                defaultBackBehavior = BackNavigationBehavior.PopUntilContentChange
-//                                            )
-//                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-//              }
+                AppMainUI(
+                    navController = navController,
+                    currentDestination = currentDestination,
+                    dataStore = dataStore,
+                    themeOption = themeOption,
+                    dynamicColor = dynamicColor,
+                    newsViewModel = newsViewModel,
+                    isPortrait = isPortrait
+                )
             }
         }
     }
@@ -790,66 +139,4 @@ fun isOnline(context: Context): Boolean {
 
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-}
-//@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-//@Composable
-//fun AnimatedWideNavigationRailItem(
-//    label: String,
-//    selected: Boolean,
-//    onClick: () -> Unit,
-//    icon: @Composable () -> Unit,
-//    selectedColor: Color = MaterialTheme.colorScheme.secondaryContainer,
-//    contentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-//    unselectedColor: Color = MaterialTheme.colorScheme.onSurface,
-//) {
-//    val indicatorWidth by animateFloatAsState(
-//        targetValue = if (selected) 1f else 0f, // adjust to your rail width
-//        animationSpec = spring(
-//            dampingRatio = Spring.DampingRatioLowBouncy,
-//            stiffness = Spring.StiffnessMedium,
-//        ),
-//        label = "indicatorWidth"
-//    )
-//
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(56.dp)
-//            .padding(horizontal = 8.dp)
-//    ) {
-//        // Center-expanding background
-//        Box(
-//            modifier = Modifier
-//                .align(Alignment.Center)
-//                .height(54.dp)
-//                .fillMaxWidth()
-//                .scale(scaleX = indicatorWidth, scaleY = 1f)
-//                .alpha(indicatorWidth)
-//                .background(color = selectedColor, shape = RoundedCornerShape(56.dp))
-//        )
-//
-//        WideNavigationRailItem(
-//            selected = selected,
-//            onClick = onClick,
-//            railExpanded = true,
-//            icon = icon,
-//            label = { Text(text = label) },
-//            colors = WideNavigationRailItemDefaults.colors(
-//                selectedIndicatorColor = Color.Transparent,
-//                selectedIconColor = contentColor,
-//                selectedTextColor = contentColor,
-//                unselectedIconColor = unselectedColor,
-//                unselectedTextColor = unselectedColor,
-//            ),
-//            interactionSource = NoRippleInteractionSource
-//        )
-//    }
-//}
-private object NoRippleInteractionSource : MutableInteractionSource {
-
-    override val interactions: Flow<Interaction> = emptyFlow()
-
-    override suspend fun emit(interaction: Interaction) {}
-
-    override fun tryEmit(interaction: Interaction) = true
 }

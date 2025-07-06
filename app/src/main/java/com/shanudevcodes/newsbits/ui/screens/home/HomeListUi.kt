@@ -1,4 +1,4 @@
-package com.shanudevcodes.newsbits.ui.screens
+package com.shanudevcodes.newsbits.ui.screens.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopSearchBar
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,7 +53,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.Navigator
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.launch
 
@@ -62,7 +60,7 @@ import kotlinx.coroutines.launch
     ExperimentalMaterial3AdaptiveApi::class
 )
 @Composable
-fun MainUi(
+fun HomeListUi(
     navHostController: NavHostController,
 //    navigator: ThreePaneScaffoldNavigator<Any>,
     openNavDraw:() -> Unit,

@@ -1,4 +1,4 @@
-package com.shanudevcodes.newsbits.ui.screens
+package com.shanudevcodes.newsbits.ui.screens.bookmark
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,17 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.google.firebase.Timestamp
-import com.shanudevcodes.newsbits.data.Destination
-import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
+import com.shanudevcodes.newsbits.ui.screens.home.NewsListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
