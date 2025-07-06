@@ -60,12 +60,11 @@ class MainActivity : ComponentActivity() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 //            val wideNavigationRailState = rememberWideNavigationRailState(initialValue = WideNavigationRailValue.Collapsed)
-            val scope = rememberCoroutineScope()
             val newsViewModel: NewsViewModel = viewModel()
             newsViewModel.loadTopNews()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
-            val listDetailNavigator = rememberListDetailPaneScaffoldNavigator()
+//            val listDetailNavigator = rememberListDetailPaneScaffoldNavigator()
             LaunchedEffect(Unit) {
                 val isFirstLaunch = dataStore.firstLaunch.first()
                 delay(300)
