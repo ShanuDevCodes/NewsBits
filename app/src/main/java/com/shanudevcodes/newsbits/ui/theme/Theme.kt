@@ -30,8 +30,8 @@ private val DarkColorScheme = darkColorScheme(
     secondaryContainer = Color(0xFFFFD18A).copy(alpha = 0.5f),
     onSecondaryContainer = Color(0xFF3A2600),
     primaryContainer = Color(0xFFFCB76F),
-    onPrimaryContainer = Color(0xFF212734)
-
+    onPrimaryContainer = Color(0xFF212734),
+    surfaceContainer = Black70
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -44,7 +44,8 @@ private val LightColorScheme = lightColorScheme(
     secondaryContainer = Color(0xFFFFD18A).copy(alpha = 0.5f),
     onSecondaryContainer = Color(0xFF3A2600),
     primaryContainer = Color(0xFFFAAB5B),
-    onPrimaryContainer = Color(0xFFDAE4FF)
+    onPrimaryContainer = Color(0xFFDAE4FF),
+    surfaceContainer = White70
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
