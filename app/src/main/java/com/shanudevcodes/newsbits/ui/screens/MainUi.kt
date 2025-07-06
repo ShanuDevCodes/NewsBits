@@ -36,6 +36,8 @@ import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopSearchBar
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,12 +54,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.Navigator
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalMaterial3AdaptiveApi::class
+)
 @Composable
-fun MainUi(navController: NavHostController, openNavDraw:() -> Unit,newsViewModel: NewsViewModel ) {
+fun MainUi(
+    navHostController: NavHostController,
+//    navigator: ThreePaneScaffoldNavigator<Any>,
+    openNavDraw:() -> Unit,
+    newsViewModel: NewsViewModel
+) {
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -223,7 +233,12 @@ fun MainUi(navController: NavHostController, openNavDraw:() -> Unit,newsViewMode
                 .padding(start = 12.dp, end = 12.dp)
         ) {
             // Screen content goes here
-            HomeScreen(navController, scrollBehavior, newsViewModel)
+            HomeScreen(
+                navController = navHostController,
+//                navigator = navigator,
+                scrollBehavior = scrollBehavior,
+                viewModel = newsViewModel
+            )
         }
     }
 }

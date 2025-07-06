@@ -18,6 +18,10 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
@@ -51,6 +55,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingToolbarDefaults.animationSpec
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +66,11 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
+import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
+import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -81,16 +91,25 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.shanudevcodes.newsbits.data.BookmarkDestination
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.Destination
+import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
+import com.shanudevcodes.newsbits.data.items
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
+import com.shanudevcodes.newsbits.ui.screens.BookMarksScreen
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
 import com.shanudevcodes.newsbits.ui.screens.MainUi
 import com.shanudevcodes.newsbits.ui.screens.NewsDetailScreen
@@ -102,10 +121,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.text.contains
 
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
+        ExperimentalMaterial3AdaptiveApi::class
+    )
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -116,20 +138,6 @@ class MainActivity : ComponentActivity() {
             } else {
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             }
-            val items = listOf(
-                "Home",
-                "Bookmarked",
-            )
-            val selectedIcons =
-                listOf(
-                    Icons.Filled.Home,
-                    Icons.Filled.Bookmark,
-                )
-            val unselectedIcons =
-                listOf(
-                    Icons.Outlined.Home,
-                    Icons.Outlined.BookmarkBorder,
-                )
             val configuration = LocalConfiguration.current
             val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
             val dataStore = DataStoreManager(applicationContext)
@@ -137,14 +145,16 @@ class MainActivity : ComponentActivity() {
             val dynamicColor by dataStore.dynamicColorFlow.collectAsState(initial = false)
             var themeLoaded by remember { mutableStateOf(false) }
             val navController = rememberNavController()
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
 //            val wideNavigationRailState = rememberWideNavigationRailState(initialValue = WideNavigationRailValue.Collapsed)
             val scope = rememberCoroutineScope()
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-            var selectedItem by remember { mutableIntStateOf(0) }
             val newsViewModel: NewsViewModel = viewModel()
             newsViewModel.loadTopNews()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
+            val listDetailNavigator = rememberListDetailPaneScaffoldNavigator()
             LaunchedEffect(Unit) {
                 val isFirstLaunch = dataStore.firstLaunch.first()
                 delay(300)
@@ -310,322 +320,382 @@ class MainActivity : ComponentActivity() {
 //                            }
 //                        }
 //                    }
-                    ModalNavigationDrawer(
-                        drawerState = drawerState,
-                        drawerContent = {
-                            ModalDrawerSheet(
-                                modifier = Modifier.width(300.dp)
+                ModalNavigationDrawer(
+                    drawerState = drawerState,
+                    drawerContent = {
+                        ModalDrawerSheet(
+                            modifier = Modifier.width(300.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Column {
-                                        Text(
-                                            "News Bits",
-                                            color = MaterialTheme.colorScheme.tertiary,
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-                                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        items.forEachIndexed { index, item ->
+                                Column {
+                                    Text(
+                                        "News Bits",
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    items.forEachIndexed { index, item ->
+                                        val isSelected = currentDestination?.hierarchy?.any { it.route == item.destination::class.qualifiedName } == true
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(
+                                                    horizontal = 8.dp,
+                                                    vertical = 4.dp
+                                                ) // Provide space for scale animation
+                                                .height(56.dp)
+                                        ) {
+                                            val scale by animateFloatAsState(
+                                                targetValue = if (isSelected) 1f else 0f,
+                                                animationSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioLowBouncy,
+                                                    stiffness = Spring.StiffnessMedium
+                                                ),
+                                                label = "scale"
+                                            )
+
+                                            // Animated background
                                             Box(
                                                 modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 8.dp, vertical = 4.dp) // Provide space for scale animation
-                                                    .height(56.dp)
-                                            ) {
-                                                val scale by animateFloatAsState(
-                                                    targetValue = if (selectedItem == index) 1f else 0f,
-                                                    animationSpec = spring(
-                                                        dampingRatio = Spring.DampingRatioLowBouncy,
-                                                        stiffness = Spring.StiffnessMedium
-                                                    ),
-                                                    label = "scale"
-                                                )
+                                                    .fillMaxSize()
+                                                    .scale(scaleX = scale, scaleY = 1f)
+                                                    .alpha(scale)
+                                                    .background(
+                                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                                        shape = RoundedCornerShape(48.dp)
+                                                    )
+                                            )
 
-                                                // Animated background
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .scale(scaleX = scale, scaleY = 1f)
-                                                        .alpha(scale)
-                                                        .background(
-                                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                                            shape = RoundedCornerShape(48.dp)
-                                                        )
-                                                )
-
-                                                // Navigation item
-                                                NavigationDrawerItem(
-                                                    icon = {
-                                                        Icon(
-                                                            imageVector = if (selectedItem == index) selectedIcons[index] else unselectedIcons[index],
-                                                            contentDescription = item
-                                                        )
-                                                    },
-                                                    label = { Text(text = item) },
-                                                    selected = selectedItem == index,
-                                                    onClick = {
-                                                        selectedItem = index
-                                                    },
-                                                    colors = NavigationDrawerItemDefaults.colors(
-                                                        selectedContainerColor = Color.Transparent,
-                                                        selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                        selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    ),
-                                                    interactionSource = NoRippleInteractionSource,
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
-                                            }
+                                            // Navigation item
+                                            NavigationDrawerItem(
+                                                icon = {
+                                                    Icon(
+                                                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                                        contentDescription = item.title
+                                                    )
+                                                },
+                                                label = { Text(text = item.title) },
+                                                selected = isSelected,
+                                                onClick = {
+                                                    scope.launch {
+                                                        navController.navigate(item.destination) {
+                                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                                saveState = true
+                                                            }
+                                                            launchSingleTop = true
+                                                            restoreState = true
+                                                        }
+                                                        delay(300)
+                                                        drawerState.close()
+                                                    }
+                                                },
+                                                colors = NavigationDrawerItemDefaults.colors(
+                                                    selectedContainerColor = Color.Transparent,
+                                                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                ),
+                                                interactionSource = NoRippleInteractionSource,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
                                         }
+                                    }
 
-                                        Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
 
-                                        Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                        Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                        var isDropDownEnabled by remember { mutableStateOf(false) }
-                                        val regions = listOf("Global", "India", "USA", "Canada", "Germany", "Japan")
-                                        var selectedRegion by remember { mutableStateOf(regions.first()) }
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            contentAlignment = Alignment.Center,
+                                    var isDropDownEnabled by remember { mutableStateOf(false) }
+                                    val regions = listOf(
+                                        "Global",
+                                        "India",
+                                        "USA",
+                                        "Canada",
+                                        "Germany",
+                                        "Japan"
+                                    )
+                                    var selectedRegion by remember { mutableStateOf(regions.first()) }
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp)
+                                                .clip(shape = RoundedCornerShape(48.dp))
+                                                .clickable {
+                                                    isDropDownEnabled = !isDropDownEnabled
+                                                }, // toggles dropdown
+                                            verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             Row(
                                                 modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 8.dp)
-                                                    .clip(shape = RoundedCornerShape(48.dp))
-                                                    .clickable {
-                                                        isDropDownEnabled = !isDropDownEnabled
-                                                    }, // toggles dropdown
-                                                verticalAlignment = Alignment.CenterVertically,
+                                                    .padding(horizontal = 16.dp)
+                                                    .fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically
+
                                             ) {
-                                                Row(
+                                                Column(
                                                     modifier = Modifier
-                                                        .padding(horizontal = 16.dp)
-                                                        .fillMaxWidth(),
-                                                    verticalAlignment = Alignment.CenterVertically
-
+                                                        .weight(1f)
                                                 ) {
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .weight(1f)
-                                                    ) {
-                                                        Text(
-                                                            text = "Region",
-                                                            color = MaterialTheme.colorScheme.primary,
-                                                            style = MaterialTheme.typography.labelLarge
-                                                        )
-                                                        Text(
-                                                            text = selectedRegion,
-                                                            style = MaterialTheme.typography.bodySmallEmphasized
-                                                        )
-                                                    }
-
-                                                    IconButton(
-                                                        onClick = {
-                                                            isDropDownEnabled = !isDropDownEnabled
-                                                        }
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.ArrowDropDown,
-                                                            contentDescription = "Change Region"
-                                                        )
-                                                    }
+                                                    Text(
+                                                        text = "Region",
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        style = MaterialTheme.typography.labelLarge
+                                                    )
+                                                    Text(
+                                                        text = selectedRegion,
+                                                        style = MaterialTheme.typography.bodySmallEmphasized
+                                                    )
                                                 }
-                                            }
-                                            DropdownMenu(
-                                                shape = RoundedCornerShape(24.dp),
-                                                expanded = isDropDownEnabled,
-                                                onDismissRequest = {
-                                                    isDropDownEnabled = false
-                                                },
-                                                modifier = Modifier
-                                                    .width(200.dp)
-                                                    .align(Alignment.Center),
-                                            ) {
-                                                regions.forEach { region ->
-                                                    DropdownMenuItem(
-                                                        text = {
-                                                            Text(
-                                                                text = region,
-                                                                style = MaterialTheme.typography.bodySmallEmphasized,
-                                                                modifier = Modifier.padding(start = 16.dp),
-                                                                maxLines = 1,
-                                                                overflow = TextOverflow.Ellipsis
-                                                            )
-                                                        },
-                                                        onClick = {
-                                                            selectedRegion = region
-                                                            isDropDownEnabled = false
-                                                        },
-                                                        modifier = Modifier.fillMaxWidth()
+
+                                                IconButton(
+                                                    onClick = {
+                                                        isDropDownEnabled = !isDropDownEnabled
+                                                    }
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.ArrowDropDown,
+                                                        contentDescription = "Change Region"
                                                     )
                                                 }
                                             }
                                         }
-
-                                        Spacer(modifier = Modifier.weight(1f))
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.Center
+                                        DropdownMenu(
+                                            shape = RoundedCornerShape(24.dp),
+                                            expanded = isDropDownEnabled,
+                                            onDismissRequest = {
+                                                isDropDownEnabled = false
+                                            },
+                                            modifier = Modifier
+                                                .width(200.dp)
+                                                .align(Alignment.Center),
                                         ) {
-                                            IconButton(
-                                                onClick = {
-                                                    scope.launch {
-                                                        dataStore.setDynamicColor(!dynamicColor)
-                                                    }
-                                                }
-                                            ) {
-                                                Icon(
-                                                    imageVector = if (dynamicColor) Icons.Filled.Palette else Icons.Outlined.Palette,
-                                                    contentDescription = "Color Scheme Change"
-                                                )
-                                            }
-                                            IconButton(
-                                                onClick = {
-                                                    scope.launch {
-                                                        dataStore.saveThemeOption(
-                                                            when (themeOption) {
-                                                                ThemeOptions.SYSTEM_DEFAULT -> ThemeOptions.LIGHT
-                                                                ThemeOptions.LIGHT -> ThemeOptions.DARK
-                                                                ThemeOptions.DARK -> ThemeOptions.SYSTEM_DEFAULT
-                                                            }
+                                            regions.forEach { region ->
+                                                DropdownMenuItem(
+                                                    text = {
+                                                        Text(
+                                                            text = region,
+                                                            style = MaterialTheme.typography.bodySmallEmphasized,
+                                                            modifier = Modifier.padding(start = 16.dp),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
                                                         )
-                                                    }
-                                                }
-                                            ) {
-                                                Icon(
-                                                    imageVector = when (themeOption) {
-                                                        ThemeOptions.SYSTEM_DEFAULT -> Icons.Default.Contrast
-                                                        ThemeOptions.LIGHT -> Icons.Default.LightMode
-                                                        ThemeOptions.DARK -> Icons.Default.DarkMode
                                                     },
-                                                    contentDescription = "Theme Change"
+                                                    onClick = {
+                                                        selectedRegion = region
+                                                        isDropDownEnabled = false
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth()
                                                 )
                                             }
                                         }
-                                        Text(
-                                            text = "Version: ${BuildConfig.VERSION_NAME}",
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                        Text(
-                                            text = "Powered By NewsData.io",
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
                                     }
+
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        IconButton(
+                                            onClick = {
+                                                scope.launch {
+                                                    dataStore.setDynamicColor(!dynamicColor)
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = if (dynamicColor) Icons.Filled.Palette else Icons.Outlined.Palette,
+                                                contentDescription = "Color Scheme Change"
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                scope.launch {
+                                                    dataStore.saveThemeOption(
+                                                        when (themeOption) {
+                                                            ThemeOptions.SYSTEM_DEFAULT -> ThemeOptions.LIGHT
+                                                            ThemeOptions.LIGHT -> ThemeOptions.DARK
+                                                            ThemeOptions.DARK -> ThemeOptions.SYSTEM_DEFAULT
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = when (themeOption) {
+                                                    ThemeOptions.SYSTEM_DEFAULT -> Icons.Default.Contrast
+                                                    ThemeOptions.LIGHT -> Icons.Default.LightMode
+                                                    ThemeOptions.DARK -> Icons.Default.DarkMode
+                                                },
+                                                contentDescription = "Theme Change"
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = "Version: ${BuildConfig.VERSION_NAME}",
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    )
+                                    Text(
+                                        text = "Powered By NewsData.io",
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    )
                                 }
                             }
                         }
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surface)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surface)
-                        ) {
-                            Row {
-                                val animatedWeight = remember { Animatable(0f) }
-                                LaunchedEffect(isPortrait) {
-                                    if (!isPortrait) {
-                                        delay(100)
-                                        animatedWeight.animateTo(
-                                            targetValue = 0.35f,
-                                            animationSpec = tween(
-                                                durationMillis = 600,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        )
-                                    } else {
-                                        animatedWeight.snapTo(0f)
-                                    }
-                                }
-                                if (animatedWeight.value > 0f) {
-                                    Box(modifier = Modifier.weight(animatedWeight.value)) {
-                                        MainUi(
-                                            navController,
-                                            openNavDraw = {
-                                                scope.launch {
-                                                    drawerState.open()
-//                                                    wideNavigationRailState.expand()
-                                                }
-                                            },
-                                            newsViewModel
-                                        )
-                                    }
-                                }
+                        Row {
+                            val animatedWeight = remember { Animatable(0f) }
+                            LaunchedEffect(isPortrait) {
                                 if (!isPortrait) {
-                                    VerticalDivider(
-                                        modifier = Modifier
-                                            .width(1.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                    delay(100)
+                                    animatedWeight.animateTo(
+                                        targetValue = 0.35f,
+                                        animationSpec = tween(
+                                            durationMillis = 600,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
+                                } else {
+                                    animatedWeight.snapTo(0f)
+                                }
+                            }
+                            if (animatedWeight.value > 0f) {
+                                Box(modifier = Modifier.weight(animatedWeight.value)) {
+                                    MainUi(
+                                        navController,
+                                        openNavDraw = {
+                                            scope.launch {
+                                                drawerState.open()
+//                                                    wideNavigationRailState.expand()
+                                            }
+                                        },
+                                        newsViewModel
                                     )
                                 }
-                                Box(
+                            }
+                            if (!isPortrait) {
+                                VerticalDivider(
                                     modifier = Modifier
-                                        .weight(0.65f)
-                                        .clipToBounds()
+                                        .width(1.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(0.65f)
+                                    .clipToBounds()
+                            ) {
+                                NavHost(
+                                    startDestination = Destination.HOME,
+                                    navController = navController,
                                 ) {
-                                    NavHost(
-                                        startDestination = Destination.HOMESCREEN,
-                                        navController = navController,
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                                animationSpec = tween(
-                                                    durationMillis = 600,
-                                                    easing = ExpressiveEasing.Emphasized
-                                                )
-                                            )
-                                        },
-                                        exitTransition = {
-                                            slideOutHorizontally(
-                                                targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-                                                animationSpec = tween(
-                                                    durationMillis = 600,
-                                                    easing = ExpressiveEasing.Emphasized
-                                                )
-                                            )
-                                        },
-                                        popEnterTransition = {
-                                            slideInHorizontally(
-                                                initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-                                                animationSpec = tween(
-                                                    durationMillis = 300,
-                                                    easing = ExpressiveEasing.Emphasized
-                                                )
-                                            )
-                                        },
-                                        popExitTransition = {
-                                            slideOutOfContainer(
-                                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                                animationSpec = tween(
-                                                    durationMillis = 300,
-                                                    easing = ExpressiveEasing.Emphasized
-                                                )
+                                    navigation<Destination.BOOKMARKS>(
+                                        startDestination = BookmarkDestination.BOOKMARKSCREEN,
+                                    ){
+                                        composable<BookmarkDestination.BOOKMARKSCREEN> {
+                                            BookMarksScreen(
+                                                openNavDraw = {
+                                                    scope.launch {
+                                                        drawerState.open()
+                                                    }
+                                                }
                                             )
                                         }
-                                    ) {
-                                        composable<Destination.HOMESCREEN> {
+                                    }
+                                    navigation<Destination.HOME>(
+                                        startDestination = HomeDestination.HOMESCREEN,
+                                        enterTransition = {
+                                            val from = initialState.destination.route
+                                            val to = targetState.destination.route
+                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
+                                                slideIntoContainer(
+                                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                                    animationSpec = tween(
+                                                        durationMillis = 600,
+                                                        easing = ExpressiveEasing.Emphasized
+                                                    )
+                                                )
+                                            }else{
+                                                null
+                                            }
+                                        },
+                                        exitTransition = {
+                                            val from = initialState.destination.route
+                                            val to = targetState.destination.route
+                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
+                                                slideOutHorizontally(
+                                                    targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                                                    animationSpec = tween(
+                                                        durationMillis = 600,
+                                                        easing = ExpressiveEasing.Emphasized
+                                                    )
+                                                )
+                                            }else{
+                                                null
+                                            }
+                                        },
+                                        popEnterTransition = {
+                                            val from = initialState.destination.route
+                                            val to = targetState.destination.route
+                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
+                                                slideInHorizontally(
+                                                    initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                                                    animationSpec = tween(
+                                                        durationMillis = 300,
+                                                        easing = ExpressiveEasing.Emphasized
+                                                    )
+                                                )
+                                            }else{
+                                                null
+                                            }
+                                        },
+                                        popExitTransition = {
+                                            val from = initialState.destination.route
+                                            val to = targetState.destination.route
+                                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
+                                                slideOutOfContainer(
+                                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                                    animationSpec = tween(
+                                                        durationMillis = 300,
+                                                        easing = ExpressiveEasing.Emphasized
+                                                    )
+                                                )
+                                            }else{
+                                                null
+                                            }
+                                        }
+                                    ){
+                                        composable<HomeDestination.HOMESCREEN> {
                                             if (isPortrait) {
                                                 MainUi(navController, openNavDraw = {
                                                     scope.launch {
                                                         drawerState.open()
- //                                                       wideNavigationRailState.expand()
                                                     }
                                                 }, newsViewModel)
                                             } else {
                                                 EmptyScreen()
                                             }
                                         }
-                                        composable<Destination.NEWSDETAILSCREEN> {
+                                        composable<HomeDestination.NEWSDETAILSCREEN> {
                                             NewsDetailScreen(
                                                 it.arguments?.getInt("newsId") ?: 1,
                                                 navController,
@@ -634,12 +704,78 @@ class MainActivity : ComponentActivity() {
                                                     ?: News.NEWS_ALL.name
                                             )
                                         }
+//                                        composable<HomeDestination.HOMESCREEN> {
+//                                            NavigableListDetailPaneScaffold(
+//                                                navigator = listDetailNavigator,
+//                                                listPane = {
+//                                                    AnimatedPane(
+//                                                        enterTransition = slideInHorizontally(
+//                                                            animationSpec = tween(
+//                                                                durationMillis = 600,
+//                                                                easing = ExpressiveEasing.Emphasized
+//                                                            )
+//                                                        ),
+//                                                        exitTransition = slideOutHorizontally (
+//                                                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+//                                                            animationSpec = tween(
+//                                                                durationMillis = 600,
+//                                                                easing = ExpressiveEasing.Emphasized
+//                                                            )
+//                                                        ),
+//                                                    ) {
+//                                                        MainUi(
+//                                                            navigator = listDetailNavigator,
+//                                                            openNavDraw = {
+//                                                                scope.launch {
+//                                                                    drawerState.open()
+////                                                    wideNavigationRailState.expand()
+//                                                                }
+//                                                            },
+//                                                            newsViewModel
+//                                                        )
+//                                                    }
+//                                                },
+//                                                detailPane = {
+//                                                    AnimatedPane(
+//                                                        enterTransition = slideInHorizontally(
+//                                                            animationSpec = tween(
+//                                                                durationMillis = 600,
+//                                                                easing = ExpressiveEasing.Emphasized
+//                                                            ),
+//                                                            initialOffsetX = { fullWidth -> fullWidth }
+//                                                        ),
+//                                                        exitTransition = slideOutHorizontally (
+//                                                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+//                                                            animationSpec = tween(
+//                                                                durationMillis = 600,
+//                                                                easing = ExpressiveEasing.Emphasized
+//                                                            )
+//                                                        ),
+//                                                    ) {
+//                                                        // Show the detail pane content if selected item is available
+//                                                        listDetailNavigator.currentDestination?.contentKey?.let {
+//                                                            val contentKey = it
+//                                                            val (type, indexStr) = contentKey.toString()
+//                                                                .split("::")
+//                                                            NewsDetailScreen(
+//                                                                indexStr.toInt(),
+//                                                                navController,
+//                                                                newsViewModel,
+//                                                                type
+//                                                            )
+//                                                        }?:EmptyScreen()
+//                                                    }
+//                                                },
+//                                                defaultBackBehavior = BackNavigationBehavior.PopUntilContentChange
+//                                            )
+//                                        }
                                     }
                                 }
                             }
                         }
                     }
-//                }
+                }
+//              }
             }
         }
     }

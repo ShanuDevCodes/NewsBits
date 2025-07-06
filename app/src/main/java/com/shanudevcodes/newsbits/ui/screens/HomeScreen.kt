@@ -42,6 +42,9 @@ import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -73,6 +76,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.Destination
+import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
@@ -83,9 +87,16 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalMaterial3AdaptiveApi::class
+)
 @Composable
-fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScrollBehavior, viewModel: NewsViewModel) {
+fun HomeScreen(
+    navController: NavHostController,
+//    navigator: ThreePaneScaffoldNavigator<Any>,
+    scrollBehavior: SearchBarScrollBehavior,
+    viewModel: NewsViewModel
+) {
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
     val state = rememberCarouselState { newsTopList.size }
@@ -117,6 +128,9 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
             scope.launch {
                 isRefreshing = true
                 delay(1000)
+//                navigator.navigateTo(
+//                    pane = ListDetailPaneScaffoldRole.Detail,
+//                )
                 navController.popBackStack(
                     route = navController.graph.startDestinationRoute
                         ?: navController.graph.findStartDestination().route!!,
@@ -226,8 +240,14 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
                                 )
                                 .clickable(
                                     onClick = {
+//                                        scope.launch {
+//                                            navigator.navigateTo(
+//                                                pane = ListDetailPaneScaffoldRole.Detail,
+//                                                contentKey = "${News.NEWS_ALL.name}::$index"
+//                                            )
+//                                        }
                                         navController.navigate(
-                                            Destination.NEWSDETAILSCREEN(
+                                            HomeDestination.NEWSDETAILSCREEN(
                                                 index,
                                                 News.NEWS_TOP.name
                                             )
@@ -333,8 +353,14 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: SearchBarScroll
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
+//                                    scope.launch {
+//                                        navigator.navigateTo(
+//                                            pane = ListDetailPaneScaffoldRole.Detail,
+//                                            contentKey = "${News.NEWS_ALL.name}::$index"
+//                                        )
+//                                    }
                                     navController.navigate(
-                                        Destination.NEWSDETAILSCREEN(
+                                        HomeDestination.NEWSDETAILSCREEN(
                                             index,
                                             News.NEWS_ALL.name
                                         )

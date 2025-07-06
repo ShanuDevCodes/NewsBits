@@ -19,3 +19,26 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep Jetpack Navigation core classes
+-keep class androidx.navigation.** { *; }
+-keep class * extends androidx.navigation.NavDestination
+-keep class * extends androidx.navigation.Navigator
+
+# Keep your own navigation destination sealed classes (adjusted to your actual package)
+-keep class com.shanudevcodes.newsbits.data.Destination { *; }
+-keep class com.shanudevcodes.newsbits.data.Destination$* { *; }
+
+# Keep Jetpack Compose runtime and UI (especially needed for animations, transitions)
+-keep class androidx.compose.runtime.** { *; }
+-keep class androidx.compose.animation.** { *; }
+-keep class androidx.compose.ui.** { *; }
+
+# Keep navigation-compose classes
+-keep class androidx.navigation.compose.** { *; }
+
+# Keep Composable annotations (needed for navigation graph generation)
+-keep @androidx.compose.runtime.Composable class * { *; }
+
+# Keep your navigation drawer animation code
+-keep class com.shanudevcodes.newsbits.ui.** { *; }
