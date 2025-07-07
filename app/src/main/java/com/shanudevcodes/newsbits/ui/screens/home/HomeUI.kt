@@ -24,14 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
-import com.shanudevcodes.newsbits.data.BookmarkDestination
-import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
-import com.shanudevcodes.newsbits.ui.screens.bookmark.BookMarksScreen
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -87,105 +83,66 @@ fun HomeUI(isPortrait: Boolean, navController: NavHostController, drawerState: D
                     .clipToBounds()
             ) {
                 NavHost(
-                    startDestination = Destination.HOME,
+                    startDestination = HomeDestination.HOMESCREEN,
                     navController = navController,
-                ) {
-                    navigation<Destination.BOOKMARKS>(
-                        startDestination = BookmarkDestination.BOOKMARKSCREEN,
-                    ){
-                        composable<BookmarkDestination.BOOKMARKSCREEN> {
-                            BookMarksScreen(
-                                openNavDraw = {
-                                    scope.launch {
-                                        drawerState.open()
-                                    }
-                                }
+                     enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(
+                                durationMillis = 600,
+                                easing = ExpressiveEasing.Emphasized
                             )
+                        )
+                    },
+                    exitTransition = {
+                        slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                            animationSpec = tween(
+                                durationMillis = 600,
+                                easing = ExpressiveEasing.Emphasized
+                            )
+                        )
+
+                    },
+                    popEnterTransition = {
+                        slideInHorizontally(
+                            initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = ExpressiveEasing.Emphasized
+                            )
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = ExpressiveEasing.Emphasized
+                            )
+                        )
+                    }
+                ) {
+                    composable<HomeDestination.HOMESCREEN> {
+                        if (isPortrait) {
+                            HomeListUi(navController, openNavDraw = {
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }, newsViewModel)
+                        } else {
+                            EmptyScreen()
                         }
                     }
-                    navigation<Destination.HOME>(
-                        startDestination = HomeDestination.HOMESCREEN,
-                        enterTransition = {
-                            val from = initialState.destination.route
-                            val to = targetState.destination.route
-                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                slideIntoContainer(
-                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                    animationSpec = tween(
-                                        durationMillis = 600,
-                                        easing = ExpressiveEasing.Emphasized
-                                    )
-                                )
-                            }else{
-                                null
-                            }
-                        },
-                        exitTransition = {
-                            val from = initialState.destination.route
-                            val to = targetState.destination.route
-                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                slideOutHorizontally(
-                                    targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-                                    animationSpec = tween(
-                                        durationMillis = 600,
-                                        easing = ExpressiveEasing.Emphasized
-                                    )
-                                )
-                            }else{
-                                null
-                            }
-                        },
-                        popEnterTransition = {
-                            val from = initialState.destination.route
-                            val to = targetState.destination.route
-                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                slideInHorizontally(
-                                    initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-                                    animationSpec = tween(
-                                        durationMillis = 300,
-                                        easing = ExpressiveEasing.Emphasized
-                                    )
-                                )
-                            }else{
-                                null
-                            }
-                        },
-                        popExitTransition = {
-                            val from = initialState.destination.route
-                            val to = targetState.destination.route
-                            if (from?.contains("HomeDestination") == true && to?.contains("HomeDestination") == true) {
-                                slideOutOfContainer(
-                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                    animationSpec = tween(
-                                        durationMillis = 300,
-                                        easing = ExpressiveEasing.Emphasized
-                                    )
-                                )
-                            }else{
-                                null
-                            }
-                        }
-                    ){
-                        composable<HomeDestination.HOMESCREEN> {
-                            if (isPortrait) {
-                                HomeListUi(navController, openNavDraw = {
-                                    scope.launch {
-                                        drawerState.open()
-                                    }
-                                }, newsViewModel)
-                            } else {
-                                EmptyScreen()
-                            }
-                        }
-                        composable<HomeDestination.NEWSDETAILSCREEN> {
-                            HomeDetailScreen(
-                                it.arguments?.getInt("newsId") ?: 1,
-                                navController,
-                                newsViewModel,
-                                it.arguments?.getString("news")
-                                    ?: News.NEWS_ALL.name
-                            )
-                        }
+                    composable<HomeDestination.NEWSDETAILSCREEN> {
+                        HomeDetailScreen(
+                            it.arguments?.getInt("newsId") ?: 1,
+                            navController,
+                            newsViewModel,
+                            it.arguments?.getString("news")
+                                ?: News.NEWS_ALL.name
+                        )
+                    }
 //                                        composable<HomeDestination.HOMESCREEN> {
 //                                            NavigableListDetailPaneScaffold(
 //                                                navigator = listDetailNavigator,
@@ -251,7 +208,7 @@ fun HomeUI(isPortrait: Boolean, navController: NavHostController, drawerState: D
 //                                                defaultBackBehavior = BackNavigationBehavior.PopUntilContentChange
 //                                            )
 //                                        }
-                    }
+
                 }
             }
         }

@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,10 +59,14 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.data.DataStoreManager
+import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
 import com.shanudevcodes.newsbits.data.items
+import com.shanudevcodes.newsbits.ui.screens.bookmark.BookMarksScreen
 import com.shanudevcodes.newsbits.ui.screens.home.HomeUI
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
@@ -70,8 +76,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppMainUI(
-    navController: NavHostController,
-    currentDestination: NavDestination?,
+    rootNavController: NavHostController,
+    rootCurrentDestination: NavDestination?,
+    homeNavController: NavHostController,
     dataStore: DataStoreManager,
     themeOption: ThemeOptions,
     dynamicColor: Boolean,
@@ -220,7 +227,7 @@ fun AppMainUI(
                             HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                             Spacer(modifier = Modifier.height(8.dp))
                             items.forEachIndexed { index, item ->
-                                val isSelected = currentDestination?.hierarchy?.any { it.route == item.destination::class.qualifiedName } == true
+                                val isSelected = rootCurrentDestination?.hierarchy?.any { it.route == item.destination::class.qualifiedName } == true
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -263,8 +270,8 @@ fun AppMainUI(
                                         selected = isSelected,
                                         onClick = {
                                             scope.launch {
-                                                navController.navigate(item.destination) {
-                                                    popUpTo(navController.graph.findStartDestination().id) {
+                                                rootNavController.navigate(item.destination) {
+                                                    popUpTo(rootNavController.graph.findStartDestination().id) {
                                                         saveState = true
                                                     }
                                                     launchSingleTop = true
@@ -439,7 +446,44 @@ fun AppMainUI(
                 }
             }
         ) {
-            HomeUI(isPortrait, navController, drawerState, newsViewModel)
+            Box(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            ) {
+                NavHost(
+                    navController = rootNavController,
+                    startDestination = Destination.HOME,
+                    enterTransition = {
+                        fadeIn()
+                    },
+                    exitTransition = {
+                        fadeOut()
+                    },
+                    popEnterTransition = {
+                        fadeIn()
+                    },
+                    popExitTransition = {
+                        fadeOut()
+                    }
+                ) {
+                    composable<Destination.HOME> {
+                        HomeUI(
+                            isPortrait = isPortrait,
+                            navController = homeNavController,
+                            drawerState = drawerState,
+                            newsViewModel = newsViewModel
+                        )
+                    }
+                    composable<Destination.BOOKMARKS> {
+                        BookMarksScreen(
+                            openNavDraw = {
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
 //      }
     }

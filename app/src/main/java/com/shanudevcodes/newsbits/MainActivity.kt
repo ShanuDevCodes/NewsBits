@@ -56,9 +56,10 @@ class MainActivity : ComponentActivity() {
             val themeOption by dataStore.themeFlow.collectAsState(initial = ThemeOptions.SYSTEM_DEFAULT)
             val dynamicColor by dataStore.dynamicColorFlow.collectAsState(initial = false)
             var themeLoaded by remember { mutableStateOf(false) }
-            val navController = rememberNavController()
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
+            val rootNavController = rememberNavController()
+            val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
+            val rootCurrentDestination = rootNavBackStackEntry?.destination
+            val homeNavController = rememberNavController()
 //            val wideNavigationRailState = rememberWideNavigationRailState(initialValue = WideNavigationRailValue.Collapsed)
             val newsViewModel: NewsViewModel = viewModel()
             newsViewModel.loadTopNews()
@@ -116,13 +117,14 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = dynamicColor
             ) {
                 AppMainUI(
-                    navController = navController,
-                    currentDestination = currentDestination,
+                    homeNavController = homeNavController,
                     dataStore = dataStore,
                     themeOption = themeOption,
                     dynamicColor = dynamicColor,
                     newsViewModel = newsViewModel,
-                    isPortrait = isPortrait
+                    isPortrait = isPortrait,
+                    rootNavController = rootNavController,
+                    rootCurrentDestination = rootCurrentDestination,
                 )
             }
         }
