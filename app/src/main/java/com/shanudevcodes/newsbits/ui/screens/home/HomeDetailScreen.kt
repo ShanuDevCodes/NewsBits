@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -243,7 +244,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 24.dp, end = 8.dp, start = 8.dp),
+            .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+8.dp, end = 8.dp, start = 8.dp),
         contentAlignment = Alignment.BottomEnd
     ) {
         ExtendedFloatingActionButton(
