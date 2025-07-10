@@ -140,7 +140,7 @@ fun BookmarkUI(drawerState: DrawerState){
                     composable<BookmarkDestination.BOOKMARKDETAILSCREEN> {
                         val arg = it.arguments
                         BookmarkDetailScreen(
-                            newsId = arg?.getInt("newsId")?: 0,
+                            newsId = arg?.getString("newsId")?: "",
                             navController = navController
                         )
                     }

@@ -23,5 +23,5 @@ sealed class BookmarkDestination{
     @Serializable
     object BOOKMARKSCREEN : Destination()
     @Serializable
-    data class BOOKMARKDETAILSCREEN(val newsId: Int) : Destination()
+    data class BOOKMARKDETAILSCREEN(val newsId: String) : Destination()
 }

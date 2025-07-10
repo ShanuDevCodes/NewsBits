@@ -43,7 +43,36 @@ class RoomViewModel(
             is RoomEvents.CheckArticleSaved -> {
                 viewModelScope.launch {
                     _state.value = _state.value.copy(
-                        isArticleSaved = dao.checkArticleSaved(event.article.article_id)
+                        isArticleSaved = dao.checkArticleSaved(event.articleId)
+                    )
+                }
+            }
+
+            is RoomEvents.GetArticleById -> {
+                viewModelScope.launch {
+                    dao.getArticleById(event.articleId)
+                        .collect { article ->
+                            _state.value = _state.value.copy(
+                                article = article
+                            )
+                        }
+                }
+            }
+
+            is RoomEvents.DeleteArticleById -> {
+                viewModelScope.launch {
+                    dao.deleteArticleById(event.articleId)
+                    _state.value = _state.value.copy(
+                        isArticleSaved = false
+                    )
+                }
+            }
+
+            is RoomEvents.UpdateBookMarkedArticle -> {
+                viewModelScope.launch {
+                    dao.upsertArticle(event.article)
+                    _state.value = _state.value.copy(
+                        isArticleSaved = true
                     )
                 }
             }

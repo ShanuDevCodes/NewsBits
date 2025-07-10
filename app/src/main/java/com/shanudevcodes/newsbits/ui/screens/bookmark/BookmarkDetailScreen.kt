@@ -29,7 +29,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.LocalLibrary
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.BookmarkAdd
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -40,11 +42,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -62,22 +69,25 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
-import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
+import com.shanudevcodes.newsbits.data.savedarticledb.SavedArticle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.TimeZone
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BookmarkDetailScreen(
-    newsId: Int,
+    newsId: String,
     navController: NavHostController
 ){
-    val newsArticle = mockNewsList[newsId]
+    val scope = rememberCoroutineScope()
+    val isDialogVisible = rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
     val dao = db.RoomDao()
@@ -85,7 +95,9 @@ fun BookmarkDetailScreen(
         factory = RoomViewModelFactory(dao)
     )
     val viewModelState = roomViewModel.state.collectAsState()
-
+    val newArticle = viewModelState.value.article
+    val cachedArticle = remember { mutableStateOf<SavedArticle?>(null) }
+    roomViewModel.onEvent(RoomEvents.GetArticleById(newsId))
     val isBookMarked = viewModelState.value.isArticleSaved
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -98,8 +110,14 @@ fun BookmarkDetailScreen(
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-    LaunchedEffect(newsArticle.article_id) {
-        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle))
+    LaunchedEffect(newArticle) {
+        if (newArticle != null) {
+            cachedArticle.value = newArticle
+        }
+    }
+    val newsArticle = cachedArticle.value
+    LaunchedEffect(newsArticle?.article_id) {
+        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle?.article_id?:""))
     }
     Box(
         modifier = Modifier
@@ -131,7 +149,7 @@ fun BookmarkDetailScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = newsArticle.title,
+                                text = newsArticle?.title?:"",
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMediumEmphasized,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -141,21 +159,9 @@ fun BookmarkDetailScreen(
 
                         IconButton(
                             onClick = {
+                                isDialogVisible.value = true
                                 Log.d("BookmarkToggle", "Clicked! isBookMarked = $isBookMarked")
-                                if (isBookMarked){
-                                    roomViewModel.onEvent(
-                                        RoomEvents.DeleteArticle(
-                                            article = newsArticle
-                                        )
-                                    )
-                                }else {
-                                    roomViewModel.onEvent(
-                                        RoomEvents.SaveArticle(
-                                            article = newsArticle
-                                        )
-                                    )
-                                }
-                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle))
+                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle?.article_id?:""))
                             }
                         ) {
                             Icon(
@@ -174,13 +180,13 @@ fun BookmarkDetailScreen(
                         .padding(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = newsArticle.source_name,
+                            text = newsArticle?.source_name?:"",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = formatDateString(newsArticle.pubDate),
+                            text = formatDateString(newsArticle?.pubDate?:""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -191,7 +197,7 @@ fun BookmarkDetailScreen(
                         )
                     }
 
-                    BottomSheetContent(newsArticle)
+                    BottomSheetContentBookMarked(newsArticle)
                 }
             },
         ) {paddingValues ->
@@ -202,8 +208,8 @@ fun BookmarkDetailScreen(
             ) {
                 val overlayColor = MaterialTheme.colorScheme.surface
                 Image(
-                    painter = if (newsArticle.image_url != null) rememberAsyncImagePainter(model = newsArticle.image_url) else painterResource(R.drawable.img_6),
-                    contentDescription = newsArticle.source_id,
+                    painter = if (newsArticle?.image_url != null) rememberAsyncImagePainter(model = newsArticle.image_url) else painterResource(R.drawable.img_6),
+                    contentDescription = newsArticle?.source_id,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -228,12 +234,15 @@ fun BookmarkDetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+8.dp, end = 8.dp, start = 8.dp),
+            .padding(
+                bottom = WindowInsets.navigationBars.asPaddingValues()
+                    .calculateBottomPadding() + 8.dp, end = 8.dp, start = 8.dp
+            ),
         contentAlignment = Alignment.BottomEnd
     ) {
         ExtendedFloatingActionButton(
             onClick = {
-                openUrlInBrowser(context, newsArticle.link)
+                openUrlInBrowser(context, newsArticle?.link?:"")
             },
             icon = {
                 Icon(
@@ -245,11 +254,30 @@ fun BookmarkDetailScreen(
             elevation = FloatingActionButtonDefaults.elevation(2.dp)
         )
     }
+    if (isDialogVisible.value) {
+        DeleteWarningDialogBox(
+            onDismissRequest = {
+                isDialogVisible.value = false
+            },
+            onConfirm = {
+                scope.launch {
+                    navController.popBackStack()
+                    delay(300)
+                    roomViewModel.onEvent(
+                        RoomEvents.DeleteArticleById(
+                            articleId = newsArticle?.article_id ?: ""
+                        )
+                    )
+                }
+                isDialogVisible.value = false
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContent(news: NewsArticle){
+fun BottomSheetContentBookMarked(news: SavedArticle?){
     val listState = rememberLazyListState()
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
@@ -257,7 +285,7 @@ fun BottomSheetContent(news: NewsArticle){
             .fillMaxSize()
             .padding(top = 16.dp, start = 8.dp, end = 8.dp)
     ) {
-        if (news.description != null) {
+        if (news?.description != null) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -303,4 +331,43 @@ fun openUrlInBrowser(context: Context, url: String) {
     } catch (e: Exception) {
         Toast.makeText(context, "No browser found to open the link.", Toast.LENGTH_SHORT).show()
     }
+}
+
+@Composable
+fun DeleteWarningDialogBox(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        icon = {
+            Icon(imageVector = Icons.Default.Warning, contentDescription = "Warning Icon")
+        },
+        title = {
+            Text(text = "Delete Bookmark")
+        },
+        text = {
+            Text(text = "Are you sure you want to delete the bookmark? This action is irreversible.")
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
 }

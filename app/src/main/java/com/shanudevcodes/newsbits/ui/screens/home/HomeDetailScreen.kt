@@ -115,7 +115,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
     val screenWidthDp = configuration.screenWidthDp.dp
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
     LaunchedEffect(newsArticle.article_id) {
-        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle))
+        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle.article_id))
     }
     Box(
         modifier = Modifier
@@ -171,7 +171,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
                                         )
                                     )
                                 }
-                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle))
+                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle.article_id))
                             }
                         ) {
                             Icon(

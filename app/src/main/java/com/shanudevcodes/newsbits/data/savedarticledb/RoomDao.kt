@@ -15,8 +15,14 @@ interface RoomDao {
     @Delete
     suspend fun deleteArticle(article: SavedArticle)
 
-    @Query("SELECT * FROM SavedArticle")
+    @Query("DELETE FROM SavedArticle WHERE article_id = :article_Id")
+    suspend fun deleteArticleById(article_Id: String)
+
+    @Query("SELECT *, ROWID FROM SavedArticle ORDER BY ROWID DESC")
     fun getArticles(): Flow<List<SavedArticle>>
+
+    @Query("SELECT * FROM SavedArticle WHERE article_id = :article_Id")
+    fun getArticleById(article_Id: String): Flow<SavedArticle?>
 
     @Query("SELECT EXISTS(SELECT * FROM SavedArticle WHERE article_id = :article_Id)")
     suspend fun checkArticleSaved(article_Id: String): Boolean
