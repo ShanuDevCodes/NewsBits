@@ -348,7 +348,7 @@ fun DeleteWarningDialogBox(
         text = {
             Text(
                 text = "Are you sure you want to delete the bookmark? This action is irreversible.",
-                textAlign = TextAlign.Justify
+                textAlign = TextAlign.Center
             )
         },
         onDismissRequest = {
