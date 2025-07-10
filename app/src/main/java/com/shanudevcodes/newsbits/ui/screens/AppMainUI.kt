@@ -45,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +67,7 @@ import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
 import com.shanudevcodes.newsbits.data.items
-import com.shanudevcodes.newsbits.ui.screens.bookmark.BookMarksScreen
+import com.shanudevcodes.newsbits.ui.screens.bookmark.BookmarkUI
 import com.shanudevcodes.newsbits.ui.screens.home.HomeUI
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
@@ -78,13 +79,13 @@ import kotlinx.coroutines.launch
 fun AppMainUI(
     rootNavController: NavHostController,
     rootCurrentDestination: NavDestination?,
-    homeNavController: NavHostController,
     dataStore: DataStoreManager,
     themeOption: ThemeOptions,
     dynamicColor: Boolean,
     newsViewModel: NewsViewModel,
     isPortrait: Boolean
 ){
+    val saveableStateHolder = rememberSaveableStateHolder()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -466,21 +467,20 @@ fun AppMainUI(
                     }
                 ) {
                     composable<Destination.HOME> {
-                        HomeUI(
-                            isPortrait = isPortrait,
-                            navController = homeNavController,
-                            drawerState = drawerState,
-                            newsViewModel = newsViewModel
-                        )
+                        saveableStateHolder.SaveableStateProvider("home") {
+                            HomeUI(
+                                isPortrait = isPortrait,
+                                drawerState = drawerState,
+                                newsViewModel = newsViewModel
+                            )
+                        }
                     }
                     composable<Destination.BOOKMARKS> {
-                        BookMarksScreen(
-                            openNavDraw = {
-                                scope.launch {
-                                    drawerState.open()
-                                }
-                            }
-                        )
+                        saveableStateHolder.SaveableStateProvider("bookmark") {
+                            BookmarkUI(
+                                drawerState = drawerState,
+                            )
+                        }
                     }
                 }
             }

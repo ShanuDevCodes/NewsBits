@@ -13,13 +13,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -59,7 +57,6 @@ class MainActivity : ComponentActivity() {
             val rootNavController = rememberNavController()
             val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
             val rootCurrentDestination = rootNavBackStackEntry?.destination
-            val homeNavController = rememberNavController()
 //            val wideNavigationRailState = rememberWideNavigationRailState(initialValue = WideNavigationRailValue.Collapsed)
             val newsViewModel: NewsViewModel = viewModel()
             newsViewModel.loadTopNews()
@@ -117,7 +114,6 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = dynamicColor
             ) {
                 AppMainUI(
-                    homeNavController = homeNavController,
                     dataStore = dataStore,
                     themeOption = themeOption,
                     dynamicColor = dynamicColor,

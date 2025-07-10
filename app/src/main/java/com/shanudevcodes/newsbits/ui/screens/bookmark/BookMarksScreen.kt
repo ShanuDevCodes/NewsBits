@@ -37,10 +37,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import com.google.firebase.Timestamp
+import com.shanudevcodes.newsbits.data.BookmarkDestination
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.ui.screens.home.NewsListItem
 
@@ -48,8 +50,9 @@ import com.shanudevcodes.newsbits.ui.screens.home.NewsListItem
 @Composable
 fun BookMarksScreen(
     openNavDraw: () -> Unit,
-){
-    val newsList: List<NewsArticle> = listOf(mockNews1,mockNews2,mockNews3)
+    navController: NavHostController
+) {
+    val newsList = mockNewsList
     val notificationCount = 11
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -129,13 +132,13 @@ fun BookMarksScreen(
                 modifier = Modifier.padding(0.dp)
             )
         }
-    ){innerPadding ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(start = 12.dp, end = 12.dp)
         ) {
-            LazyColumn{
+            LazyColumn {
                 itemsIndexed(newsList) { index, news ->
                     Card(
                         shape = RoundedCornerShape(24.dp),
@@ -147,8 +150,18 @@ fun BookMarksScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                }
+                                .clickable (
+                                    onClick = {
+                                        navController.navigate(
+                                            BookmarkDestination.BOOKMARKDETAILSCREEN(
+                                                index,
+                                            )
+                                        ) {
+                                            popUpTo(navController.graph.findStartDestination().id)
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
                         ) {
                             NewsListItem(news = news)
                         }
@@ -159,14 +172,8 @@ fun BookMarksScreen(
     }
 }
 
-@Preview
-@Composable
-fun Preview(){
-    BookMarksScreen(
-        openNavDraw = {}
-    )
-}
-val mockNews1 = NewsArticle(
+val mockNewsList = listOf(
+    NewsArticle(
     ai_org = "OpenAI",
     ai_region = "Global",
     ai_tag = "AI, Technology",
@@ -193,9 +200,8 @@ val mockNews1 = NewsArticle(
     source_url = "https://techcrunch.com",
     title = "OpenAI Releases Groundbreaking AI Model",
     video_url = "https://example.com/video1.mp4"
-)
-
-val mockNews2 = NewsArticle(
+    ),
+    NewsArticle(
     ai_org = "World Health Org",
     ai_region = "India",
     ai_tag = "Health, Alert",
@@ -222,9 +228,8 @@ val mockNews2 = NewsArticle(
     source_url = "https://www.who.int",
     title = "WHO Issues New Health Advisory for India",
     video_url = null
-)
-
-val mockNews3 = NewsArticle(
+    ),
+    NewsArticle(
     ai_org = "UNESCO",
     ai_region = "Europe",
     ai_tag = "Culture, Heritage",
@@ -251,4 +256,5 @@ val mockNews3 = NewsArticle(
     source_url = "https://unesco.org",
     title = "UNESCO Recognizes New Heritage Sites in Europe",
     video_url = null
+    )
 )

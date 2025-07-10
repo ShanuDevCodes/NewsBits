@@ -2,7 +2,6 @@ package com.shanudevcodes.newsbits.ui.screens.home
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -21,9 +20,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
@@ -33,7 +32,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeUI(isPortrait: Boolean, navController: NavHostController, drawerState: DrawerState, newsViewModel: NewsViewModel){
+fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsViewModel){
+    val navController = rememberNavController()
     val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier
@@ -49,7 +49,7 @@ fun HomeUI(isPortrait: Boolean, navController: NavHostController, drawerState: D
                         targetValue = 0.35f,
                         animationSpec = tween(
                             durationMillis = 600,
-                            easing = FastOutSlowInEasing
+                            easing = ExpressiveEasing.EmphasizedDecelerate
                         )
                     )
                 } else {
