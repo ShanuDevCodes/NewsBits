@@ -51,7 +51,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -98,9 +97,7 @@ fun BookmarkDetailScreen(
         factory = RoomViewModelFactory(dao)
     )
     val viewModelState = roomViewModel.state.collectAsState()
-    val newArticle = viewModelState.value.article
-    val cachedArticle = remember { mutableStateOf<SavedArticle?>(null) }
-    roomViewModel.onEvent(RoomEvents.GetArticleById(newsId))
+    val newsArticle = viewModelState.value.article
     val isBookMarked = viewModelState.value.isArticleSaved
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -113,13 +110,8 @@ fun BookmarkDetailScreen(
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-    LaunchedEffect(newArticle) {
-        if (newArticle != null) {
-            cachedArticle.value = newArticle
-        }
-    }
-    val newsArticle = cachedArticle.value
-    LaunchedEffect(newsArticle?.article_id) {
+    LaunchedEffect(Unit) {
+        roomViewModel.onEvent(RoomEvents.GetArticleById(newsId))
         roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle?.article_id?:""))
     }
     Box(
