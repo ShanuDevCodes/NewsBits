@@ -13,15 +13,15 @@ sealed class Destination {
 @Serializable
 sealed class HomeDestination{
     @Serializable
-    object HOMESCREEN : Destination()
+    object HOMESCREEN : HomeDestination()
     @Serializable
-    data class NEWSDETAILSCREEN(val newsId : Int, val news: String) : Destination()
+    data class NEWSDETAILSCREEN(val newsId : Int, val news: String) : HomeDestination()
 }
 
 @Serializable
 sealed class BookmarkDestination{
     @Serializable
-    object BOOKMARKSCREEN : Destination()
+    object BOOKMARKSCREEN : BookmarkDestination()
     @Serializable
-    data class BOOKMARKDETAILSCREEN(val newsId: String) : Destination()
+    data class BOOKMARKDETAILSCREEN(val newsId: String) : BookmarkDestination()
 }

@@ -35,10 +35,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,13 +53,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
-import com.google.firebase.Timestamp
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.BookmarkDestination
-import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
@@ -166,6 +168,14 @@ fun BookMarksScreen(
                 .padding(innerPadding)
                 .padding(start = 12.dp, end = 12.dp)
         ) {
+            val lastViewedId = rememberSaveable { mutableStateOf<String?>(null) }
+            val currentBackStackEntry by navController.currentBackStackEntryAsState()
+
+            LaunchedEffect(currentBackStackEntry?.destination) {
+                if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == BookmarkDestination.BOOKMARKSCREEN::class.qualifiedName } == true) {
+                    lastViewedId.value = null
+                }
+            }
             LazyColumn {
                 itemsIndexed(newsList) { index, news ->
                     Card(
@@ -180,13 +190,15 @@ fun BookMarksScreen(
                                 .fillMaxWidth()
                                 .clickable (
                                     onClick = {
-                                        navController.navigate(
-                                            BookmarkDestination.BOOKMARKDETAILSCREEN(
-                                                news.article_id,
-                                            )
-                                        ) {
-                                            popUpTo(navController.graph.findStartDestination().id)
-                                            launchSingleTop = true
+                                        if (lastViewedId.value != news.article_id) {
+                                            lastViewedId.value = news.article_id
+                                            navController.navigate(BookmarkDestination.BOOKMARKDETAILSCREEN(news.article_id)) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = false // because it's a different article
+                                            }
                                         }
                                     }
                                 )

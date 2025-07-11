@@ -110,9 +110,15 @@ fun BookmarkDetailScreen(
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-    LaunchedEffect(Unit) {
+    LaunchedEffect(newsId) {
         roomViewModel.onEvent(RoomEvents.GetArticleById(newsId))
-        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle?.article_id?:""))
+    }
+
+    LaunchedEffect(viewModelState.value.article?.article_id) {
+        val articleId = viewModelState.value.article?.article_id
+        if (!articleId.isNullOrEmpty()) {
+            roomViewModel.onEvent(RoomEvents.CheckArticleSaved(articleId))
+        }
     }
     Box(
         modifier = Modifier

@@ -59,6 +59,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,8 +71,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
@@ -121,6 +124,16 @@ fun HomeScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyColumnSate = rememberLazyListState()
     val visible = remember { mutableStateOf(false) }
+    val lastViewedIndex = rememberSaveable { mutableStateOf<Int?>(null) }
+    val lastViewedType = rememberSaveable { mutableStateOf<String?>(null) }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(currentBackStackEntry?.destination) {
+        if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
+            lastViewedIndex.value = null
+            lastViewedType.value = null
+        }
+    }
     PullToRefreshBox(
         state = pullToRefreshState,
         isRefreshing = isRefreshing,
@@ -246,14 +259,18 @@ fun HomeScreen(
 //                                                contentKey = "${News.NEWS_ALL.name}::$index"
 //                                            )
 //                                        }
-                                        navController.navigate(
-                                            HomeDestination.NEWSDETAILSCREEN(
-                                                index,
-                                                News.NEWS_TOP.name
-                                            )
-                                        ) {
-                                            popUpTo(navController.graph.findStartDestination().id)
-                                            launchSingleTop = true
+                                        if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_TOP.name) {
+                                            lastViewedIndex.value = index
+                                            lastViewedType.value = News.NEWS_TOP.name
+                                            navController.navigate(
+                                                HomeDestination.NEWSDETAILSCREEN(
+                                                    index,
+                                                    News.NEWS_TOP.name
+                                                )
+                                            ) {
+                                                popUpTo(navController.graph.findStartDestination().id)
+                                                launchSingleTop = true
+                                            }
                                         }
                                     }
                                 )
@@ -359,14 +376,18 @@ fun HomeScreen(
 //                                            contentKey = "${News.NEWS_ALL.name}::$index"
 //                                        )
 //                                    }
-                                    navController.navigate(
-                                        HomeDestination.NEWSDETAILSCREEN(
-                                            index,
-                                            News.NEWS_ALL.name
-                                        )
-                                    ) {
-                                        popUpTo(navController.graph.findStartDestination().id)
-                                        launchSingleTop = true
+                                    if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_ALL.name) {
+                                        lastViewedIndex.value = index
+                                        lastViewedType.value = News.NEWS_ALL.name
+                                        navController.navigate(
+                                            HomeDestination.NEWSDETAILSCREEN(
+                                                index,
+                                                News.NEWS_ALL.name
+                                            )
+                                        ) {
+                                            popUpTo(navController.graph.findStartDestination().id)
+                                            launchSingleTop = true
+                                        }
                                     }
                                 }
                         ) {
