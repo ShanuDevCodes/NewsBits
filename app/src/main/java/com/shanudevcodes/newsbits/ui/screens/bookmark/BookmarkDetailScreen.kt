@@ -19,12 +19,17 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BookmarkAdded
@@ -38,6 +43,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -284,37 +290,62 @@ fun BottomSheetContentBookMarked(news: SavedArticle?){
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 16.dp, start = 8.dp, end = 8.dp)
+            .padding(top = 8.dp, start = 8.dp, end = 8.dp)
     ) {
-        if (news?.description != null) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .nestedScroll(scrollInterop)
-                    .fillMaxSize()
-            ) {
-                item {
-                    Text(
-                        text = news.description,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Start
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 600.dp)
+        ) {
+            LazyRow {
+                itemsIndexed(news?.category?.split(", ")?.filter { it.isNotBlank() }?: emptyList()){index, category ->
+                    FilterChip(
+                        selected = true,
+                        onClick = {},
+                        label = {
+                            Text(text = category)
+                        },
+                        shape = RoundedCornerShape(16.dp),
                     )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(84.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
             }
-        } else {
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                Spacer(modifier = Modifier.height(500.dp))
-                Text(
-                    text = "No description available",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+
+            if (news?.description != null) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .nestedScroll(scrollInterop)
+                        .weight(1f)
+                        .fillMaxSize()
+                ) {
+                    item {
+                        Text(
+                            text = news.description,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Justify,
+                            modifier = Modifier.fillMaxWidth(),
+                            softWrap = true,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(84.dp))
+                    }
+                }
+            } else {
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Spacer(modifier = Modifier.height(500.dp))
+                    Text(
+                        text = "No description available",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }

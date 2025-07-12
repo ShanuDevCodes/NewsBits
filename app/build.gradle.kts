@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,18 +10,30 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+val localProps = Properties().apply {
+    val localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) {
+        load(FileInputStream(localPropsFile))
+    }
+}
+
 android {
     namespace = "com.shanudevcodes.newsbits"
     compileSdk = 36
+
 
     defaultConfig {
         applicationId = "com.shanudevcodes.newsbits"
         minSdk = 30
         targetSdk = 35
         versionCode = 1
-        versionName = "2.4.4-Beta"
+        versionName = "3.1.0-Alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "ALGOLIA_APP_ID", "\"${localProps.getProperty("ALGOLIA_APP_ID")}\"")
+        buildConfigField("String", "ALGOLIA_SEARCH_KEY", "\"${localProps.getProperty("ALGOLIA_SEARCH_KEY")}\"")
+        buildConfigField("String", "ALGOLIA_INDEX", "\"${localProps.getProperty("ALGOLIA_INDEX")}\"")
     }
 
     buildTypes {
@@ -80,4 +95,7 @@ dependencies {
     implementation(libs.androidx.adaptive)
     implementation(libs.androidx.adaptive.layout)
     implementation(libs.androidx.adaptive.navigation)
+    implementation(platform("com.algolia:algoliasearch-client-kotlin-bom:3.24.2"))
+    implementation("com.algolia:algoliasearch-client-kotlin")
+    implementation("io.ktor:ktor-client-okhttp:2.3.4")
 }

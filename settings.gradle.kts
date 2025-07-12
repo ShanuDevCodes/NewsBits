@@ -19,6 +19,15 @@ dependencyResolutionManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven(url = "https://jitpack.io") // optional if needed
+    }
+}
+
 rootProject.name = "NewsBits"
 include(":app")
  

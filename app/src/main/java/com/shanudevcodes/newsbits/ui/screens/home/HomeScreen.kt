@@ -192,10 +192,6 @@ fun HomeScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            item {
                 HorizontalCenteredHeroCarousel(
                     state = state,
                     modifier = Modifier
@@ -312,7 +308,7 @@ fun HomeScreen(
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             item {
@@ -353,7 +349,7 @@ fun HomeScreen(
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             items(newsList.itemCount) { index ->
@@ -554,5 +550,3 @@ fun NewsListItem(news: NewsArticle) {
         }
     }
 }
-
-
