@@ -54,8 +54,6 @@ class NewsViewModel : ViewModel() {
 
                 Log.d("AlgoliaSearchResponse", "Search result: ${response.results.filterIsInstance<SearchResult.SearchResponseValue>()}")
 
-                val responsessss: List<SearchResult> = response.results
-
                 val json = Json { ignoreUnknownKeys = true }
 
 
