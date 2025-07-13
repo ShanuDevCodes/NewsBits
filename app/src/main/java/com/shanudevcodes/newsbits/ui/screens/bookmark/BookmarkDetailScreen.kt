@@ -296,7 +296,6 @@ fun BottomSheetContentBookMarked(news: SavedArticle?){
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 600.dp)
         ) {
             LazyRow {
                 itemsIndexed(news?.category?.split(", ")?.filter { it.isNotBlank() }?: emptyList()){index, category ->
@@ -331,11 +330,12 @@ fun BottomSheetContentBookMarked(news: SavedArticle?){
                         )
                     }
                     item {
-                        Spacer(modifier = Modifier.height(84.dp))
+                        Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+70.dp))
                     }
                 }
             } else {
                 Box(
+                    modifier = Modifier.heightIn(max = 600.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Spacer(modifier = Modifier.height(500.dp))

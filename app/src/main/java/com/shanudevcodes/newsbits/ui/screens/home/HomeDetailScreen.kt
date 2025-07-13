@@ -279,11 +279,9 @@ fun BottomSheetContent(news: NewsArticle){
             .fillMaxSize()
             .padding(top = 8.dp, start = 8.dp, end = 8.dp)
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 600.dp)
         ) {
             LazyRow {
                 itemsIndexed(news.category){index, category ->
@@ -318,11 +316,12 @@ fun BottomSheetContent(news: NewsArticle){
                         )
                     }
                     item {
-                        Spacer(modifier = Modifier.height(84.dp))
+                        Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+70.dp))
                     }
                 }
             } else {
                 Box(
+                    modifier = Modifier.heightIn(max = 600.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Spacer(modifier = Modifier.height(500.dp))

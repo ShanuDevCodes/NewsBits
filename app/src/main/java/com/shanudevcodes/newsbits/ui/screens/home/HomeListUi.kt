@@ -11,15 +11,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +35,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExpandedDockedSearchBar
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -77,6 +77,7 @@ import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
@@ -97,11 +98,16 @@ fun HomeListUi(
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
     val searchResults by newsViewModel.searchResults.collectAsState()
+    val screenWidthDp = configuration.screenWidthDp.dp
     val inputField =
         @Composable {
             SearchBarDefaults.InputField(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.width(
+                    when(isPortrait) {
+                        false -> screenWidthDp * 0.337f
+                        true -> screenWidthDp
+                    }
+                ),
                 searchBarState = searchBarState,
                 textFieldState = textFieldState,
                 onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
@@ -112,6 +118,7 @@ fun HomeListUi(
                             onClick = {
                                 scope.launch {
                                     textFieldState.clearText()
+                                    newsViewModel.resetSearchResults()
                                     searchBarState.animateToCollapsed()
                                 }
                             }
@@ -144,6 +151,7 @@ fun HomeListUi(
 
     LaunchedEffect(textFieldState) {
         snapshotFlow { textFieldState.text.toString() }
+            .debounce(300)
             .collect { newText ->
                 if (newText.isNotBlank()) {
                     newsViewModel.searchNewsInAlgolia(newText)
@@ -238,44 +246,69 @@ fun HomeListUi(
                         inputField = inputField,
                         windowInsets = WindowInsets(0),
                     )
-                    ExpandedFullScreenSearchBar(
-                        tonalElevation = 48.dp,
-                        state = searchBarState,
-                        inputField = inputField,
-                        modifier = Modifier
-                            .then(
-                                if (!isPortrait) {
-                                    Modifier
-                                        .padding()
-                                        .widthIn(max = 490.dp)
-                                        .heightIn(max = 450.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                } else {
-                                    Modifier // no additional constraints
-                                },
-                            ),
-                        windowInsets = {WindowInsets.statusBars}
-                    ) {
-                        Box(
-                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                    if (!isPortrait) {
+                        ExpandedDockedSearchBar(
+                            tonalElevation = 48.dp,
+                            state = searchBarState,
+                            inputField = inputField,
                         ) {
-                            LazyColumn {
-                                item {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                                itemsIndexed(searchResults) { index, search ->
-                                    Card(
-                                        shape = RoundedCornerShape(24.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(bottom = 8.dp),
-                                    ) {
-                                        Box(
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(start = 8.dp, end = 8.dp)
+                            ) {
+                                LazyColumn {
+                                    item {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                    itemsIndexed(searchResults) { index, search ->
+                                        Card(
+                                            shape = RoundedCornerShape(24.dp),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                                             modifier = Modifier
                                                 .fillMaxWidth()
+                                                .padding(bottom = 8.dp),
                                         ) {
-                                            NewsSearchListItem(news = search)
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                            ) {
+                                                NewsSearchListItem(news = search)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }else {
+                        ExpandedFullScreenSearchBar(
+                            tonalElevation = 48.dp,
+                            state = searchBarState,
+                            inputField = inputField,
+                            windowInsets = { WindowInsets.statusBars },
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(start = 8.dp, end = 8.dp)
+                            ) {
+                                LazyColumn {
+                                    item {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                    itemsIndexed(searchResults) { index, search ->
+                                        Card(
+                                            shape = RoundedCornerShape(24.dp),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(bottom = 8.dp),
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                            ) {
+                                                NewsSearchListItem(news = search)
+                                            }
                                         }
                                     }
                                 }

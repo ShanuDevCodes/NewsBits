@@ -32,7 +32,7 @@ class NewsViewModel : ViewModel() {
         _searchResults.value = emptyList()
     }
 
-    fun searchNewsInAlgolia(query: String) {
+    fun searchNewsInAlgolia(query: String, page: Int = 0) {
         viewModelScope.launch {
             val appID = BuildConfig.ALGOLIA_APP_ID
             val apiKey = BuildConfig.ALGOLIA_SEARCH_KEY
@@ -46,7 +46,8 @@ class NewsViewModel : ViewModel() {
                         requests = listOf(
                             SearchForHits(
                                 indexName = indexName,
-                                query = query
+                                query = query,
+                                page = page
                             )
                         )
                     )
