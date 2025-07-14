@@ -25,3 +25,10 @@ data class SavedArticle(
     val title: String = "",
     val video_url: String? = null
 )
+
+@Entity
+data class History(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val query: String = "",
+)

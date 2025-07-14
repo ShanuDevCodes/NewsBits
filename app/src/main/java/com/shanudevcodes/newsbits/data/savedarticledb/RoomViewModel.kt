@@ -76,6 +76,38 @@ class RoomViewModel(
                     )
                 }
             }
+
+            RoomEvents.GetHistory -> {
+                viewModelScope.launch {
+                    dao.getHistory()
+                        .collect { history ->
+                            _state.value = _state.value.copy(
+                                historyList = history
+                            )
+                        }
+                }
+            }
+            is RoomEvents.SetHistoryQuery -> {
+                viewModelScope.launch {
+                    _state.value = _state.value.copy(
+                        historyQuery = event.query
+                    )
+                }
+            }
+            is RoomEvents.DeleteHistory -> {
+                viewModelScope.launch {
+                    dao.deleteHistory(event.history)
+                    _state.value = _state.value.copy(
+                        historyList = emptyList()
+                    )
+                }
+            }
+
+            is RoomEvents.UpsertHistory -> {
+                viewModelScope.launch {
+                    dao.upsertHistory(History(query = _state.value.historyQuery))
+                }
+            }
         }
     }
 }

@@ -26,4 +26,14 @@ interface RoomDao {
 
     @Query("SELECT EXISTS(SELECT * FROM SavedArticle WHERE article_id = :article_Id)")
     suspend fun checkArticleSaved(article_Id: String): Boolean
+
+    @Upsert
+    suspend fun upsertHistory(history: History)
+
+    @Delete
+    suspend fun deleteHistory(history: History)
+
+    @Query("SELECT * FROM History ORDER BY ROWID DESC")
+    fun getHistory(): Flow<List<History>>
+
 }

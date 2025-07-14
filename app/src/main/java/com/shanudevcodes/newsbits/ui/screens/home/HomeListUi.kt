@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +29,9 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -41,6 +44,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
@@ -64,16 +68,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
@@ -90,7 +100,14 @@ fun HomeListUi(
     openNavDraw:() -> Unit,
     newsViewModel: NewsViewModel
 ) {
-
+    val context = LocalContext.current
+    val db = AppDatabase.getInstance(context)
+    val dao = db.RoomDao()
+    val roomViewModel: RoomViewModel = viewModel(
+        factory = RoomViewModelFactory(dao)
+    )
+    val roomState by roomViewModel.state.collectAsState()
+    val history = roomState.historyList
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
@@ -110,7 +127,11 @@ fun HomeListUi(
                 ),
                 searchBarState = searchBarState,
                 textFieldState = textFieldState,
-                onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
+                onSearch = {
+                    scope.launch {
+                        roomViewModel.onEvent(RoomEvents.UpsertHistory)
+                    }
+                },
                 placeholder = { Text("Search News Bits...") },
                 leadingIcon = {
                     if (searchBarState.currentValue == SearchBarValue.Expanded) {
@@ -135,7 +156,11 @@ fun HomeListUi(
                             .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
-                            .clickable(onClick = { /* your action */ }), // Acts like a button
+                            .clickable(onClick = {
+                                scope.launch {
+
+                                }
+                            }), // Acts like a button
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -150,15 +175,23 @@ fun HomeListUi(
         }
 
     LaunchedEffect(textFieldState) {
-        snapshotFlow { textFieldState.text.toString() }
-            .debounce(300)
-            .collect { newText ->
-                if (newText.isNotBlank()) {
-                    newsViewModel.searchNewsInAlgolia(newText)
-                } else {
-                    newsViewModel.resetSearchResults()
+        launch {
+            snapshotFlow { textFieldState.text.toString() }
+                .debounce(300)
+                .collect { newText ->
+                    if (newText.isNotBlank()) {
+                        newsViewModel.searchNewsInAlgolia(newText)
+                    } else {
+                        newsViewModel.resetSearchResults()
+                    }
                 }
-            }
+        }
+        launch {
+            snapshotFlow { textFieldState.text.toString() }
+                .collect { newText ->
+                    roomViewModel.onEvent(RoomEvents.SetHistoryQuery(newText))
+                }
+        }
     }
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
@@ -252,6 +285,9 @@ fun HomeListUi(
                             state = searchBarState,
                             inputField = inputField,
                         ) {
+                            LaunchedEffect(Unit) {
+                                roomViewModel.onEvent(RoomEvents.GetHistory)
+                            }
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -261,19 +297,68 @@ fun HomeListUi(
                                     item {
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
-                                    itemsIndexed(searchResults) { index, search ->
-                                        Card(
-                                            shape = RoundedCornerShape(24.dp),
-                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(bottom = 8.dp),
-                                        ) {
-                                            Box(
+                                    if (textFieldState.text.toString().isNotEmpty()) {
+                                        itemsIndexed(searchResults) { index, search ->
+                                            Card(
+                                                shape = RoundedCornerShape(24.dp),
+                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                                                 modifier = Modifier
                                                     .fillMaxWidth()
+                                                    .padding(bottom = 8.dp),
                                             ) {
-                                                NewsSearchListItem(news = search)
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                ) {
+                                                    NewsSearchListItem(news = search)
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        items(history) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                                modifier = Modifier
+                                                    .height(48.dp)
+                                                    .clip(shape = RoundedCornerShape(24.dp))
+                                                    .clickable(onClick = {
+                                                        textFieldState.edit {
+                                                            replace(0, length, it.query)
+                                                        }
+                                                    })
+                                                    .padding(start = 8.dp, end = 4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.History,
+                                                    contentDescription = "History"
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = it.query,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                IconButton(
+                                                    onClick = {
+                                                        scope.launch {
+                                                            roomViewModel.onEvent(
+                                                                RoomEvents.DeleteHistory(
+                                                                    it
+                                                                )
+                                                            )
+                                                            roomViewModel.onEvent(RoomEvents.GetHistory)
+                                                        }
+                                                    },
+                                                    modifier =
+                                                        Modifier.size(
+                                                            IconButtonDefaults.largeIconSize
+                                                        )
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Close,
+                                                        contentDescription = "Delete",
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -287,6 +372,9 @@ fun HomeListUi(
                             inputField = inputField,
                             windowInsets = { WindowInsets.statusBars },
                         ) {
+                            LaunchedEffect(Unit) {
+                                roomViewModel.onEvent(RoomEvents.GetHistory)
+                            }
                             Box(
                                 modifier = Modifier
                                     .padding(start = 8.dp, end = 8.dp)
@@ -295,19 +383,68 @@ fun HomeListUi(
                                     item {
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
-                                    itemsIndexed(searchResults) { index, search ->
-                                        Card(
-                                            shape = RoundedCornerShape(24.dp),
-                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(bottom = 8.dp),
-                                        ) {
-                                            Box(
+                                    if (textFieldState.text.toString().isNotEmpty()) {
+                                        itemsIndexed(searchResults) { index, search ->
+                                            Card(
+                                                shape = RoundedCornerShape(24.dp),
+                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                                                 modifier = Modifier
                                                     .fillMaxWidth()
+                                                    .padding(bottom = 8.dp),
                                             ) {
-                                                NewsSearchListItem(news = search)
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                ) {
+                                                    NewsSearchListItem(news = search)
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        items(history) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                                modifier = Modifier
+                                                    .height(48.dp)
+                                                    .clip(shape = RoundedCornerShape(24.dp))
+                                                    .clickable(onClick = {
+                                                        textFieldState.edit {
+                                                            replace(0, length, it.query)
+                                                        }
+                                                    })
+                                                    .padding(start = 8.dp, end = 4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.History,
+                                                    contentDescription = "History"
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = it.query,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                IconButton(
+                                                    onClick = {
+                                                        scope.launch {
+                                                            roomViewModel.onEvent(
+                                                                RoomEvents.DeleteHistory(
+                                                                    it
+                                                                )
+                                                            )
+                                                            roomViewModel.onEvent(RoomEvents.GetHistory)
+                                                        }
+                                                    },
+                                                    modifier =
+                                                        Modifier.size(
+                                                            IconButtonDefaults.largeIconSize
+                                                        )
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Close,
+                                                        contentDescription = "Delete",
+                                                    )
+                                                }
                                             }
                                         }
                                     }
