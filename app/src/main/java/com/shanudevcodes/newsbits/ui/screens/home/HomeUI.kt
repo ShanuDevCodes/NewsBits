@@ -26,7 +26,6 @@ import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
-import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -125,13 +124,15 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                 ) {
                     composable<HomeDestination.HOMESCREEN> {
                         if (isPortrait) {
-                            HomeListUi(navController, openNavDraw = {
-                                scope.launch {
-                                    drawerState.open()
-                                }
-                            }, newsViewModel)
+                            SearchResultScreen()
+//                            HomeListUi(navController, openNavDraw = {
+//                                scope.launch {
+//                                    drawerState.open()
+//                                }
+//                            }, newsViewModel)
                         } else {
-                            EmptyScreen()
+                            SearchResultScreen()
+                            //EmptyScreen()
                         }
                     }
                     composable<HomeDestination.NEWSDETAILSCREEN> {
