@@ -295,19 +295,14 @@ fun HomeListUi(
                             }
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
                                     .padding(start = 8.dp, end = 8.dp)
                             ) {
                                 Card(
                                     shape = RoundedCornerShape(24.dp),
                                     modifier = Modifier
-                                        .fillMaxSize()
                                         .padding(top = 8.dp, bottom = 8.dp)
                                 ) {
                                     LazyColumn {
-                                        item {
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                        }
                                         if (textFieldState.text.toString().isNotEmpty()) {
 //                                        itemsIndexed(searchResults) { index, search ->
 //                                            Card(
@@ -357,8 +352,6 @@ fun HomeListUi(
                                                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                                         thickness = 2.dp
                                                     )
-                                                }else{
-                                                    Spacer(modifier = Modifier.height(8.dp))
                                                 }
                                             }
                                         } else {
@@ -411,8 +404,6 @@ fun HomeListUi(
                                                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                                         thickness = 2.dp
                                                     )
-                                                }else{
-                                                    Spacer(modifier = Modifier.height(8.dp))
                                                 }
                                             }
                                         }
@@ -440,13 +431,9 @@ fun HomeListUi(
                                     ),
                                     shape = RoundedCornerShape(24.dp),
                                     modifier = Modifier
-                                        .fillMaxSize()
                                         .padding(top = 8.dp, bottom = if (WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() > 0.dp ) WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() else 8.dp)
                                 ) {
                                     LazyColumn {
-                                        item {
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                        }
                                         if (textFieldState.text.toString().isNotEmpty()) {
 //                                        itemsIndexed(searchResults) { index, search ->
 //                                            Card(
@@ -496,8 +483,6 @@ fun HomeListUi(
                                                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                                         thickness = 2.dp
                                                     )
-                                                }else{
-                                                    Spacer(modifier = Modifier.height(8.dp))
                                                 }
                                             }
                                         } else {
@@ -550,8 +535,6 @@ fun HomeListUi(
                                                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                                         thickness = 2.dp
                                                     )
-                                                }else{
-                                                    Spacer(modifier = Modifier.height(8.dp))
                                                 }
                                             }
                                         }
