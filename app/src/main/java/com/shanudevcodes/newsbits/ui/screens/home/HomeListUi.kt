@@ -547,18 +547,21 @@ fun HomeListUi(
             }
         },
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(start = 12.dp, end = 12.dp)
-        ) {
-            // Screen content goes here
-            HomeScreen(
-                navController = navHostController,
+        Column {
+
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(start = 12.dp, end = 12.dp)
+            ) {
+                // Screen content goes here
+                HomeScreen(
+                    navController = navHostController,
 //                navigator = navigator,
-                scrollBehavior = scrollBehavior,
-                viewModel = newsViewModel
-            )
+                    scrollBehavior = scrollBehavior,
+                    viewModel = newsViewModel
+                )
+            }
         }
     }
 }
