@@ -63,3 +63,9 @@ data class NewsArticleSearch(
     val title: String = "",
     val video_url: String? = null
 )
+
+@Serializable
+data class SearchSuggestion(
+    val query: String = "",
+    val objectID: String = ""
+)

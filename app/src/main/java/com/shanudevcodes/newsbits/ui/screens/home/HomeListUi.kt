@@ -11,16 +11,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +43,7 @@ import androidx.compose.material3.ExpandedDockedSearchBar
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -114,7 +116,8 @@ fun HomeListUi(
     val textFieldState = rememberTextFieldState()
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
-    val searchResults by newsViewModel.searchResults.collectAsState()
+//    val searchResults by newsViewModel.searchResults.collectAsState()
+    val searchSuggestion by newsViewModel.searchSuggestions.collectAsState()
     val screenWidthDp = configuration.screenWidthDp.dp
     val inputField =
         @Composable {
@@ -180,9 +183,11 @@ fun HomeListUi(
                 .debounce(300)
                 .collect { newText ->
                     if (newText.isNotBlank()) {
-                        newsViewModel.searchNewsInAlgolia(newText)
+//                        newsViewModel.searchNewsInAlgolia(newText)
+                        newsViewModel.searchSuggestionInAlgolia(newText)
                     } else {
-                        newsViewModel.resetSearchResults()
+//                        newsViewModel.resetSearchResults()
+                        newsViewModel.resetSearchSuggestions()
                     }
                 }
         }
@@ -293,71 +298,117 @@ fun HomeListUi(
                                     .fillMaxSize()
                                     .padding(start = 8.dp, end = 8.dp)
                             ) {
-                                LazyColumn {
-                                    item {
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
-                                    if (textFieldState.text.toString().isNotEmpty()) {
-                                        itemsIndexed(searchResults) { index, search ->
-                                            Card(
-                                                shape = RoundedCornerShape(24.dp),
-                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(bottom = 8.dp),
-                                            ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                ) {
-                                                    NewsSearchListItem(news = search)
-                                                }
-                                            }
+                                Card(
+                                    shape = RoundedCornerShape(24.dp),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(top = 8.dp, bottom = 8.dp)
+                                ) {
+                                    LazyColumn {
+                                        item {
+                                            Spacer(modifier = Modifier.height(8.dp))
                                         }
-                                    }else{
-                                        items(history) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                                modifier = Modifier
-                                                    .height(48.dp)
-                                                    .clip(shape = RoundedCornerShape(24.dp))
-                                                    .clickable(onClick = {
-                                                        textFieldState.edit {
-                                                            replace(0, length, it.query)
-                                                        }
-                                                    })
-                                                    .padding(start = 8.dp, end = 4.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.History,
-                                                    contentDescription = "History"
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    text = it.query,
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                                IconButton(
-                                                    onClick = {
-                                                        scope.launch {
-                                                            roomViewModel.onEvent(
-                                                                RoomEvents.DeleteHistory(
-                                                                    it
-                                                                )
-                                                            )
-                                                            roomViewModel.onEvent(RoomEvents.GetHistory)
-                                                        }
-                                                    },
-                                                    modifier =
-                                                        Modifier.size(
-                                                            IconButtonDefaults.largeIconSize
-                                                        )
+                                        if (textFieldState.text.toString().isNotEmpty()) {
+//                                        itemsIndexed(searchResults) { index, search ->
+//                                            Card(
+//                                                shape = RoundedCornerShape(24.dp),
+//                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+//                                                modifier = Modifier
+//                                                    .fillMaxWidth()
+//                                                    .padding(bottom = 8.dp),
+//                                            ) {
+//                                                Box(
+//                                                    modifier = Modifier
+//                                                        .fillMaxWidth()
+//                                                ) {
+//                                                    NewsSearchListItem(news = search)
+//                                                }
+//                                            }
+//                                        }
+                                            itemsIndexed(searchSuggestion) {index, it->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                                    modifier = Modifier
+                                                        .height(48.dp)
+                                                        .clip(shape = RoundedCornerShape(24.dp))
+                                                        .clickable(onClick = {
+                                                            textFieldState.edit {
+                                                                replace(0, length, it.query)
+                                                            }
+                                                        })
+                                                        .padding(start = 8.dp, end = 8.dp)
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Close,
-                                                        contentDescription = "Delete",
+                                                        imageVector = Icons.Default.Search,
+                                                        contentDescription = "Search"
                                                     )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = it.query,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    Icon(
+                                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                                        contentDescription = "Insert",
+                                                    )
+                                                }
+                                                if (index != searchSuggestion.lastIndex){
+                                                    HorizontalDivider()
+                                                }else{
+                                                    Spacer(modifier = Modifier.height(8.dp))
+                                                }
+                                            }
+                                        } else {
+                                            itemsIndexed(history) {index,it->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                                    modifier = Modifier
+                                                        .height(48.dp)
+                                                        .clip(shape = RoundedCornerShape(24.dp))
+                                                        .clickable(onClick = {
+                                                            textFieldState.edit {
+                                                                replace(0, length, it.query)
+                                                            }
+                                                        })
+                                                        .padding(start = 8.dp, end = 4.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.History,
+                                                        contentDescription = "History"
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = it.query,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    IconButton(
+                                                        onClick = {
+                                                            scope.launch {
+                                                                roomViewModel.onEvent(
+                                                                    RoomEvents.DeleteHistory(
+                                                                        it
+                                                                    )
+                                                                )
+                                                                roomViewModel.onEvent(RoomEvents.GetHistory)
+                                                            }
+                                                        },
+                                                        modifier =
+                                                            Modifier.size(
+                                                                IconButtonDefaults.largeIconSize
+                                                            )
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Close,
+                                                            contentDescription = "Delete",
+                                                        )
+                                                    }
+                                                }
+                                                if (index != history.lastIndex){
+                                                    HorizontalDivider()
+                                                }else{
+                                                    Spacer(modifier = Modifier.height(8.dp))
                                                 }
                                             }
                                         }
@@ -379,71 +430,120 @@ fun HomeListUi(
                                 modifier = Modifier
                                     .padding(start = 8.dp, end = 8.dp)
                             ) {
-                                LazyColumn {
-                                    item {
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
-                                    if (textFieldState.text.toString().isNotEmpty()) {
-                                        itemsIndexed(searchResults) { index, search ->
-                                            Card(
-                                                shape = RoundedCornerShape(24.dp),
-                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(bottom = 8.dp),
-                                            ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                ) {
-                                                    NewsSearchListItem(news = search)
-                                                }
-                                            }
+                                Card(
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                    ),
+                                    shape = RoundedCornerShape(24.dp),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(top = 8.dp, bottom = if (WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() > 0.dp ) WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() else 8.dp)
+                                ) {
+                                    LazyColumn {
+                                        item {
+                                            Spacer(modifier = Modifier.height(8.dp))
                                         }
-                                    }else{
-                                        items(history) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                                modifier = Modifier
-                                                    .height(48.dp)
-                                                    .clip(shape = RoundedCornerShape(24.dp))
-                                                    .clickable(onClick = {
-                                                        textFieldState.edit {
-                                                            replace(0, length, it.query)
-                                                        }
-                                                    })
-                                                    .padding(start = 8.dp, end = 4.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.History,
-                                                    contentDescription = "History"
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    text = it.query,
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                                IconButton(
-                                                    onClick = {
-                                                        scope.launch {
-                                                            roomViewModel.onEvent(
-                                                                RoomEvents.DeleteHistory(
-                                                                    it
-                                                                )
-                                                            )
-                                                            roomViewModel.onEvent(RoomEvents.GetHistory)
-                                                        }
-                                                    },
-                                                    modifier =
-                                                        Modifier.size(
-                                                            IconButtonDefaults.largeIconSize
-                                                        )
+                                        if (textFieldState.text.toString().isNotEmpty()) {
+//                                        itemsIndexed(searchResults) { index, search ->
+//                                            Card(
+//                                                shape = RoundedCornerShape(24.dp),
+//                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+//                                                modifier = Modifier
+//                                                    .fillMaxWidth()
+//                                                    .padding(bottom = 8.dp),
+//                                            ) {
+//                                                Box(
+//                                                    modifier = Modifier
+//                                                        .fillMaxWidth()
+//                                                ) {
+//                                                    NewsSearchListItem(news = search)
+//                                                }
+//                                            }
+//                                        }
+                                            itemsIndexed(searchSuggestion) {index, it->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                                    modifier = Modifier
+                                                        .height(48.dp)
+                                                        .clip(shape = RoundedCornerShape(24.dp))
+                                                        .clickable(onClick = {
+                                                            textFieldState.edit {
+                                                                replace(0, length, it.query)
+                                                            }
+                                                        })
+                                                        .padding(start = 8.dp, end = 8.dp)
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Close,
-                                                        contentDescription = "Delete",
+                                                        imageVector = Icons.Default.Search,
+                                                        contentDescription = "Search"
                                                     )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = it.query,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    Icon(
+                                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                                        contentDescription = "Insert",
+                                                    )
+                                                }
+                                                if (index != searchSuggestion.lastIndex){
+                                                    HorizontalDivider()
+                                                }else{
+                                                    Spacer(modifier = Modifier.height(8.dp))
+                                                }
+                                            }
+                                        } else {
+                                            itemsIndexed(history) {index, it->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                                    modifier = Modifier
+                                                        .height(48.dp)
+                                                        .clip(shape = RoundedCornerShape(24.dp))
+                                                        .clickable(onClick = {
+                                                            textFieldState.edit {
+                                                                replace(0, length, it.query)
+                                                            }
+                                                        })
+                                                        .padding(start = 8.dp, end = 4.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.History,
+                                                        contentDescription = "History"
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = it.query,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    IconButton(
+                                                        onClick = {
+                                                            scope.launch {
+                                                                roomViewModel.onEvent(
+                                                                    RoomEvents.DeleteHistory(
+                                                                        it
+                                                                    )
+                                                                )
+                                                                roomViewModel.onEvent(RoomEvents.GetHistory)
+                                                            }
+                                                        },
+                                                        modifier =
+                                                            Modifier.size(
+                                                                IconButtonDefaults.largeIconSize
+                                                            )
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Close,
+                                                            contentDescription = "Delete",
+                                                        )
+                                                    }
+                                                }
+                                                if (index != history.lastIndex){
+                                                    HorizontalDivider()
+                                                }else{
+                                                    Spacer(modifier = Modifier.height(8.dp))
                                                 }
                                             }
                                         }

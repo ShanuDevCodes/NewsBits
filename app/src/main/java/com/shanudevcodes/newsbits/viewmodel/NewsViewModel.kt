@@ -13,6 +13,7 @@ import com.algolia.client.model.search.SearchResult
 import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.NewsArticleSearch
+import com.shanudevcodes.newsbits.data.SearchSuggestion
 import com.shanudevcodes.newsbits.data.fetchTopNews
 import com.shanudevcodes.newsbits.data.getNewsPagingFlow
 import kotlinx.coroutines.flow.Flow
@@ -28,8 +29,72 @@ class NewsViewModel : ViewModel() {
     private val _searchResults = MutableStateFlow<List<NewsArticleSearch>>(emptyList())
     val searchResults: StateFlow<List<NewsArticleSearch>> = _searchResults
 
+    private val _searchSuggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
+    val searchSuggestions: StateFlow<List<SearchSuggestion>> = _searchSuggestions
+
     fun resetSearchResults(){
         _searchResults.value = emptyList()
+    }
+
+    fun resetSearchSuggestions(){
+        _searchSuggestions.value = emptyList()
+    }
+
+    fun searchSuggestionInAlgolia(query: String){
+        viewModelScope.launch {
+            val appID = BuildConfig.ALGOLIA_APP_ID
+            val apiKey = BuildConfig.ALGOLIA_SEARCH_KEY
+            val indexName = "News_Suggestions_Record"
+
+            val client = SearchClient(appID, apiKey)
+
+            try {
+                val response = client.search(
+                    SearchMethodParams(
+                        requests = listOf(
+                            SearchForHits(
+                                indexName = indexName,
+                                query = query
+                            )
+                        )
+                    )
+                )
+
+                val json = Json { ignoreUnknownKeys = true }
+
+                val suggestions = response.results.mapNotNull { result ->
+                    when (result) {
+                        is SearchResult.SearchResponseValue -> {
+                            // Old behavior: wrapped
+                            result.value.hits.mapNotNull { hit ->
+                                hit.additionalProperties?.let {
+                                    val jsonObject = JsonObject(it)
+                                    json.decodeFromJsonElement<SearchSuggestion>(jsonObject)
+                                }
+                            }
+                        }
+
+                        is SearchResponse -> {
+                            // Newer SDK behavior: direct SearchResponse
+                            result.hits.mapNotNull { hit ->
+                                hit.additionalProperties?.let {
+                                    val jsonObject = JsonObject(it)
+                                    json.decodeFromJsonElement<SearchSuggestion>(jsonObject)
+                                }
+                            }
+                        }
+
+                        else -> null
+                    }
+                }.flatten()
+
+                _searchSuggestions.value = suggestions
+
+            }catch (e: Exception){
+                Log.e("AlgoliaSearch", "Search Suggestion failed: ${e.message}", e)
+                _searchSuggestions.value = emptyList()
+            }
+        }
     }
 
     fun searchNewsInAlgolia(query: String, page: Int = 0) {
