@@ -331,7 +331,6 @@ fun HomeListUi(
                                                     horizontalArrangement = Arrangement.SpaceEvenly,
                                                     modifier = Modifier
                                                         .height(48.dp)
-                                                        .clip(shape = RoundedCornerShape(24.dp))
                                                         .clickable(onClick = {
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
@@ -354,7 +353,10 @@ fun HomeListUi(
                                                     )
                                                 }
                                                 if (index != searchSuggestion.lastIndex){
-                                                    HorizontalDivider()
+                                                    HorizontalDivider(
+                                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                        thickness = 2.dp
+                                                    )
                                                 }else{
                                                     Spacer(modifier = Modifier.height(8.dp))
                                                 }
@@ -366,7 +368,6 @@ fun HomeListUi(
                                                     horizontalArrangement = Arrangement.SpaceEvenly,
                                                     modifier = Modifier
                                                         .height(48.dp)
-                                                        .clip(shape = RoundedCornerShape(24.dp))
                                                         .clickable(onClick = {
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
@@ -406,7 +407,10 @@ fun HomeListUi(
                                                     }
                                                 }
                                                 if (index != history.lastIndex){
-                                                    HorizontalDivider()
+                                                    HorizontalDivider(
+                                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                        thickness = 2.dp
+                                                    )
                                                 }else{
                                                     Spacer(modifier = Modifier.height(8.dp))
                                                 }
@@ -466,7 +470,6 @@ fun HomeListUi(
                                                     horizontalArrangement = Arrangement.SpaceEvenly,
                                                     modifier = Modifier
                                                         .height(48.dp)
-                                                        .clip(shape = RoundedCornerShape(24.dp))
                                                         .clickable(onClick = {
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
@@ -489,7 +492,10 @@ fun HomeListUi(
                                                     )
                                                 }
                                                 if (index != searchSuggestion.lastIndex){
-                                                    HorizontalDivider()
+                                                    HorizontalDivider(
+                                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                        thickness = 2.dp
+                                                    )
                                                 }else{
                                                     Spacer(modifier = Modifier.height(8.dp))
                                                 }
@@ -501,7 +507,6 @@ fun HomeListUi(
                                                     horizontalArrangement = Arrangement.SpaceEvenly,
                                                     modifier = Modifier
                                                         .height(48.dp)
-                                                        .clip(shape = RoundedCornerShape(24.dp))
                                                         .clickable(onClick = {
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
@@ -541,7 +546,10 @@ fun HomeListUi(
                                                     }
                                                 }
                                                 if (index != history.lastIndex){
-                                                    HorizontalDivider()
+                                                    HorizontalDivider(
+                                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                        thickness = 2.dp
+                                                    )
                                                 }else{
                                                     Spacer(modifier = Modifier.height(8.dp))
                                                 }
