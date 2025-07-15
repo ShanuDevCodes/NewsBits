@@ -230,7 +230,6 @@ fun HomeListUi(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.weight(1f)
                             )
-
                             Box(
                                 contentAlignment = Alignment.BottomEnd,
                             ) {
