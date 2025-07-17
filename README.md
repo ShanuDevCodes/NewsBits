@@ -13,11 +13,10 @@
 5. [Algolia Search Setup](#-algolia-search-setup)  
 6. [API Key / `local.properties` Setup](#-api-key--localproperties-setup)  
 7. [Getting Started](#-getting-started)  
-8. [Dependencies](#-dependencies)  
-9. [Troubleshooting](#-troubleshooting)  
-10. [Roadmap](#-roadmap)  
-11. [Author](#-author)  
-12. [License](#-license)  
+8. [Troubleshooting](#-troubleshooting)  
+9. [Roadmap](#-roadmap)  
+10. [Author](#-author)  
+11. [License](#-license)  
 
 ---
 
