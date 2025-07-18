@@ -1,11 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +27,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.BottomSheetScaffold
@@ -44,14 +38,9 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -64,76 +53,32 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
-import com.shanudevcodes.newsbits.data.News
-import com.shanudevcodes.newsbits.data.NewsArticle
-import com.shanudevcodes.newsbits.data.fetchNewsByLink
+import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.formatDateString
-import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
-import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import java.util.TimeZone
 
-@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel: NewsViewModel, news: String) {
+fun SearchResultDetailScreen(
+    navController: NavHostController
+){
     val context = LocalContext.current
-    val db = AppDatabase.getInstance(context)
-    val dao = db.RoomDao()
-    val roomViewModel: RoomViewModel = viewModel(
-        factory = RoomViewModelFactory(dao)
-    )
-    val viewModelState = roomViewModel.state.collectAsState()
-    val allNews = viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
-    val topNews by viewModel.topNews.collectAsState()
-    // Safe access to news item
-    var newsArticle: NewsArticle? = allNews[newsIndex]
-
-    when(news){
-        News.NEWS_ALL.name -> newsArticle = allNews[newsIndex]
-        News.NEWS_TOP.name -> newsArticle = topNews.getOrNull(newsIndex)
-    }
-
-    if (newsArticle == null) {
-        // Show error state when news isn't available
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("News content not available", style = MaterialTheme.typography.bodyLarge)
-        }
-        return
-    }
-    val isBookMarked = viewModelState.value.isArticleSaved
+    val scaffoldState = rememberBottomSheetScaffoldState()
     val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.PartiallyExpanded
-        )
-    )
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val newsArticle = mockNewsArticles[0]
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-    LaunchedEffect(Unit) {
-        val result = fetchNewsByLink(newsArticle.link)
-        Log.d("NewsFetchTest", "Fetched article: ${result?.title?:"no output"}")
-    }
-    LaunchedEffect(newsArticle.article_id) {
-        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle.article_id))
-    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
     ) {
         BottomSheetScaffold(
-            topBar = {},
             scaffoldState = scaffoldState,
             sheetMaxWidth = screenWidthDp,
             sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),
@@ -168,25 +113,25 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
 
                         IconButton(
                             onClick = {
-                                Log.d("BookmarkToggle", "Clicked! isBookMarked = $isBookMarked")
-                                if (isBookMarked){
-                                    roomViewModel.onEvent(
-                                        RoomEvents.DeleteArticle(
-                                            article = newsArticle
-                                        )
-                                    )
-                                }else {
-                                    roomViewModel.onEvent(
-                                        RoomEvents.SaveArticle(
-                                            article = newsArticle
-                                        )
-                                    )
-                                }
-                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle.article_id))
+//                                Log.d("BookmarkToggle", "Clicked! isBookMarked = $isBookMarked")
+//                                if (isBookMarked){
+//                                    roomViewModel.onEvent(
+//                                        RoomEvents.DeleteArticle(
+//                                            article = newsArticle
+//                                        )
+//                                    )
+//                                }else {
+//                                    roomViewModel.onEvent(
+//                                        RoomEvents.SaveArticle(
+//                                            article = newsArticle
+//                                        )
+//                                    )
+//                                }
+//                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle.article_id))
                             }
                         ) {
                             Icon(
-                                imageVector = if (isBookMarked) Icons.Filled.BookmarkAdded else Icons.Outlined.BookmarkAdd,
+                                imageVector = /*if (isBookMarked) Icons.Filled.BookmarkAdded else*/ Icons.Outlined.BookmarkAdd,
                                 contentDescription = "Bookmark",
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.secondary
@@ -218,7 +163,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
                         )
                     }
 
-                    BottomSheetContent(newsArticle)
+                    SearchResultBottomSheetContent(newsArticle)
                 }
             },
         ) {paddingValues ->
@@ -273,10 +218,9 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
         )
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContent(news: NewsArticle){
+fun SearchResultBottomSheetContent(news: NewsArticleSearch){
     val listState = rememberLazyListState()
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
@@ -339,19 +283,5 @@ fun BottomSheetContent(news: NewsArticle){
                 }
             }
         }
-    }
-}
-fun openUrlInBrowser(context: Context, url: String) {
-    var finalUrl = url
-    // Ensure the URL starts with http:// or https://
-    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
-        finalUrl = "http://$finalUrl"
-    }
-    val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
-    // Check if there is an app to handle the intent
-    try {
-        context.startActivity(browserIntent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "No browser found to open the link.", Toast.LENGTH_SHORT).show()
     }
 }

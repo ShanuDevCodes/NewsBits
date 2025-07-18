@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -11,29 +12,42 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
+import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsViewModel){
+    val searchNavController = rememberNavController()
     val navController = rememberNavController()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val scope = rememberCoroutineScope()
+    if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false){
+        BackHandler {
+            navController.popBackStack()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -58,14 +72,15 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
             if (animatedWeight.value > 0f) {
                 Box(modifier = Modifier.weight(animatedWeight.value)) {
                     HomeListUi(
-                        navController,
+                        searchNavController = searchNavController,
+                        navHostController = navController,
                         openNavDraw = {
                             scope.launch {
                                 drawerState.open()
 //                                                    wideNavigationRailState.expand()
                             }
                         },
-                        newsViewModel
+                        newsViewModel = newsViewModel
                     )
                 }
             }
@@ -124,15 +139,19 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                 ) {
                     composable<HomeDestination.HOMESCREEN> {
                         if (isPortrait) {
-                            SearchResultScreen()
-//                            HomeListUi(navController, openNavDraw = {
-//                                scope.launch {
-//                                    drawerState.open()
-//                                }
-//                            }, newsViewModel)
+                            HomeListUi(
+                                searchNavController = searchNavController,
+                                navHostController = navController,
+                                openNavDraw = {
+                                    scope.launch {
+                                        drawerState.open()
+//                                                    wideNavigationRailState.expand()
+                                    }
+                                },
+                                newsViewModel = newsViewModel
+                            )
                         } else {
-                            SearchResultScreen()
-                            //EmptyScreen()
+                            EmptyScreen()
                         }
                     }
                     composable<HomeDestination.NEWSDETAILSCREEN> {
@@ -144,6 +163,10 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                                 ?: News.NEWS_ALL.name
                         )
                     }
+                    composable<HomeDestination.SEARCHRESULTDETAILSCREEN> {
+                        SearchResultDetailScreen(navController = navController)
+                    }
+                    //composable<> {  }
 //                                        composable<HomeDestination.HOMESCREEN> {
 //                                            NavigableListDetailPaneScaffold(
 //                                                navigator = listDetailNavigator,

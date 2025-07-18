@@ -1,6 +1,5 @@
 package com.shanudevcodes.newsbits.data
 
-
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -13,6 +12,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.Query.Direction.DESCENDING
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
+import java.net.URLEncoder
 
 fun getNewsPagingFlow(): Flow<PagingData<NewsArticle>> {
     val collection = FirebaseFirestore.getInstance()
@@ -28,6 +28,27 @@ fun getNewsPagingFlow(): Flow<PagingData<NewsArticle>> {
             FirestorePagingSource(collection, pageSize = 20)
         }
     ).flow
+}
+
+suspend fun fetchNewsByLink(link: String): NewsArticle? {
+    val encodedLink = URLEncoder.encode(link, "UTF-8")
+    val db = FirebaseFirestore.getInstance()
+
+    return try {
+        val snapshot = db.collection("news_all")
+            .document(encodedLink)
+            .get()
+            .await()
+
+        if (snapshot.exists()) {
+            snapshot.toObject(NewsArticle::class.java)
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
 }
 
 suspend fun fetchTopNews(limit: Long = 10): List<NewsArticle> {

@@ -16,6 +16,8 @@ sealed class HomeDestination{
     object HOMESCREEN : HomeDestination()
     @Serializable
     data class NEWSDETAILSCREEN(val newsId : Int, val news: String) : HomeDestination()
+    @Serializable
+    object SEARCHRESULTDETAILSCREEN : HomeDestination()
 }
 
 @Serializable
@@ -24,4 +26,12 @@ sealed class BookmarkDestination{
     object BOOKMARKSCREEN : BookmarkDestination()
     @Serializable
     data class BOOKMARKDETAILSCREEN(val newsId: String) : BookmarkDestination()
+}
+
+@Serializable
+sealed class SearchDestination{
+    @Serializable
+    object HOMESEARCHSCREEN : SearchDestination()
+    @Serializable
+    object SEARCHRESULTSCREEN : SearchDestination()
 }

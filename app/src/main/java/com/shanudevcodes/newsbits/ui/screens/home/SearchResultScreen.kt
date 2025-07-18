@@ -1,9 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,225 +10,48 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopSearchBar
-import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.shortenName
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchResultScreen(){
-    val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-    val notificationCount = 11
+fun SearchResultScreen(
+    navController: NavHostController
+){
     val scope = rememberCoroutineScope()
-    val screenWidthDp = configuration.screenWidthDp.dp
-    val textFieldState = rememberTextFieldState()
-    val searchBarState = rememberSearchBarState()
-    val inputField =
-        @Composable {
-            SearchBarDefaults.InputField(
-                modifier = Modifier.width(
-                    when(isPortrait) {
-                        false -> screenWidthDp * 0.337f
-                        true -> screenWidthDp
-                    }
-                ),
-                searchBarState = searchBarState,
-                textFieldState = textFieldState,
-                onSearch = {
-//                    scope.launch {
-//                        roomViewModel.onEvent(RoomEvents.UpsertHistory)
-//                    }
-                },
-                placeholder = { Text("Search News Bits...") },
-                leadingIcon = {
-                    if (searchBarState.currentValue == SearchBarValue.Expanded) {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-//                                    textFieldState.clearText()
-//                                    newsViewModel.resetSearchResults()
-                                    searchBarState.animateToCollapsed()
-                                }
-                            }
-                        ) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
-                        }
-                    } else {
-                        Icon(Icons.Default.Search, contentDescription = null)
-                    }
-                },
-                trailingIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable(onClick = {
-                                scope.launch {
-
-                                }
-                            }), // Acts like a button
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.surfaceContainerLow,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                },
-            )
-        }
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            Column {
-                CenterAlignedTopAppBar(
-                    navigationIcon = {
-                        if (isPortrait) {
-                            IconButton(
-                                onClick = { },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menu",
-                                    modifier = Modifier.size(48.dp),
-                                )
-                            }
-                        }
-                    },
-                    title = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Search Results",
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (isPortrait) {
-                                Box(
-                                    contentAlignment = Alignment.BottomEnd,
-                                ) {
-                                    IconButton(
-                                        onClick = { },
-                                        modifier = Modifier.offset(x = 6.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Notifications,
-                                            contentDescription = "Notifications",
-                                            modifier = Modifier.size(48.dp)
-                                        )
-                                    }
-                                    if (notificationCount > 0) {
-                                        val notificationCountString by remember {
-                                            mutableStateOf(
-                                                if (notificationCount > 9) {
-                                                    "9+"
-                                                } else {
-                                                    "$notificationCount"
-                                                }
-                                            )
-                                        }
-                                        Box(
-                                            modifier = Modifier
-                                                .offset(x = 1.dp, y = -5.dp)
-                                                .size(18.dp)
-                                                .clip(CircleShape)
-                                                .background(Color.White)
-                                                .border(1.dp, Color.Black, CircleShape),
-                                            contentAlignment = Alignment.TopCenter
-                                        ) {
-                                            Text(
-                                                text = notificationCountString,
-                                                color = MaterialTheme.colorScheme.tertiary,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                modifier = Modifier.offset(y = -5.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                )
-                if (isPortrait) {
-                    TopSearchBar(
-                        state = searchBarState,
-                        inputField = inputField,
-                        windowInsets = WindowInsets(0),
-                    )
-                    ExpandedFullScreenSearchBar(
-                        tonalElevation = 48.dp,
-                        state = searchBarState,
-                        inputField = inputField,
-                        windowInsets = { WindowInsets.statusBars },
-                    ) {
-
-                    }
-                }
-            }
-        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -252,13 +72,10 @@ fun SearchResultScreen(){
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-//                                    scope.launch {
-//                                        navigator.navigateTo(
-//                                            pane = ListDetailPaneScaffoldRole.Detail,
-//                                            contentKey = "${News.NEWS_ALL.name}::$index"
-//                                        )
-//                                    }
-
+                                            navController.navigate(HomeDestination.SEARCHRESULTDETAILSCREEN){
+                                                popUpTo(navController.graph.findStartDestination().id)
+                                                launchSingleTop = true
+                                            }
                                     }
                             ) {
                                 NewsSearchListItem(news = news)
@@ -270,7 +87,6 @@ fun SearchResultScreen(){
         }
     }
 }
-
 @Composable
 fun NewsSearchListItem(news: NewsArticleSearch) {
     Row(
@@ -470,10 +286,3 @@ val mockNewsArticles = listOf(
         video_url = null
     )
 )
-
-
-@Preview
-@Composable
-fun Preview(){
-    SearchResultScreen()
-}

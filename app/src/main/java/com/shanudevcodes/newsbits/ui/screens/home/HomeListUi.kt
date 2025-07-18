@@ -71,7 +71,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.data.SearchDestination
 import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
@@ -86,6 +93,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun HomeListUi(
+    searchNavController: NavHostController,
     navHostController: NavHostController,
 //    navigator: ThreePaneScaffoldNavigator<Any>,
     openNavDraw:() -> Unit,
@@ -108,6 +116,7 @@ fun HomeListUi(
 //    val searchResults by newsViewModel.searchResults.collectAsState()
     val searchSuggestion by newsViewModel.searchSuggestions.collectAsState()
     val screenWidthDp = configuration.screenWidthDp.dp
+    val currentBackStackEntry by navHostController.currentBackStackEntryAsState()
     val inputField =
         @Composable {
             SearchBarDefaults.InputField(
@@ -165,7 +174,6 @@ fun HomeListUi(
                 },
             )
         }
-
     LaunchedEffect(textFieldState) {
         launch {
             snapshotFlow { textFieldState.text.toString() }
@@ -318,6 +326,18 @@ fun HomeListUi(
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
                                                             }
+                                                            scope.launch {
+                                                                searchBarState.animateToCollapsed()
+                                                                if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                                                                    navHostController.popBackStack()
+                                                                }
+                                                            }
+                                                            searchNavController.navigate(
+                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                            ){
+                                                                popUpTo(searchNavController.graph.findStartDestination().id)
+                                                                launchSingleTop = true
+                                                            }
                                                         })
                                                         .padding(start = 8.dp, end = 8.dp)
                                                 ) {
@@ -352,6 +372,18 @@ fun HomeListUi(
                                                         .clickable(onClick = {
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
+                                                            }
+                                                            scope.launch {
+                                                                searchBarState.animateToCollapsed()
+                                                                if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                                                                    navHostController.popBackStack()
+                                                                }
+                                                            }
+                                                            searchNavController.navigate(
+                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                            ){
+                                                                popUpTo(searchNavController.graph.findStartDestination().id)
+                                                                launchSingleTop = true
                                                             }
                                                         })
                                                         .padding(start = 8.dp, end = 4.dp)
@@ -449,6 +481,18 @@ fun HomeListUi(
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
                                                             }
+                                                            scope.launch {
+                                                                searchBarState.animateToCollapsed()
+                                                                if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                                                                    navHostController.popBackStack()
+                                                                }
+                                                            }
+                                                            searchNavController.navigate(
+                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                            ){
+                                                                popUpTo(searchNavController.graph.findStartDestination().id)
+                                                                launchSingleTop = true
+                                                            }
                                                         })
                                                         .padding(start = 8.dp, end = 8.dp)
                                                 ) {
@@ -483,6 +527,18 @@ fun HomeListUi(
                                                         .clickable(onClick = {
                                                             textFieldState.edit {
                                                                 replace(0, length, it.query)
+                                                            }
+                                                            scope.launch {
+                                                                searchBarState.animateToCollapsed()
+                                                                if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                                                                    navHostController.popBackStack()
+                                                                }
+                                                            }
+                                                            searchNavController.navigate(
+                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                            ){
+                                                                popUpTo(searchNavController.graph.findStartDestination().id)
+                                                                launchSingleTop = true
                                                             }
                                                         })
                                                         .padding(start = 8.dp, end = 4.dp)
@@ -535,20 +591,32 @@ fun HomeListUi(
             }
         },
     ) { innerPadding ->
-        Column {
-
-            Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(start = 12.dp, end = 12.dp)
-            ) {
-                // Screen content goes here
-                HomeScreen(
-                    navController = navHostController,
+        Box(
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            NavHost(
+                startDestination = SearchDestination.HOMESEARCHSCREEN,
+                navController = searchNavController,
+            ){
+                composable<SearchDestination.HOMESEARCHSCREEN> {
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 12.dp, end = 12.dp)
+                        ) {
+                            // Screen content goes here
+                            HomeScreen(
+                                navController = navHostController,
 //                navigator = navigator,
-                    scrollBehavior = scrollBehavior,
-                    viewModel = newsViewModel
-                )
+                                scrollBehavior = scrollBehavior,
+                                viewModel = newsViewModel
+                            )
+                        }
+                    }
+                }
+                composable<SearchDestination.SEARCHRESULTSCREEN> {
+                    SearchResultScreen(navController = navHostController)
+                }
             }
         }
     }
