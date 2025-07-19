@@ -14,17 +14,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.LocalLibrary
@@ -33,7 +26,6 @@ import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,30 +33,37 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
-import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.shimmerEffect
+import com.shanudevcodes.newsbits.viewModel.SearchResultDetailScreenViewModel
 import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchResultDetailScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    link: String
 ){
+    val viewModel: SearchResultDetailScreenViewModel = viewModel()
+    val news by viewModel.news.collectAsState()
+    val isNewsFetched by viewModel.isNewsFetched.collectAsState()
+    viewModel.fetchNews(link)
     val context = LocalContext.current
     val scaffoldState = rememberBottomSheetScaffoldState()
     val configuration = LocalConfiguration.current
@@ -72,7 +71,6 @@ fun SearchResultDetailScreen(
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-    val newsArticle = mockNewsArticles[0]
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
     Box(
         modifier = Modifier
@@ -103,7 +101,7 @@ fun SearchResultDetailScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = newsArticle.title,
+                                text = news?.title?:"",
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMediumEmphasized,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -146,13 +144,13 @@ fun SearchResultDetailScreen(
                         .padding(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = newsArticle.source_name,
+                            text = news?.source_name?:"",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = formatDateString(newsArticle.pubDate),
+                            text = formatDateString(news?.pubDate?:""),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -162,126 +160,78 @@ fun SearchResultDetailScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-
-                    SearchResultBottomSheetContent(newsArticle)
+                    if (isNewsFetched) {
+                        BottomSheetContent(news)
+                    }else{
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 8.dp, start = 8.dp, end = 8.dp)
+                                .fillMaxWidth()
+                                .height(300.dp)
+                                .shimmerEffect()
+                        )
+                    }
                 }
             },
-        ) {paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16f / 12f)
-            ) {
-                val overlayColor = MaterialTheme.colorScheme.surface
-                Image(
-                    painter = if (newsArticle.image_url != null) rememberAsyncImagePainter(model = newsArticle.image_url) else painterResource(R.drawable.img_6),
-                    contentDescription = newsArticle.source_id,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+        ) { paddingValues ->
+            if (isNewsFetched) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(
-                            WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 20.dp
-                        )
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    overlayColor.copy(alpha = 0.4f),
-                                    overlayColor.copy(alpha = 0f)
+                        .aspectRatio(16f / 12f)
+                ) {
+                    val overlayColor = MaterialTheme.colorScheme.surface
+                    Image(
+                        painter = if (news?.image_url != null) rememberAsyncImagePainter(
+                            model = news?.image_url ?: ""
+                        ) else painterResource(R.drawable.img_6),
+                        contentDescription = news?.source_id ?: "",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(
+                                WindowInsets.statusBars.asPaddingValues()
+                                    .calculateTopPadding() + 20.dp
+                            )
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        overlayColor.copy(alpha = 0.4f),
+                                        overlayColor.copy(alpha = 0f)
+                                    )
                                 )
                             )
-                        )
-                )
+                    )
+                }
             }
         }
     }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+8.dp, end = 8.dp, start = 8.dp),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-        ExtendedFloatingActionButton(
-            onClick = {
-                openUrlInBrowser(context, newsArticle.link)
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.LocalLibrary, // your icon
-                    contentDescription = "Read Article"
-                )
-            },
-            text = { Text(text = "Read Full Article") },
-            elevation = FloatingActionButtonDefaults.elevation(2.dp)
-        )
-    }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchResultBottomSheetContent(news: NewsArticleSearch){
-    val listState = rememberLazyListState()
-    val scrollInterop = rememberNestedScrollInteropConnection()
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 8.dp, start = 8.dp, end = 8.dp)
-    ) {
-        Column(
+    if (isNewsFetched) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .padding(
+                    bottom = WindowInsets.navigationBars.asPaddingValues()
+                        .calculateBottomPadding() + 8.dp, end = 8.dp, start = 8.dp
+                ),
+            contentAlignment = Alignment.BottomEnd
         ) {
-            LazyRow {
-                itemsIndexed(news.category){index, category ->
-                    FilterChip(
-                        selected = true,
-                        onClick = {},
-                        label = {
-                            Text(text = category)
-                        },
-                        shape = RoundedCornerShape(16.dp),
+            ExtendedFloatingActionButton(
+                onClick = {
+                    openUrlInBrowser(context, news?.link ?: "")
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.LocalLibrary, // your icon
+                        contentDescription = "Read Article"
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-            }
-
-            if (news.description != null) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .nestedScroll(scrollInterop)
-                        .weight(1f)
-                        .fillMaxSize()
-                ) {
-                    item {
-                        Text(
-                            text = news.description,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Justify,
-                            modifier = Modifier.fillMaxWidth(),
-                            softWrap = true,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+70.dp))
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier.heightIn(max = 600.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Spacer(modifier = Modifier.height(500.dp))
-                    Text(
-                        text = "No description available",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+                },
+                text = { Text(text = "Read Full Article") },
+                elevation = FloatingActionButtonDefaults.elevation(2.dp)
+            )
         }
     }
 }

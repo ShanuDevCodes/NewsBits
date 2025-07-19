@@ -276,7 +276,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContent(news: NewsArticle){
+fun BottomSheetContent(news: NewsArticle?){
     val listState = rememberLazyListState()
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
@@ -289,7 +289,7 @@ fun BottomSheetContent(news: NewsArticle){
                 .fillMaxWidth()
         ) {
             LazyRow {
-                itemsIndexed(news.category){index, category ->
+                itemsIndexed(news?.category?: emptyList()){index, category ->
                     FilterChip(
                         selected = true,
                         onClick = {},
@@ -302,7 +302,7 @@ fun BottomSheetContent(news: NewsArticle){
                 }
             }
 
-            if (news.description != null) {
+            if (news?.description != null) {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier

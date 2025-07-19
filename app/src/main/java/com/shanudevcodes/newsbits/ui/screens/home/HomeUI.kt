@@ -164,7 +164,12 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                         )
                     }
                     composable<HomeDestination.SEARCHRESULTDETAILSCREEN> {
-                        SearchResultDetailScreen(navController = navController)
+
+                        SearchResultDetailScreen(
+                            navController = navController,
+                            link = "https://ca.finance.yahoo.com/news/tesla-tsla-stock-under-pressure-185131136.html"
+                        )
+
                     }
                     //composable<> {  }
 //                                        composable<HomeDestination.HOMESCREEN> {
