@@ -83,6 +83,7 @@ import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
@@ -96,7 +97,6 @@ import kotlin.math.absoluteValue
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-//    navigator: ThreePaneScaffoldNavigator<Any>,
     scrollBehavior: SearchBarScrollBehavior,
     viewModel: NewsViewModel
 ) {
@@ -127,6 +127,22 @@ fun HomeScreen(
     val lastViewedIndex = rememberSaveable { mutableStateOf<Int?>(null) }
     val lastViewedType = rememberSaveable { mutableStateOf<String?>(null) }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    var loadError by remember { mutableStateOf(true) }
+    val isTopNewsLoaded by viewModel.isTopNewsLoaded.collectAsState()
+
+    LaunchedEffect(newsList.loadState.refresh) {
+        if (newsList.loadState.refresh is LoadState.Error){
+            Log.d("NewsBitsLoadError", "Error: 1")
+        }
+        if (newsList.loadState.refresh is LoadState.NotLoading){
+            Log.d("NewsBitsLoadError", "Error: 2")
+        }
+        if (newsList.itemCount == 0){
+            loadError = true
+        }else{
+            loadError = false
+        }
+    }
 
     LaunchedEffect(currentBackStackEntry?.destination) {
         if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
@@ -141,9 +157,6 @@ fun HomeScreen(
             scope.launch {
                 isRefreshing = true
                 delay(1000)
-//                navigator.navigateTo(
-//                    pane = ListDetailPaneScaffoldRole.Detail,
-//                )
                 navController.popBackStack(
                     route = navController.graph.startDestinationRoute
                         ?: navController.graph.findStartDestination().route!!,
@@ -192,117 +205,136 @@ fun HomeScreen(
             }
 
             item {
-                HorizontalCenteredHeroCarousel(
-                    state = state,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    itemSpacing = 8.dp,
-                ) { index ->
-                    val currentItem = newsTopList[index]
-                    val activeIndex = state.currentItem
-
-                    val offsetFraction =
-                        (index - activeIndex).toFloat().coerceIn(-1f, 1f).absoluteValue
-
-                    val targetAlpha = (1f - offsetFraction).coerceIn(0f, 1f)
-                    val animatedAlpha by animateFloatAsState(
-                        targetValue = targetAlpha,
-                        animationSpec = tween(durationMillis = 500),
-                        label = "carouselAlpha"
-                    )
-
-                    Box(
+                if (isTopNewsLoaded){
+                    HorizontalCenteredHeroCarousel(
+                        state = state,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(205.dp)
-                            .clip(MaterialTheme.shapes.extraLarge),
-                    ) {
-                        // Image with rounded corners
-                        Image(
-                            painter = if (currentItem.image_url != null) rememberAsyncImagePainter(
-                                model = currentItem.image_url
-                            ) else painterResource(R.drawable.img_6),
-                            contentDescription = "item $index",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .maskClip(MaterialTheme.shapes.extraLarge)
+                            .height(180.dp),
+                        itemSpacing = 8.dp,
+                    ) { index ->
+                        val currentItem = newsTopList[index]
+                        val activeIndex = state.currentItem
+
+                        val offsetFraction =
+                            (index - activeIndex).toFloat().coerceIn(-1f, 1f).absoluteValue
+
+                        val targetAlpha = (1f - offsetFraction).coerceIn(0f, 1f)
+                        val animatedAlpha by animateFloatAsState(
+                            targetValue = targetAlpha,
+                            animationSpec = tween(durationMillis = 500),
+                            label = "carouselAlpha"
                         )
 
-                        // Gradient overlay (black at bottom, transparent at top)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
-                                .maskClip(MaterialTheme.shapes.extraLarge)
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color(0xCC000000) // more visible black
-                                        ),
-                                        startY = 100f,
-                                        endY = Float.POSITIVE_INFINITY
+                                .height(205.dp)
+                                .clip(MaterialTheme.shapes.extraLarge),
+                        ) {
+                            // Image with rounded corners
+                            Image(
+                                painter = if (currentItem.image_url != null) rememberAsyncImagePainter(
+                                    model = currentItem.image_url
+                                ) else painterResource(R.drawable.img_6),
+                                contentDescription = "item $index",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .maskClip(MaterialTheme.shapes.extraLarge)
+                            )
+
+                            // Gradient overlay (black at bottom, transparent at top)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .maskClip(MaterialTheme.shapes.extraLarge)
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color(0xCC000000) // more visible black
+                                            ),
+                                            startY = 100f,
+                                            endY = Float.POSITIVE_INFINITY
+                                        )
                                     )
-                                )
-                                .clickable(
-                                    onClick = {
-//                                        scope.launch {
-//                                            navigator.navigateTo(
-//                                                pane = ListDetailPaneScaffoldRole.Detail,
-//                                                contentKey = "${News.NEWS_ALL.name}::$index"
-//                                            )
-//                                        }
-                                        if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_TOP.name) {
-                                            lastViewedIndex.value = index
-                                            lastViewedType.value = News.NEWS_TOP.name
-                                            navController.navigate(
-                                                HomeDestination.NEWSDETAILSCREEN(
-                                                    index,
-                                                    News.NEWS_TOP.name
-                                                )
-                                            ) {
-                                                popUpTo(navController.graph.findStartDestination().id)
-                                                launchSingleTop = true
+                                    .clickable(
+                                        onClick = {
+                                            if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_TOP.name) {
+                                                lastViewedIndex.value = index
+                                                lastViewedType.value = News.NEWS_TOP.name
+                                                navController.navigate(
+                                                    HomeDestination.NEWSDETAILSCREEN(
+                                                        index,
+                                                        News.NEWS_TOP.name
+                                                    )
+                                                ) {
+                                                    popUpTo(navController.graph.findStartDestination().id)
+                                                    launchSingleTop = true
+                                                }
                                             }
                                         }
-                                    }
-                                )
-                        )
-
-                        // Text content over image and gradient
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .padding(12.dp)
-                                .alpha(animatedAlpha), // padding inside image
-                            verticalArrangement = Arrangement.Bottom
-                        ) {
-                            Text(
-                                text = currentItem.title,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 2,
-                                color = Color.White
+                                    )
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
+
+                            // Text content over image and gradient
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .padding(12.dp)
+                                    .alpha(animatedAlpha), // padding inside image
+                                verticalArrangement = Arrangement.Bottom
                             ) {
                                 Text(
-                                    text = shortenName(currentItem.source_name), // mock writer
-                                    color = Color.Gray,
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = currentItem.title,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 2,
+                                    color = Color.White
                                 )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    text = formatDateString(currentItem.pubDate), // mock time
-                                    color = MaterialTheme.colorScheme.primary, // soft orange
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = shortenName(currentItem.source_name), // mock writer
+                                        color = Color.Gray,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(
+                                        text = formatDateString(currentItem.pubDate), // mock time
+                                        color = MaterialTheme.colorScheme.primary, // soft orange
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
+                        }
+                    }
+                }else{
+                    HorizontalCenteredHeroCarousel(
+                        state = rememberCarouselState{10},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        itemSpacing = 8.dp,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(205.dp)
+                                .clip(MaterialTheme.shapes.extraLarge),
+                        ){
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .maskClip(MaterialTheme.shapes.extraLarge)
+                                    .shimmerEffect()
+                            )
                         }
                     }
                 }
@@ -366,12 +398,6 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-//                                    scope.launch {
-//                                        navigator.navigateTo(
-//                                            pane = ListDetailPaneScaffoldRole.Detail,
-//                                            contentKey = "${News.NEWS_ALL.name}::$index"
-//                                        )
-//                                    }
                                     if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_ALL.name) {
                                         lastViewedIndex.value = index
                                         lastViewedType.value = News.NEWS_ALL.name
@@ -398,63 +424,71 @@ fun HomeScreen(
                 if (appendState is LoadState.Error) {
                     Log.d("NewsBits", "Append failed: ${appendState.error}")
                 }
-                if (newsList.loadState.append is LoadState.Loading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            CircularWavyProgressIndicator()
-                            LaunchedEffect(newsList.loadState.append) {
-                                if (newsList.loadState.append is LoadState.Loading) {
-                                    delay(5000)
-                                    visible.value = true // Show button if it takes too long
+                when(loadError) {
+                    false -> {
+                        if (newsList.loadState.append is LoadState.Loading) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    CircularWavyProgressIndicator()
+                                    LaunchedEffect(newsList.loadState.append) {
+                                        if (newsList.loadState.append is LoadState.Loading) {
+                                            delay(5000)
+                                            visible.value = true // Show button if it takes too long
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    AnimatedVisibility(
+                                        visible = visible.value
+                                    ) {
+                                        Button(onClick = {
+                                            scope.launch {
+                                                lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
+                                                newsList.refresh()
+                                            }
+                                        }) {
+                                            Text(text = "Refresh")
+                                        }
+                                    }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            AnimatedVisibility(
-                                visible = visible.value
+                        } else {
+                            visible.value = false
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Button(onClick = {
-                                    scope.launch {
-                                        lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
-                                        newsList.refresh()
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(text = "Network Error")
+                                    Button(onClick = {
+                                        scope.launch {
+                                            lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
+                                            newsList.refresh()
+                                        }
+                                    }) {
+                                        Text(text = "Refresh")
                                     }
-                                }) {
-                                    Text(text = "Refresh")
                                 }
                             }
                         }
                     }
-                }
-                else{
-                    visible.value = false
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(text = "Network Error")
-                            Button(onClick = {
-                                scope.launch {
-                                    lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
-                                    newsList.refresh()
-                                }
-                            }) {
-                                Text(text = "Refresh")
-                            }
+                    true -> {
+                        for (i in 1 .. 10){
+                            DummySearchResultItem()
                         }
                     }
                 }

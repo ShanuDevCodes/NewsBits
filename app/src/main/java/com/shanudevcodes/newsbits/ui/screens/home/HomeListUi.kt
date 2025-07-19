@@ -164,7 +164,15 @@ fun HomeListUi(
                                 )
                             }
                         } else {
-                            Icon(Icons.Default.Search, contentDescription = null)
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        searchBarState.animateToExpanded()
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Search, contentDescription = null)
+                            }
                         }
                     }else{
                         IconButton(

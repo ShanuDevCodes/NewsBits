@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
             val newsViewModel: NewsViewModel = viewModel()
             newsViewModel.loadTopNews()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
+            newsList.refresh()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
             LaunchedEffect(Unit) {
                 val isFirstLaunch = dataStore.firstLaunch.first()

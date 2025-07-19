@@ -170,11 +170,18 @@ class NewsViewModel : ViewModel() {
     private val _topNews = MutableStateFlow<List<NewsArticle>>(emptyList())
     val topNews: StateFlow<List<NewsArticle>> = _topNews
 
+    private val _isTopNewsLoaded = MutableStateFlow(false)
+    val isTopNewsLoaded: StateFlow<Boolean> = _isTopNewsLoaded
+
     val allNewsPagingFlow: Flow<PagingData<NewsArticle>> = getNewsPagingFlow().cachedIn(viewModelScope)
 
     fun loadTopNews(){
         viewModelScope.launch {
+            _isTopNewsLoaded.value = false
             _topNews.value = fetchTopNews()
+            if (!_topNews.value.isEmpty()) {
+                _isTopNewsLoaded.value = true
+            }
         }
     }
 
