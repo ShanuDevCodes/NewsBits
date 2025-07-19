@@ -32,6 +32,9 @@ class NewsViewModel : ViewModel() {
     private val _searchSuggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
     val searchSuggestions: StateFlow<List<SearchSuggestion>> = _searchSuggestions
 
+    private val _isSearchResultsLoaded = MutableStateFlow(false)
+    val isSearchResultsLoaded: StateFlow<Boolean> = _isSearchResultsLoaded
+
     fun resetSearchResults(){
         _searchResults.value = emptyList()
     }
@@ -99,6 +102,7 @@ class NewsViewModel : ViewModel() {
 
     fun searchNewsInAlgolia(query: String, page: Int = 0) {
         viewModelScope.launch {
+            _isSearchResultsLoaded.value = false
             val appID = BuildConfig.ALGOLIA_APP_ID
             val apiKey = BuildConfig.ALGOLIA_SEARCH_KEY
             val indexName = BuildConfig.ALGOLIA_INDEX
@@ -150,6 +154,7 @@ class NewsViewModel : ViewModel() {
                 }.flatten()
 
                 _searchResults.value = articles
+                _isSearchResultsLoaded.value = true
                 Log.d("AlgoliaSearchResponseArticle", "Parsed articles: $articles")
 
             } catch (e: Exception) {

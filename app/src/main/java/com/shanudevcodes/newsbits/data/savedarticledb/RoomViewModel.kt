@@ -15,10 +15,12 @@ class RoomViewModel(
         when(event) {
             is RoomEvents.DeleteArticle -> {
                 viewModelScope.launch {
-                    dao.deleteArticle(event.article.toSavedArticle())
-                    _state.value = _state.value.copy(
-                        isArticleSaved = false
-                    )
+                    if (event.article != null) {
+                        dao.deleteArticle(event.article.toSavedArticle())
+                        _state.value = _state.value.copy(
+                            isArticleSaved = false
+                        )
+                    }
                 }
             }
             RoomEvents.GetArticles -> {
@@ -33,10 +35,12 @@ class RoomViewModel(
             }
             is RoomEvents.SaveArticle -> {
                 viewModelScope.launch {
-                    dao.upsertArticle(event.article.toSavedArticle())
-                    _state.value = _state.value.copy(
-                        isArticleSaved = true
-                    )
+                    if (event.article != null) {
+                        dao.upsertArticle(event.article.toSavedArticle())
+                        _state.value = _state.value.copy(
+                            isArticleSaved = true
+                        )
+                    }
                 }
             }
 

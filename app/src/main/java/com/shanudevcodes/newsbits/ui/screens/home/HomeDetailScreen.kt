@@ -91,7 +91,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
     val roomViewModel: RoomViewModel = viewModel(
         factory = RoomViewModelFactory(dao)
     )
-    val viewModelState = roomViewModel.state.collectAsState()
+    val viewModelState by roomViewModel.state.collectAsState()
     val allNews = viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val topNews by viewModel.topNews.collectAsState()
     // Safe access to news item
@@ -109,7 +109,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
         }
         return
     }
-    val isBookMarked = viewModelState.value.isArticleSaved
+    val isBookMarked = viewModelState.isArticleSaved
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val scaffoldState = rememberBottomSheetScaffoldState(

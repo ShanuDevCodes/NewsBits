@@ -95,7 +95,6 @@ import kotlinx.coroutines.launch
 fun HomeListUi(
     searchNavController: NavHostController,
     navHostController: NavHostController,
-//    navigator: ThreePaneScaffoldNavigator<Any>,
     openNavDraw:() -> Unit,
     newsViewModel: NewsViewModel
 ) {
@@ -117,6 +116,7 @@ fun HomeListUi(
     val searchSuggestion by newsViewModel.searchSuggestions.collectAsState()
     val screenWidthDp = configuration.screenWidthDp.dp
     val currentBackStackEntry by navHostController.currentBackStackEntryAsState()
+    val searchBackStackEntry by searchNavController.currentBackStackEntryAsState()
     val inputField =
         @Composable {
             SearchBarDefaults.InputField(
@@ -131,14 +131,49 @@ fun HomeListUi(
                 onSearch = {
                     scope.launch {
                         roomViewModel.onEvent(RoomEvents.UpsertHistory)
+                        searchBarState.animateToCollapsed()
+                        if (currentBackStackEntry?.destination?.hierarchy?.any {it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                            navHostController.popBackStack()
+                        }
+                    }
+                    searchNavController.navigate(
+                        SearchDestination.SEARCHRESULTSCREEN(
+                            query = textFieldState.text.toString()
+                        )
+                    ){
+                        popUpTo(searchNavController.graph.findStartDestination().id)
+                        launchSingleTop = true
                     }
                 },
                 placeholder = { Text("Search News Bits...") },
                 leadingIcon = {
-                    if (searchBarState.currentValue == SearchBarValue.Expanded) {
+                    if (searchBackStackEntry?.destination?.hierarchy?.any{it.route == SearchDestination.HOMESEARCHSCREEN::class.qualifiedName} == true) {
+                        if (searchBarState.currentValue == SearchBarValue.Expanded) {
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        textFieldState.clearText()
+                                        newsViewModel.resetSearchResults()
+                                        searchBarState.animateToCollapsed()
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Default.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        } else {
+                            Icon(Icons.Default.Search, contentDescription = null)
+                        }
+                    }else{
                         IconButton(
                             onClick = {
                                 scope.launch {
+                                    searchNavController.popBackStack()
+                                    if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                                        navHostController.popBackStack()
+                                    }
                                     textFieldState.clearText()
                                     newsViewModel.resetSearchResults()
                                     searchBarState.animateToCollapsed()
@@ -147,8 +182,6 @@ fun HomeListUi(
                         ) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
                         }
-                    } else {
-                        Icon(Icons.Default.Search, contentDescription = null)
                     }
                 },
                 trailingIcon = {
@@ -159,7 +192,19 @@ fun HomeListUi(
                             .background(MaterialTheme.colorScheme.primary)
                             .clickable(onClick = {
                                 scope.launch {
-
+                                    roomViewModel.onEvent(RoomEvents.UpsertHistory)
+                                    searchBarState.animateToCollapsed()
+                                    if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
+                                        navHostController.popBackStack()
+                                    }
+                                }
+                                searchNavController.navigate(
+                                    SearchDestination.SEARCHRESULTSCREEN(
+                                        query = textFieldState.text.toString()
+                                    )
+                                ){
+                                    popUpTo(searchNavController.graph.findStartDestination().id)
+                                    launchSingleTop = true
                                 }
                             }), // Acts like a button
                         contentAlignment = Alignment.Center
@@ -300,22 +345,6 @@ fun HomeListUi(
                                 ) {
                                     LazyColumn {
                                         if (textFieldState.text.toString().isNotEmpty()) {
-//                                        itemsIndexed(searchResults) { index, search ->
-//                                            Card(
-//                                                shape = RoundedCornerShape(24.dp),
-//                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-//                                                modifier = Modifier
-//                                                    .fillMaxWidth()
-//                                                    .padding(bottom = 8.dp),
-//                                            ) {
-//                                                Box(
-//                                                    modifier = Modifier
-//                                                        .fillMaxWidth()
-//                                                ) {
-//                                                    NewsSearchListItem(news = search)
-//                                                }
-//                                            }
-//                                        }
                                             itemsIndexed(searchSuggestion) {index, it->
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically,
@@ -333,7 +362,9 @@ fun HomeListUi(
                                                                 }
                                                             }
                                                             searchNavController.navigate(
-                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                                SearchDestination.SEARCHRESULTSCREEN(
+                                                                    query = it.query
+                                                                )
                                                             ){
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
@@ -380,7 +411,9 @@ fun HomeListUi(
                                                                 }
                                                             }
                                                             searchNavController.navigate(
-                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                                SearchDestination.SEARCHRESULTSCREEN(
+                                                                    query = it.query
+                                                                )
                                                             ){
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
@@ -455,22 +488,6 @@ fun HomeListUi(
                                 ) {
                                     LazyColumn {
                                         if (textFieldState.text.toString().isNotEmpty()) {
-//                                        itemsIndexed(searchResults) { index, search ->
-//                                            Card(
-//                                                shape = RoundedCornerShape(24.dp),
-//                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-//                                                modifier = Modifier
-//                                                    .fillMaxWidth()
-//                                                    .padding(bottom = 8.dp),
-//                                            ) {
-//                                                Box(
-//                                                    modifier = Modifier
-//                                                        .fillMaxWidth()
-//                                                ) {
-//                                                    NewsSearchListItem(news = search)
-//                                                }
-//                                            }
-//                                        }
                                             itemsIndexed(searchSuggestion) {index, it->
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically,
@@ -488,7 +505,9 @@ fun HomeListUi(
                                                                 }
                                                             }
                                                             searchNavController.navigate(
-                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                                SearchDestination.SEARCHRESULTSCREEN(
+                                                                    query = it.query
+                                                                )
                                                             ){
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
@@ -535,7 +554,9 @@ fun HomeListUi(
                                                                 }
                                                             }
                                                             searchNavController.navigate(
-                                                                SearchDestination.SEARCHRESULTSCREEN
+                                                                SearchDestination.SEARCHRESULTSCREEN(
+                                                                    query = it.query
+                                                                )
                                                             ){
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
@@ -615,7 +636,7 @@ fun HomeListUi(
                     }
                 }
                 composable<SearchDestination.SEARCHRESULTSCREEN> {
-                    SearchResultScreen(navController = navHostController)
+                    SearchResultScreen(navController = navHostController, newsViewModel = newsViewModel, query = it.arguments?.getString("query") ?: "",)
                 }
             }
         }

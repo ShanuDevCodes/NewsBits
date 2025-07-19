@@ -1,4 +1,4 @@
-package com.shanudevcodes.newsbits.viewModel
+package com.shanudevcodes.newsbits.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

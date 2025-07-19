@@ -77,7 +77,6 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                         openNavDraw = {
                             scope.launch {
                                 drawerState.open()
-//                                                    wideNavigationRailState.expand()
                             }
                         },
                         newsViewModel = newsViewModel
@@ -167,77 +166,10 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
 
                         SearchResultDetailScreen(
                             navController = navController,
-                            link = "https://ca.finance.yahoo.com/news/tesla-tsla-stock-under-pressure-185131136.html"
+                            link = it.arguments?.getString("link") ?: ""
                         )
 
                     }
-                    //composable<> {  }
-//                                        composable<HomeDestination.HOMESCREEN> {
-//                                            NavigableListDetailPaneScaffold(
-//                                                navigator = listDetailNavigator,
-//                                                listPane = {
-//                                                    AnimatedPane(
-//                                                        enterTransition = slideInHorizontally(
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            )
-//                                                        ),
-//                                                        exitTransition = slideOutHorizontally (
-//                                                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            )
-//                                                        ),
-//                                                    ) {
-//                                                        HomeListUi(
-//                                                            navigator = listDetailNavigator,
-//                                                            openNavDraw = {
-//                                                                scope.launch {
-//                                                                    drawerState.open()
-////                                                    wideNavigationRailState.expand()
-//                                                                }
-//                                                            },
-//                                                            newsViewModel
-//                                                        )
-//                                                    }
-//                                                },
-//                                                detailPane = {
-//                                                    AnimatedPane(
-//                                                        enterTransition = slideInHorizontally(
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            ),
-//                                                            initialOffsetX = { fullWidth -> fullWidth }
-//                                                        ),
-//                                                        exitTransition = slideOutHorizontally (
-//                                                            targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
-//                                                            animationSpec = tween(
-//                                                                durationMillis = 600,
-//                                                                easing = ExpressiveEasing.Emphasized
-//                                                            )
-//                                                        ),
-//                                                    ) {
-//                                                        // Show the detail pane content if selected item is available
-//                                                        listDetailNavigator.currentDestination?.contentKey?.let {
-//                                                            val contentKey = it
-//                                                            val (type, indexStr) = contentKey.toString()
-//                                                                .split("::")
-//                                                            HomeDetailScreen(
-//                                                                indexStr.toInt(),
-//                                                                navController,
-//                                                                newsViewModel,
-//                                                                type
-//                                                            )
-//                                                        }?:EmptyScreen()
-//                                                    }
-//                                                },
-//                                                defaultBackBehavior = BackNavigationBehavior.PopUntilContentChange
-//                                            )
-//                                        }
-
                 }
             }
         }

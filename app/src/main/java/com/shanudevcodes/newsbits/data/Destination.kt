@@ -17,7 +17,7 @@ sealed class HomeDestination{
     @Serializable
     data class NEWSDETAILSCREEN(val newsId : Int, val news: String) : HomeDestination()
     @Serializable
-    object SEARCHRESULTDETAILSCREEN : HomeDestination()
+    data class SEARCHRESULTDETAILSCREEN(val link: String) : HomeDestination()
 }
 
 @Serializable
@@ -33,5 +33,5 @@ sealed class SearchDestination{
     @Serializable
     object HOMESEARCHSCREEN : SearchDestination()
     @Serializable
-    object SEARCHRESULTSCREEN : SearchDestination()
+    data class SEARCHRESULTSCREEN(val query: String) : SearchDestination()
 }

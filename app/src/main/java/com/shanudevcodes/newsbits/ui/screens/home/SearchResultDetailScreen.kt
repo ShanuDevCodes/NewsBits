@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +19,10 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.BottomSheetScaffold
@@ -33,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -50,8 +54,12 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
+import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shimmerEffect
-import com.shanudevcodes.newsbits.viewModel.SearchResultDetailScreenViewModel
+import com.shanudevcodes.newsbits.viewmodel.SearchResultDetailScreenViewModel
 import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -72,6 +80,16 @@ fun SearchResultDetailScreen(
     val screenWidthDp = configuration.screenWidthDp.dp
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
+    val db = AppDatabase.getInstance(context)
+    val dao = db.RoomDao()
+    val roomViewModel: RoomViewModel = viewModel(
+        factory = RoomViewModelFactory(dao)
+    )
+    val viewModelState by roomViewModel.state.collectAsState()
+    val isBookMarked = viewModelState.isArticleSaved
+    LaunchedEffect(news?.article_id) {
+        roomViewModel.onEvent(RoomEvents.CheckArticleSaved(news?.article_id?:""))
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,38 +116,49 @@ fun SearchResultDetailScreen(
 
                         Column(
                             modifier = Modifier.weight(1f), // 👈 Don't fill max width
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Text(
-                                text = news?.title?:"",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMediumEmphasized,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center
-                            )
+                            if (isNewsFetched) {
+                                Text(
+                                    text = news?.title ?: "",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleMediumEmphasized,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center
+                                )
+                            }else{
+                                Box(
+                                    modifier = Modifier
+                                        .padding(start = 8.dp, end = 8.dp)
+                                        .fillMaxWidth()
+                                        .height(20.dp)
+                                        .shimmerEffect()
+                                )
+                            }
                         }
 
                         IconButton(
                             onClick = {
-//                                Log.d("BookmarkToggle", "Clicked! isBookMarked = $isBookMarked")
-//                                if (isBookMarked){
-//                                    roomViewModel.onEvent(
-//                                        RoomEvents.DeleteArticle(
-//                                            article = newsArticle
-//                                        )
-//                                    )
-//                                }else {
-//                                    roomViewModel.onEvent(
-//                                        RoomEvents.SaveArticle(
-//                                            article = newsArticle
-//                                        )
-//                                    )
-//                                }
-//                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(newsArticle.article_id))
+                                Log.d("BookmarkToggle", "Clicked! isBookMarked = $isBookMarked")
+                                if (isBookMarked){
+                                    roomViewModel.onEvent(
+                                        RoomEvents.DeleteArticle(
+                                            article = news
+                                        )
+                                    )
+                                }else {
+                                    roomViewModel.onEvent(
+                                        RoomEvents.SaveArticle(
+                                            article = news
+                                        )
+                                    )
+                                }
+                                roomViewModel.onEvent(RoomEvents.CheckArticleSaved(news?.article_id?:""))
                             }
                         ) {
                             Icon(
-                                imageVector = /*if (isBookMarked) Icons.Filled.BookmarkAdded else*/ Icons.Outlined.BookmarkAdd,
+                                imageVector = if (isBookMarked) Icons.Filled.BookmarkAdded else Icons.Outlined.BookmarkAdd,
                                 contentDescription = "Bookmark",
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.secondary
@@ -163,11 +192,20 @@ fun SearchResultDetailScreen(
                     if (isNewsFetched) {
                         BottomSheetContent(news)
                     }else{
+                        for(i in 1 .. 8){
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 8.dp, start = 8.dp, end = 8.dp)
+                                    .fillMaxWidth()
+                                    .height(20.dp)
+                                    .shimmerEffect()
+                            )
+                        }
                         Box(
                             modifier = Modifier
                                 .padding(top = 8.dp, start = 8.dp, end = 8.dp)
-                                .fillMaxWidth()
-                                .height(300.dp)
+                                .width(100.dp)
+                                .height(20.dp)
                                 .shimmerEffect()
                         )
                     }
@@ -206,6 +244,13 @@ fun SearchResultDetailScreen(
                             )
                     )
                 }
+            }else{
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f/12f)
+                        .shimmerEffect()
+                )
             }
         }
     }
