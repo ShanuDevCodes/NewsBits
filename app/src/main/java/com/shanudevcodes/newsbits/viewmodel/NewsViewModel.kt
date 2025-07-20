@@ -3,7 +3,6 @@ package com.shanudevcodes.newsbits.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.algolia.client.api.SearchClient
 import com.algolia.client.model.search.SearchForHits
@@ -16,9 +15,10 @@ import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.SearchSuggestion
 import com.shanudevcodes.newsbits.data.fetchTopNews
 import com.shanudevcodes.newsbits.data.getNewsPagingFlow
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -173,7 +173,19 @@ class NewsViewModel : ViewModel() {
     private val _isTopNewsLoaded = MutableStateFlow(false)
     val isTopNewsLoaded: StateFlow<Boolean> = _isTopNewsLoaded
 
-    val allNewsPagingFlow: Flow<PagingData<NewsArticle>> = getNewsPagingFlow().cachedIn(viewModelScope)
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+
+    val selectedCategory = _selectedCategory.asStateFlow()
+
+    val allNewsPagingFlow = selectedCategory
+        .flatMapLatest { category ->
+            getNewsPagingFlow(category)
+        }
+        .cachedIn(viewModelScope)
+
+    fun setCategory(category: String?) {
+        _selectedCategory.value = category
+    }
 
     fun loadTopNews(){
         viewModelScope.launch {

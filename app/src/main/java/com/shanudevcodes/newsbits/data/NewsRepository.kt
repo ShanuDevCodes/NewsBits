@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.data
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.net.URLEncoder
 
-fun getNewsPagingFlow(): Flow<PagingData<NewsArticle>> {
+fun getNewsPagingFlow(category: String? = null): Flow<PagingData<NewsArticle>> {
     val collection = FirebaseFirestore.getInstance()
         .collection("news_all")
 
@@ -25,7 +26,7 @@ fun getNewsPagingFlow(): Flow<PagingData<NewsArticle>> {
             enablePlaceholders = false
         ),
         pagingSourceFactory = {
-            FirestorePagingSource(collection, pageSize = 20)
+            FirestorePagingSource(collection, categoryFilter = category)
         }
     ).flow
 }
@@ -64,42 +65,61 @@ suspend fun fetchTopNews(limit: Long = 10): List<NewsArticle> {
 }
 
 class FirestorePagingSource(
-    private val query: CollectionReference,
+    private val collection: CollectionReference,
+    private val categoryFilter: String? = null,
+    private val countryFilter: String? = null, // ✅ NEW
     private val pageSize: Long = 20
 ) : PagingSource<DocumentSnapshot, NewsArticle>() {
 
     override suspend fun load(params: LoadParams<DocumentSnapshot>): LoadResult<DocumentSnapshot, NewsArticle> {
         return try {
             val currentKey = params.key
+            var baseQuery: Query = collection
 
-            val currentQuery = if (currentKey == null) {
-                query.orderBy("pubDate", Query.Direction.DESCENDING)
-                    .limit(pageSize)
-            } else {
-                query.orderBy("pubDate", Query.Direction.DESCENDING)
-                    .startAfter(currentKey)
-                    .limit(pageSize)
+            Log.d("FirestorePagingSource", "Loading page. Category: $categoryFilter, Country: $countryFilter, Key: $currentKey")
+
+            // ✅ Apply category filter
+            if (!categoryFilter.isNullOrEmpty()) {
+                Log.d("FirestorePagingSource", "Applying category filter: $categoryFilter")
+                baseQuery = baseQuery.whereArrayContains("category", categoryFilter)
             }
 
-            val snapshot = currentQuery.get().await()
-            val documents = snapshot.documents
+            // ✅ Apply country filter
+            if (!countryFilter.isNullOrEmpty()) {
+                Log.d("FirestorePagingSource", "Applying country filter: $countryFilter")
+                baseQuery = baseQuery.whereArrayContains("country", countryFilter)
+            }
 
+            // ✅ Order by pubDate
+            baseQuery = baseQuery.orderBy("pubDate", Query.Direction.DESCENDING)
+
+            // ✅ Pagination logic
+            val finalQuery = if (currentKey == null) {
+                baseQuery.limit(pageSize)
+            } else {
+                baseQuery.startAfter(currentKey).limit(pageSize)
+            }
+
+            val snapshot = finalQuery.get().await()
+            val documents = snapshot.documents
             val items = documents.mapNotNull { it.toObject(NewsArticle::class.java) }
 
-            // 🔥 FIX: Stop pagination if we receive fewer items than requested
             val nextKey = if (documents.size < pageSize) null else documents.lastOrNull()
+
+            Log.d("FirestorePagingSource", "Loaded ${items.size} items. NextKey: $nextKey")
 
             LoadResult.Page(
                 data = items,
-                prevKey = null,     // Not paging backward
-                nextKey = nextKey   // Cursor for next load
+                prevKey = null,
+                nextKey = nextKey
             )
         } catch (e: Exception) {
+            Log.e("FirestorePagingSource", "Error loading page", e)
             LoadResult.Error(e)
         }
     }
 
     override fun getRefreshKey(state: PagingState<DocumentSnapshot, NewsArticle>): DocumentSnapshot? {
-        return null // You can improve this with smarter logic later
+        return null
     }
 }

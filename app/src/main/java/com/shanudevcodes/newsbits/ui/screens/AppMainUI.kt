@@ -183,98 +183,99 @@ fun AppMainUI(
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
+                            if (BuildConfig.DEBUG) {
+                                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
 
-                            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            var isDropDownEnabled by remember { mutableStateOf(false) }
-                            val regions = listOf(
-                                "Global",
-                                "India",
-                                "USA",
-                                "Canada",
-                                "Germany",
-                                "Japan"
-                            )
-                            var selectedRegion by remember { mutableStateOf(regions.first()) }
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp)
-                                        .clip(shape = RoundedCornerShape(48.dp))
-                                        .clickable {
-                                            isDropDownEnabled = !isDropDownEnabled
-                                        }, // toggles dropdown
-                                    verticalAlignment = Alignment.CenterVertically,
+                                var isDropDownEnabled by remember { mutableStateOf(false) }
+                                val regions = listOf(
+                                    "Global",
+                                    "India",
+                                    "USA",
+                                    "Canada",
+                                    "Germany",
+                                    "Japan"
+                                )
+                                var selectedRegion by remember { mutableStateOf(regions.first()) }
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     Row(
                                         modifier = Modifier
-                                            .padding(horizontal = 16.dp)
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
-
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                        ) {
-                                            Text(
-                                                text = "Region",
-                                                color = MaterialTheme.colorScheme.primary,
-                                                style = MaterialTheme.typography.labelLarge
-                                            )
-                                            Text(
-                                                text = selectedRegion,
-                                                style = MaterialTheme.typography.bodySmallEmphasized
-                                            )
-                                        }
-
-                                        IconButton(
-                                            onClick = {
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp)
+                                            .clip(shape = RoundedCornerShape(48.dp))
+                                            .clickable {
                                                 isDropDownEnabled = !isDropDownEnabled
-                                            }
+                                            }, // toggles dropdown
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .padding(horizontal = 16.dp)
+                                                .fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+
                                         ) {
-                                            Icon(
-                                                imageVector = Icons.Default.ArrowDropDown,
-                                                contentDescription = "Change Region"
-                                            )
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                            ) {
+                                                Text(
+                                                    text = "Region",
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    style = MaterialTheme.typography.labelLarge
+                                                )
+                                                Text(
+                                                    text = selectedRegion,
+                                                    style = MaterialTheme.typography.bodySmallEmphasized
+                                                )
+                                            }
+
+                                            IconButton(
+                                                onClick = {
+                                                    isDropDownEnabled = !isDropDownEnabled
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ArrowDropDown,
+                                                    contentDescription = "Change Region"
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                                DropdownMenu(
-                                    shape = RoundedCornerShape(24.dp),
-                                    expanded = isDropDownEnabled,
-                                    onDismissRequest = {
-                                        isDropDownEnabled = false
-                                    },
-                                    modifier = Modifier
-                                        .width(200.dp)
-                                        .align(Alignment.Center),
-                                ) {
-                                    regions.forEach { region ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    text = region,
-                                                    style = MaterialTheme.typography.bodySmallEmphasized,
-                                                    modifier = Modifier.padding(start = 16.dp),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            },
-                                            onClick = {
-                                                selectedRegion = region
-                                                isDropDownEnabled = false
-                                            },
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
+                                    DropdownMenu(
+                                        shape = RoundedCornerShape(24.dp),
+                                        expanded = isDropDownEnabled,
+                                        onDismissRequest = {
+                                            isDropDownEnabled = false
+                                        },
+                                        modifier = Modifier
+                                            .width(200.dp)
+                                            .align(Alignment.Center),
+                                    ) {
+                                        regions.forEach { region ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = region,
+                                                        style = MaterialTheme.typography.bodySmallEmphasized,
+                                                        modifier = Modifier.padding(start = 16.dp),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                },
+                                                onClick = {
+                                                    selectedRegion = region
+                                                    isDropDownEnabled = false
+                                                },
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                        }
                                     }
                                 }
                             }

@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.Button
@@ -105,18 +104,23 @@ fun HomeScreen(
     val state = rememberCarouselState { newsTopList.size }
     val options = listOf(
         "All",
-        "Science",
-        "Health",
-        "Culture",
-        "Technology",
-        "Business",
-        "Sports",
-        "Politics",
-        "Entertainment",
-        "Lifestyle",
-        "Food",
-        "Travel",
-        "Art",
+        "business",
+        "crime",
+        "domestic",
+        "education",
+        "entertainment",
+        "environment",
+        "food",
+        "health",
+        "lifestyle",
+        "other",
+        "politics",
+        "science",
+        "sports",
+        "technology",
+        "top",
+        "tourism",
+        "world"
     )
     var selectedIndex by remember { mutableIntStateOf(0) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -350,11 +354,15 @@ fun HomeScreen(
                     itemsIndexed(options) { index, label ->
                         ToggleButton(
                             checked = selectedIndex == index,
-                            onCheckedChange = { selectedIndex = index },
+                            onCheckedChange = {
+                                selectedIndex = index
+                                val selectedCategory = options[index]
+                                viewModel.setCategory(if (selectedCategory == "All") null else selectedCategory.lowercase())
+                            },
                             shapes =
                                 when (index) {
                                     0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-//                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
                                     else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                                 },
                             colors = ToggleButtonDefaults.toggleButtonColors(
@@ -365,19 +373,19 @@ fun HomeScreen(
                             Text(label)
                         }
                     }
-                    item {
-                        ToggleButton(
-                            checked = false,
-                            onCheckedChange = {},
-                            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                            colors = ToggleButtonDefaults.toggleButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                                checkedContainerColor = MaterialTheme.colorScheme.primary,
-                            )
-                        ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
-                        }
-                    }
+//                    item {
+//                        ToggleButton(
+//                            checked = false,
+//                            onCheckedChange = {},
+//                            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+//                            colors = ToggleButtonDefaults.toggleButtonColors(
+//                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+//                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+//                            )
+//                        ) {
+//                            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+//                        }
+//                    }
                 }
             }
             item {
