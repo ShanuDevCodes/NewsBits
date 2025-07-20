@@ -19,3 +19,4 @@ app/debug/output-metadata.json
 app/release/app-release.apk
 app/release/output-metadata.json
 *.dm
+git-filter-repo.py
