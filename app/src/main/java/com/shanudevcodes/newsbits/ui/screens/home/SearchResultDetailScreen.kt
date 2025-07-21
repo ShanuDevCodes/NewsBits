@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -24,11 +25,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.LocalLibrary
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -264,19 +267,43 @@ fun SearchResultDetailScreen(
                 ),
             contentAlignment = Alignment.BottomEnd
         ) {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    openUrlInBrowser(context, news?.link ?: "")
-                },
-                icon = {
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        val sendIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, news?.link ?: "")
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, "Share this news")
+                        context.startActivity(shareIntent)
+                    },
+                    elevation = FloatingActionButtonDefaults.elevation(2.dp),
+                    modifier = Modifier.size(48.dp),
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ) {
                     Icon(
-                        imageVector = Icons.Default.LocalLibrary, // your icon
-                        contentDescription = "Read Article"
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share"
                     )
-                },
-                text = { Text(text = "Read Full Article") },
-                elevation = FloatingActionButtonDefaults.elevation(2.dp)
-            )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        openUrlInBrowser(context, news?.link?:"")
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.LocalLibrary, // your icon
+                            contentDescription = "Read Article"
+                        )
+                    },
+                    text = { Text(text = "Read Full Article") },
+                    elevation = FloatingActionButtonDefaults.elevation(2.dp)
+                )
+            }
         }
     }
 }

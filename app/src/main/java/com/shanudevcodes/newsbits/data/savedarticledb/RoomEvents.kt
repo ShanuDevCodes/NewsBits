@@ -14,4 +14,5 @@ sealed interface RoomEvents {
     data object GetHistory: RoomEvents
     data class DeleteHistory(val history: History): RoomEvents
     data object UpsertHistory: RoomEvents
+    data class SaveHistory(val query: String) : RoomEvents
 }

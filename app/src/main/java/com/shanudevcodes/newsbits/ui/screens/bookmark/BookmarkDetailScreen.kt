@@ -34,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.LocalLibrary
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.AlertDialog
@@ -44,6 +45,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -83,6 +85,7 @@ import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.savedarticledb.SavedArticle
+import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.TimeZone
@@ -247,19 +250,43 @@ fun BookmarkDetailScreen(
             ),
         contentAlignment = Alignment.BottomEnd
     ) {
-        ExtendedFloatingActionButton(
-            onClick = {
-                openUrlInBrowser(context, newsArticle?.link?:"")
-            },
-            icon = {
+        Column(
+            horizontalAlignment = Alignment.End
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, newsArticle?.link ?: "")
+                        type = "text/plain"
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, "Share this news")
+                    context.startActivity(shareIntent)
+                },
+                elevation = FloatingActionButtonDefaults.elevation(2.dp),
+                modifier = Modifier.size(48.dp),
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ) {
                 Icon(
-                    imageVector = Icons.Default.LocalLibrary, // your icon
-                    contentDescription = "Read Article"
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Share"
                 )
-            },
-            text = { Text(text = "Read Full Article") },
-            elevation = FloatingActionButtonDefaults.elevation(2.dp)
-        )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            ExtendedFloatingActionButton(
+                onClick = {
+                    openUrlInBrowser(context, newsArticle?.link?:"")
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.LocalLibrary, // your icon
+                        contentDescription = "Read Article"
+                    )
+                },
+                text = { Text(text = "Read Full Article") },
+                elevation = FloatingActionButtonDefaults.elevation(2.dp)
+            )
+        }
     }
     if (isDialogVisible.value) {
         DeleteWarningDialogBox(
@@ -330,7 +357,7 @@ fun BottomSheetContentBookMarked(news: SavedArticle?){
                         )
                     }
                     item {
-                        Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+70.dp))
+                        Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()+ 126.dp))
                     }
                 }
             } else {

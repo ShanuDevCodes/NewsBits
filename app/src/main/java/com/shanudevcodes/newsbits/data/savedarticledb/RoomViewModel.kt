@@ -112,6 +112,15 @@ class RoomViewModel(
                     dao.upsertHistory(History(query = _state.value.historyQuery))
                 }
             }
+
+            is RoomEvents.SaveHistory -> {
+                viewModelScope.launch {
+                    dao.upsertHistory(History(query = event.query))
+                }
+                _state.value = _state.value.copy(
+                    historyQuery = event.query
+                )
+            }
         }
     }
 }

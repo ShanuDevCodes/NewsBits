@@ -364,6 +364,7 @@ fun HomeListUi(
                                                                 replace(0, length, it.query)
                                                             }
                                                             scope.launch {
+                                                                roomViewModel.onEvent(RoomEvents.SaveHistory(it.query))
                                                                 searchBarState.animateToCollapsed()
                                                                 if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
                                                                     navHostController.popBackStack()
@@ -507,6 +508,7 @@ fun HomeListUi(
                                                                 replace(0, length, it.query)
                                                             }
                                                             scope.launch {
+                                                                roomViewModel.onEvent(RoomEvents.SaveHistory(it.query))
                                                                 searchBarState.animateToCollapsed()
                                                                 if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
                                                                     navHostController.popBackStack()
