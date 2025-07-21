@@ -78,10 +78,12 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.ConnectivityObserver
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
+import com.shanudevcodes.newsbits.data.rememberNetworkStatus
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
@@ -99,6 +101,7 @@ fun HomeScreen(
     scrollBehavior: SearchBarScrollBehavior,
     viewModel: NewsViewModel
 ) {
+    val networkStatus = rememberNetworkStatus()
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
     val state = rememberCarouselState { newsTopList.size }
@@ -469,26 +472,28 @@ fun HomeScreen(
                                 }
                             }
                         } else {
-                            visible.value = false
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxWidth()
+                            if (networkStatus != ConnectivityObserver.Status.Available) {
+                                visible.value = false
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "Network Error")
-                                    Button(onClick = {
-                                        scope.launch {
-                                            lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
-                                            newsList.refresh()
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(text = "Network Error")
+                                        Button(onClick = {
+                                            scope.launch {
+                                                lazyColumnSate.animateScrollToItem(0) // 👈 scroll to top
+                                                newsList.refresh()
+                                            }
+                                        }) {
+                                            Text(text = "Refresh")
                                         }
-                                    }) {
-                                        Text(text = "Refresh")
                                     }
                                 }
                             }
