@@ -114,48 +114,57 @@ fun BookMarksScreen(
                             textAlign = TextAlign.Center,
                             modifier = Modifier.weight(1f)
                         )
-
-                        Box(
-                            contentAlignment = Alignment.BottomEnd,
+//                        Box(
+//                            contentAlignment = Alignment.BottomEnd,
+//                        ) {
+//                            IconButton(
+//                                onClick = { },
+//                                modifier = Modifier.offset(x = 6.dp)
+//                            ) {
+//                                Icon(
+//                                    imageVector = Icons.Default.Notifications,
+//                                    contentDescription = "Notifications",
+//                                    modifier = Modifier.size(48.dp)
+//                                )
+//                            }
+//                            if (notificationCount > 0) {
+//                                val notificationCountString by remember {
+//                                    mutableStateOf(
+//                                        if (notificationCount > 9) {
+//                                            "9+"
+//                                        } else {
+//                                            "$notificationCount"
+//                                        }
+//                                    )
+//                                }
+//                                Box(
+//                                    modifier = Modifier
+//                                        .offset(x = 1.dp, y = -5.dp)
+//                                        .size(18.dp)
+//                                        .clip(CircleShape)
+//                                        .background(Color.White)
+//                                        .border(1.dp, Color.Black, CircleShape),
+//                                    contentAlignment = Alignment.TopCenter
+//                                ) {
+//                                    Text(
+//                                        text = notificationCountString,
+//                                        color = MaterialTheme.colorScheme.tertiary,
+//                                        fontSize = 10.sp,
+//                                        fontWeight = FontWeight.Bold,
+//                                        modifier = Modifier.offset(y = -5.dp)
+//                                    )
+//                                }
+//                            }
+//                        }
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier.offset(x = 8.dp)
                         ) {
-                            IconButton(
-                                onClick = { },
-                                modifier = Modifier.offset(x = 6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
-                                    modifier = Modifier.size(48.dp)
-                                )
-                            }
-                            if (notificationCount > 0) {
-                                val notificationCountString by remember {
-                                    mutableStateOf(
-                                        if (notificationCount > 9) {
-                                            "9+"
-                                        } else {
-                                            "$notificationCount"
-                                        }
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .offset(x = 1.dp, y = -5.dp)
-                                        .size(18.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White)
-                                        .border(1.dp, Color.Black, CircleShape),
-                                    contentAlignment = Alignment.TopCenter
-                                ) {
-                                    Text(
-                                        text = notificationCountString,
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.offset(y = -5.dp)
-                                    )
-                                }
-                            }
+                            Icon(
+                                painter = painterResource(id = R.drawable.sparkler),
+                                contentDescription = "AI",
+                                modifier = Modifier.size(32.dp)
+                            )
                         }
                     }
                 },

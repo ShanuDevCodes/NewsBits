@@ -1,8 +1,8 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +31,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,20 +55,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -77,6 +72,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.shanudevcodes.newsbits.AiActivity
+import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.SearchDestination
 import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
@@ -280,47 +277,60 @@ fun HomeListUi(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.weight(1f)
                             )
-                            Box(
-                                contentAlignment = Alignment.BottomEnd,
+//                            Box(
+//                                contentAlignment = Alignment.BottomEnd,
+//                            ) {
+//                                IconButton(
+//                                    onClick = { },
+//                                    modifier = Modifier.offset(x = 6.dp)
+//                                ) {
+//                                    Icon(
+//                                        imageVector = Icons.Default.Notifications,
+//                                        contentDescription = "Notifications",
+//                                        modifier = Modifier.size(48.dp)
+//                                    )
+//                                }
+//                                if (notificationCount > 0) {
+//                                    val notificationCountString by remember {
+//                                        mutableStateOf(
+//                                            if (notificationCount > 9) {
+//                                                "9+"
+//                                            } else {
+//                                                "$notificationCount"
+//                                            }
+//                                        )
+//                                    }
+//                                    Box(
+//                                        modifier = Modifier
+//                                            .offset(x = 1.dp, y = -5.dp)
+//                                            .size(18.dp)
+//                                            .clip(CircleShape)
+//                                            .background(Color.White)
+//                                            .border(1.dp, Color.Black, CircleShape),
+//                                        contentAlignment = Alignment.TopCenter
+//                                    ) {
+//                                        Text(
+//                                            text = notificationCountString,
+//                                            color = MaterialTheme.colorScheme.tertiary,
+//                                            fontSize = 10.sp,
+//                                            fontWeight = FontWeight.Bold,
+//                                            modifier = Modifier.offset(y = -5.dp)
+//                                        )
+//                                    }
+//                                }
+//                            }
+                            IconButton(
+                                onClick = {
+                                    val intent = Intent(context, AiActivity::class.java)
+                                    context.startActivity(intent)
+                                },
+                                modifier = Modifier.offset(x = 8.dp)
                             ) {
-                                IconButton(
-                                    onClick = { },
-                                    modifier = Modifier.offset(x = 6.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Notifications,
-                                        contentDescription = "Notifications",
-                                        modifier = Modifier.size(48.dp)
-                                    )
-                                }
-                                if (notificationCount > 0) {
-                                    val notificationCountString by remember {
-                                        mutableStateOf(
-                                            if (notificationCount > 9) {
-                                                "9+"
-                                            } else {
-                                                "$notificationCount"
-                                            }
-                                        )
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .offset(x = 1.dp, y = -5.dp)
-                                            .size(18.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.White)
-                                            .border(1.dp, Color.Black, CircleShape),
-                                        contentAlignment = Alignment.TopCenter
-                                    ) {
-                                        Text(
-                                            text = notificationCountString,
-                                            color = MaterialTheme.colorScheme.tertiary,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.offset(y = -5.dp)
-                                        )
-                                    }
-                                }
+                                Icon(
+                                    painter = painterResource(id = R.drawable.sparkler),
+                                    contentDescription = "AI",
+                                    modifier = Modifier.size(32.dp)
+                                )
                             }
                         }
                     },

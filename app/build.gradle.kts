@@ -27,13 +27,14 @@ android {
         minSdk = 30
         targetSdk = 35
         versionCode = 1
-        versionName = "3.5.3-Beta"
+        versionName = "4.1.1-Beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "ALGOLIA_APP_ID", "\"${localProps.getProperty("ALGOLIA_APP_ID")}\"")
         buildConfigField("String", "ALGOLIA_SEARCH_KEY", "\"${localProps.getProperty("ALGOLIA_SEARCH_KEY")}\"")
         buildConfigField("String", "ALGOLIA_INDEX", "\"${localProps.getProperty("ALGOLIA_INDEX")}\"")
+        buildConfigField("String", "Gemini_API_Key", "\"${localProps.getProperty("Gemini_API_Key")}\"")
     }
 
     buildTypes {
@@ -48,7 +49,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -75,6 +75,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.paging.common.android)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,5 +105,9 @@ dependencies {
     implementation(libs.androidx.adaptive.navigation)
     implementation(platform("com.algolia:algoliasearch-client-kotlin-bom:3.24.2"))
     implementation("com.algolia:algoliasearch-client-kotlin")
-    implementation("io.ktor:ktor-client-okhttp:2.3.4")
+    implementation(platform("io.ktor:ktor-bom:2.3.2"))
+    implementation("io.ktor:ktor-client-core")
+    implementation("io.ktor:ktor-client-okhttp")
+    implementation("io.ktor:ktor-client-plugins")
+    implementation("com.airbnb.android:lottie-compose:6.6.7")
 }
