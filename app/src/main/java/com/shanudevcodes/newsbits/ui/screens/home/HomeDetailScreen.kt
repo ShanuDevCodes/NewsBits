@@ -135,7 +135,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
             .fillMaxWidth()
     ) {
         BottomSheetScaffold(
-            topBar = {},
+            sheetSwipeEnabled = false,
             scaffoldState = scaffoldState,
             sheetMaxWidth = screenWidthDp,
             sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),

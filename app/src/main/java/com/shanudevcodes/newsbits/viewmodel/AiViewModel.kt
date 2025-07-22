@@ -25,12 +25,19 @@ class AiViewModel: ViewModel(){
     private val _isResponseFetched = MutableStateFlow<Boolean>(false)
     val isResponseFetched = _isResponseFetched
 
+    private var isFetching = false
+
+    private val summaryType =/*"detailed"*/ "concise"
+
     fun getGeminiResponse(topNews: List<NewsArticle>){
+        if (isFetching) return
+        isFetching = true
         viewModelScope.launch {
             delay(1000)
             if (topNews.isNotEmpty()) {
                 withContext(Dispatchers.IO) {
                     try {
+                        Log.d("Gemini","run")
                         val apiKey = BuildConfig.Gemini_API_Key
                         val url =
                             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
@@ -45,6 +52,11 @@ class AiViewModel: ViewModel(){
                         val promptBuilder = StringBuilder()
                         promptBuilder.appendLine("You are a reliable summarization assistant.")
                         promptBuilder.appendLine()
+                        when (summaryType) {
+                            "concise" -> promptBuilder.appendLine("Provide a **concise summary** of each article as short as possible without missing key details.")
+                            "detailed" -> promptBuilder.appendLine("Provide a **detailed summary** for each article — include key facts as well as relevant context and elaborate it in detail.")
+                        }
+                        promptBuilder.appendLine()
                         promptBuilder.appendLine("Summarize each of the following news articles individually in one bullet per article. Ensure:")
                         promptBuilder.appendLine("- Each bullet starts with a \"*\"")
                         promptBuilder.appendLine("- Retain all factual details like names, dates, numbers, and company names")
@@ -53,7 +65,6 @@ class AiViewModel: ViewModel(){
                         promptBuilder.appendLine("- Keep the tone factual and news-like")
                         promptBuilder.appendLine()
                         promptBuilder.appendLine("Here are the articles:")
-
                         topNews.forEachIndexed { index, article ->
                             promptBuilder.appendLine("${index + 1}. ${article.title} - ${article.description}")
                         }
@@ -110,6 +121,8 @@ class AiViewModel: ViewModel(){
 
                     } catch (e: Exception) {
                         Log.e("Gemini", "Exception: ${e.message}", e)
+                    } finally {
+                        isFetching = false
                     }
                 }
             }

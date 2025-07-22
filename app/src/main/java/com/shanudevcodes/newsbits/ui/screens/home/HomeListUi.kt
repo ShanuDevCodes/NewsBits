@@ -1,6 +1,5 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
-import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,7 +71,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.shanudevcodes.newsbits.AiActivity
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.SearchDestination
@@ -319,17 +317,29 @@ fun HomeListUi(
 //                                    }
 //                                }
 //                            }
+//                            IconButton(
+//                                onClick = {
+//                                    val intent = Intent(context, AiActivity::class.java)
+//                                    context.startActivity(intent)
+//                                },
+//                                modifier = Modifier.offset(x = 8.dp)
+//                            ) {
+//                                Icon(
+//                                    painter = painterResource(id = R.drawable.sparkler),
+//                                    contentDescription = "AI",
+//                                    modifier = Modifier.size(32.dp)
+//                                )
+//                            }
                             IconButton(
                                 onClick = {
-                                    val intent = Intent(context, AiActivity::class.java)
-                                    context.startActivity(intent)
+                                    openUrlInBrowser(context = context, url = "https://github.com/shanudevcodes")
                                 },
                                 modifier = Modifier.offset(x = 8.dp)
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.sparkler),
-                                    contentDescription = "AI",
-                                    modifier = Modifier.size(32.dp)
+                                    painter = painterResource(R.drawable.github),
+                                    contentDescription = "Github",
+                                    modifier = Modifier.size(35.dp)
                                 )
                             }
                         }

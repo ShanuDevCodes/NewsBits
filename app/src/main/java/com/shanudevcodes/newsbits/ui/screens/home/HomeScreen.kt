@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.Button
@@ -40,6 +39,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
@@ -50,6 +50,7 @@ import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,6 +69,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -101,6 +103,7 @@ fun HomeScreen(
     scrollBehavior: SearchBarScrollBehavior,
     viewModel: NewsViewModel
 ) {
+    val context = LocalContext.current
     val networkStatus = rememberNetworkStatus()
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
@@ -136,6 +139,8 @@ fun HomeScreen(
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     var loadError by remember { mutableStateOf(true) }
     val isTopNewsLoaded by viewModel.isTopNewsLoaded.collectAsState()
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(newsList.loadState.refresh) {
         if (newsList.loadState.refresh is LoadState.Error){
@@ -155,6 +160,18 @@ fun HomeScreen(
         if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
             lastViewedIndex.value = null
             lastViewedType.value = null
+        }
+    }
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            sheetGesturesEnabled = false,
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            sheetState = sheetState,
+            dragHandle = null
+        ) {
+            AiBottomSheetContent()
         }
     }
     PullToRefreshBox(
@@ -198,14 +215,31 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.weight(1f)
                     )
+//                    IconButton(
+//                        onClick = {},
+//                        modifier = Modifier.offset(x = 15.dp)
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+//                            contentDescription = "All Latest News",
+//                            tint = MaterialTheme.colorScheme.secondary
+//                        )
+//                    }
                     IconButton(
-                        onClick = {},
+                        onClick = {
+//                            val intent = Intent(context, AiActivity::class.java)
+//                            context.startActivity(intent)
+                            scope.launch {
+                                showBottomSheet = true
+                            }
+                        },
                         modifier = Modifier.offset(x = 15.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "All Latest News",
-                            tint = MaterialTheme.colorScheme.secondary
+                            painter = painterResource(id = R.drawable.sparkler),
+                            contentDescription = "AI",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
