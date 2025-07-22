@@ -60,9 +60,9 @@ fun AiBottomSheetContent(){
     val isFetched by aiViewModel.isResponseFetched.collectAsState()
     newsViewModel.loadTopNews()
     LaunchedEffect(topNews) {
-//        if (topNews.isNotEmpty() && !isFetched) {
-//            aiViewModel.getGeminiResponse(topNews)
-//        }
+        if (topNews.isNotEmpty() && !isFetched) {
+            aiViewModel.getGeminiResponse(topNews)
+        }
     }
     val summary by aiViewModel.geminiResponse.collectAsState()
     Column(
