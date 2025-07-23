@@ -3,6 +3,7 @@ package com.shanudevcodes.newsbits.ui.screens.home
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -19,10 +20,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -41,6 +43,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +55,9 @@ import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.GeminiSummaryType
 import com.shanudevcodes.newsbits.ui.animation.LottieLoader
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
+import com.shanudevcodes.newsbits.viewmodel.GeminiResponse
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -77,6 +82,7 @@ fun AiBottomSheetContent(
         }
     }
     val summary by aiViewModel.geminiResponse.collectAsState()
+    var aiInfoDropDown by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -101,6 +107,38 @@ fun AiBottomSheetContent(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.weight(1f))
+            Box{
+                IconButton(
+                    onClick = {
+                        aiInfoDropDown = true
+                    },
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = "AI Model Info",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                DropdownMenu(
+                    shape = RoundedCornerShape(24.dp),
+                    expanded = aiInfoDropDown,
+                    onDismissRequest = {
+                        aiInfoDropDown = false
+                    },
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Powered By Gemini 2.5 Flash",
+                        style = MaterialTheme.typography.bodySmallEmphasized,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
             Box {
                 IconButton(
                     onClick = {
@@ -130,7 +168,8 @@ fun AiBottomSheetContent(
                         style = MaterialTheme.typography.titleSmallEmphasized,
                         modifier = Modifier.padding(start = 16.dp),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.secondary
                     )
                     DropdownMenuItem(
                         text = {
@@ -215,39 +254,10 @@ fun AiBottomSheetContent(
                 contentAlignment = Alignment.Center
             ) {
                 if (isFetched) {
-//                    AnimatedVisibility(
-//                        visible = true
-//                    ) {
-                        LazyColumn(
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        ) {
-                            item {
-                                Spacer(Modifier.height(8.dp))
-                            }
-                            item {
-                                Text(
-                                    text = when(summary.responseType){
-                                        GeminiSummaryType.CONCISE -> "Concise"
-                                        GeminiSummaryType.DETAILED -> "Detailed"
-                                        else -> ""
-                                    },
-                                    style = MaterialTheme.typography.bodySmallEmphasized,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                            item {
-                                Spacer(Modifier.height(8.dp))
-                            }
-                            items(summary.Responses) {
-                                Text(
-                                    text = "- " + it,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp)
-                                )
-                            }
-                        }
-//                    }
+                    FadingSummaryList(
+                        isFetched = isFetched,
+                        summary = summary
+                    )
                 }else {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -259,6 +269,15 @@ fun AiBottomSheetContent(
                 }
             }
         }
+//        Spacer(modifier = Modifier.height(12.dp))
+//        Text(
+//            text = "Powered By Gemini 2.5 Flash",
+//            style = MaterialTheme.typography.bodySmallEmphasized,
+//            color = MaterialTheme.colorScheme.secondary,
+//            fontWeight = FontWeight.SemiBold,
+//            textAlign = TextAlign.Center,
+//            modifier = Modifier.fillMaxWidth()
+//        )
     }
 }
 
@@ -283,4 +302,64 @@ fun FadingSummarisingText(
         style = MaterialTheme.typography.titleSmallEmphasized,
         color = MaterialTheme.colorScheme.primary.copy(alpha = alpha)
     )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun FadingSummaryList(
+    isFetched: Boolean,
+    summary: GeminiResponse
+) {
+    var hasAnimated by remember { mutableStateOf(false) }
+    val startFadeIn = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFetched) {
+        if (isFetched && !hasAnimated) {
+            startFadeIn.value = false
+            delay(200) // optional delay before fade-in
+            startFadeIn.value = true
+            hasAnimated = true
+        }
+    }
+
+    LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
+        item { Spacer(Modifier.height(12.dp)) }
+
+        item {
+            val alpha by animateFloatAsState(
+                targetValue = if (startFadeIn.value) 1f else 0f,
+                animationSpec = tween(durationMillis = 1500, delayMillis = 0)
+            )
+            Text(
+                text = when (summary.responseType) {
+                    GeminiSummaryType.CONCISE -> "Concise"
+                    GeminiSummaryType.DETAILED -> "Detailed"
+                    else -> ""
+                },
+                style = MaterialTheme.typography.bodySmallEmphasized,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.graphicsLayer { this.alpha = alpha }
+            )
+        }
+
+        item { Spacer(Modifier.height(4.dp)) }
+
+        itemsIndexed(summary.Responses) { index, response ->
+            val alpha by animateFloatAsState(
+                targetValue = if (startFadeIn.value) 1f else 0f,
+                animationSpec = tween(
+                    durationMillis = 1500,
+                    delayMillis = 100 * (index + 1) // staggered fade-in
+                )
+            )
+            Text(
+                text = "- $response",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .padding(vertical = 4.dp, horizontal = 4.dp)
+                    .graphicsLayer { this.alpha = alpha }
+            )
+        }
+    }
 }
