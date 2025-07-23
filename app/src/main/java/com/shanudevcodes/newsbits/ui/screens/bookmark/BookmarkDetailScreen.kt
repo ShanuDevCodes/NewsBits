@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -58,7 +59,9 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -115,6 +118,8 @@ fun BookmarkDetailScreen(
             initialValue = SheetValue.PartiallyExpanded
         )
     )
+    val lazyListState = rememberLazyListState()
+    val isAtTop = remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0 } }
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -134,7 +139,7 @@ fun BookmarkDetailScreen(
             .fillMaxWidth()
     ) {
         BottomSheetScaffold(
-            sheetSwipeEnabled = false,
+            sheetSwipeEnabled = isAtTop.value,
             scaffoldState = scaffoldState,
             sheetMaxWidth = screenWidthDp,
             sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),
@@ -207,7 +212,7 @@ fun BookmarkDetailScreen(
                         )
                     }
 
-                    BottomSheetContentBookMarked(newsArticle)
+                    BottomSheetContentBookMarked(newsArticle, lazyListState)
                 }
             },
         ) {paddingValues ->
@@ -311,8 +316,7 @@ fun BookmarkDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContentBookMarked(news: SavedArticle?){
-    val listState = rememberLazyListState()
+fun BottomSheetContentBookMarked(news: SavedArticle?,listState: LazyListState){
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
         modifier = Modifier

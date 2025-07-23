@@ -59,6 +59,7 @@ import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.savedarticledb.SavedArticle
 import com.shanudevcodes.newsbits.data.shortenName
+import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,14 +149,29 @@ fun BookMarksScreen(
 //                                }
 //                            }
 //                        }
+//                        IconButton(
+//                            onClick = {},
+//                            modifier = Modifier.offset(x = 8.dp)
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.sparkler),
+//                                contentDescription = "AI",
+//                                modifier = Modifier.size(32.dp)
+//                            )
+//                        }
                         IconButton(
-                            onClick = {},
+                            onClick = {
+                                openUrlInBrowser(
+                                    context = context,
+                                    url = "https://github.com/shanudevcodes"
+                                )
+                            },
                             modifier = Modifier.offset(x = 8.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.sparkler),
-                                contentDescription = "AI",
-                                modifier = Modifier.size(32.dp)
+                                painter = painterResource(R.drawable.github),
+                                contentDescription = "Github",
+                                modifier = Modifier.size(35.dp)
                             )
                         }
                     }

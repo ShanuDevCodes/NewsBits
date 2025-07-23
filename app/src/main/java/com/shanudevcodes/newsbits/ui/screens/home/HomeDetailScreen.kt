@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -53,7 +54,9 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -119,6 +122,9 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
             initialValue = SheetValue.PartiallyExpanded
         )
     )
+    val lazyListState = rememberLazyListState()
+    val isAtTop = remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0 } }
+
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
     val peekHeight = screenHeightDp
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -135,7 +141,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
             .fillMaxWidth()
     ) {
         BottomSheetScaffold(
-            sheetSwipeEnabled = false,
+            sheetSwipeEnabled = isAtTop.value,
             scaffoldState = scaffoldState,
             sheetMaxWidth = screenWidthDp,
             sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),
@@ -220,7 +226,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
                         )
                     }
 
-                    BottomSheetContent(newsArticle)
+                    BottomSheetContent(newsArticle, listState = lazyListState)
                 }
             },
         ) {paddingValues ->
@@ -302,8 +308,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContent(news: NewsArticle?){
-    val listState = rememberLazyListState()
+fun BottomSheetContent(news: NewsArticle?, listState: LazyListState){
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
         modifier = Modifier

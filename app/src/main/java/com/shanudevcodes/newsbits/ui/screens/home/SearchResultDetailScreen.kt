@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BookmarkAdded
@@ -41,7 +42,9 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -77,6 +80,8 @@ fun SearchResultDetailScreen(
     viewModel.fetchNews(link)
     val context = LocalContext.current
     val scaffoldState = rememberBottomSheetScaffoldState()
+    val lazyListState = rememberLazyListState()
+    val isAtTop = remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0 } }
     val configuration = LocalConfiguration.current
     val screenHeightDp = configuration.screenHeightDp.dp // Screen height in dp
     val peekHeight = screenHeightDp
@@ -98,7 +103,7 @@ fun SearchResultDetailScreen(
             .fillMaxWidth()
     ) {
         BottomSheetScaffold(
-            sheetSwipeEnabled = false,
+            sheetSwipeEnabled = isAtTop.value,
             scaffoldState = scaffoldState,
             sheetMaxWidth = screenWidthDp,
             sheetPeekHeight = if (isPortrait) (peekHeight * 0.75f) else (peekHeight * 0.6f),
@@ -194,7 +199,7 @@ fun SearchResultDetailScreen(
                         )
                     }
                     if (isNewsFetched) {
-                        BottomSheetContent(news)
+                        BottomSheetContent(news, listState = lazyListState)
                     }else{
                         for(i in 1 .. 8){
                             Box(

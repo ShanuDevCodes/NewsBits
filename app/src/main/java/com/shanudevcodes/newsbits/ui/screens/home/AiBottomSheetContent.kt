@@ -52,9 +52,10 @@ import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun AiBottomSheetContent(){
+fun AiBottomSheetContent(
+    aiViewModel: AiViewModel = viewModel()
+){
     var isDropdownExpanded by remember { mutableStateOf(false) }
-    val aiViewModel: AiViewModel = viewModel()
     val newsViewModel: NewsViewModel = viewModel()
     val topNews by newsViewModel.topNews.collectAsState()
     val isFetched by aiViewModel.isResponseFetched.collectAsState()
