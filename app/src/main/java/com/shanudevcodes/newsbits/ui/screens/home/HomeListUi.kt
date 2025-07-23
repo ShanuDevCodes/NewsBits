@@ -78,6 +78,7 @@ import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
+import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -91,7 +92,8 @@ fun HomeListUi(
     searchNavController: NavHostController,
     navHostController: NavHostController,
     openNavDraw:() -> Unit,
-    newsViewModel: NewsViewModel
+    newsViewModel: NewsViewModel,
+    aiViewModel: AiViewModel
 ) {
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
@@ -660,7 +662,8 @@ fun HomeListUi(
                                 navController = navHostController,
 //                navigator = navigator,
                                 scrollBehavior = scrollBehavior,
-                                viewModel = newsViewModel
+                                viewModel = newsViewModel,
+                                aiViewModel = aiViewModel
                             )
                         }
                     }

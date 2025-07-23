@@ -87,6 +87,7 @@ import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.rememberNetworkStatus
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.data.shortenName
+import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -100,7 +101,8 @@ import kotlin.math.absoluteValue
 fun HomeScreen(
     navController: NavHostController,
     scrollBehavior: SearchBarScrollBehavior,
-    viewModel: NewsViewModel
+    viewModel: NewsViewModel,
+    aiViewModel: AiViewModel
 ) {
     val networkStatus = rememberNetworkStatus()
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
@@ -169,7 +171,7 @@ fun HomeScreen(
             sheetState = sheetState,
             dragHandle = null
         ) {
-            AiBottomSheetContent()
+            AiBottomSheetContent(aiViewModel)
         }
     }
     PullToRefreshBox(

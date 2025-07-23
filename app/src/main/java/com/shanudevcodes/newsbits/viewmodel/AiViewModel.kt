@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shanudevcodes.newsbits.BuildConfig
+import com.shanudevcodes.newsbits.data.GeminiSummaryType
 import com.shanudevcodes.newsbits.data.NewsArticle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -15,11 +16,17 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import kotlin.collections.forEachIndexed
+
+data class GeminiResponse(
+    val responseType: GeminiSummaryType? = null,
+    val Responses: List<String> = emptyList()
+)
 
 class AiViewModel: ViewModel(){
 
-    private val _geminiResponse = MutableStateFlow<List<String>>(emptyList())
+    private val _geminiResponse = MutableStateFlow(
+        GeminiResponse()
+    )
     val geminiResponse = _geminiResponse
 
     private val _isResponseFetched = MutableStateFlow<Boolean>(false)
@@ -27,9 +34,11 @@ class AiViewModel: ViewModel(){
 
     private var isFetching = false
 
-    private val summaryType =/*"detailed"*/ "concise"
+    fun resetIsResponseFetched(){
+        _isResponseFetched.value = false
+    }
 
-    fun getGeminiResponse(topNews: List<NewsArticle>){
+    fun getGeminiResponse(topNews: List<NewsArticle>, responseType: GeminiSummaryType = GeminiSummaryType.CONCISE){
         if (isFetching) return
         isFetching = true
         viewModelScope.launch {
@@ -52,9 +61,9 @@ class AiViewModel: ViewModel(){
                         val promptBuilder = StringBuilder()
                         promptBuilder.appendLine("You are a reliable summarization assistant.")
                         promptBuilder.appendLine()
-                        when (summaryType) {
-                            "concise" -> promptBuilder.appendLine("Provide a **concise summary** of each article as short as possible without missing key details.")
-                            "detailed" -> promptBuilder.appendLine("Provide a **detailed summary** for each article — include key facts as well as relevant context and elaborate it in detail.")
+                        when (responseType) {
+                            GeminiSummaryType.CONCISE -> promptBuilder.appendLine("Provide a **small concise summary** of each article as short as possible without missing key details.")
+                            GeminiSummaryType.DETAILED -> promptBuilder.appendLine("Provide a **detailed summary** for each article — include key facts as well as relevant context explain and elaborate as much as possible in detail.")
                         }
                         promptBuilder.appendLine()
                         promptBuilder.appendLine("Summarize each of the following news articles individually in one bullet per article. Ensure:")
@@ -109,8 +118,16 @@ class AiViewModel: ViewModel(){
                                         trimmed.removePrefix("*").trim()
                                     } else null
                                 }
-
-                            _geminiResponse.value = bulletPoints
+                            when(responseType){
+                                GeminiSummaryType.CONCISE -> _geminiResponse.value = GeminiResponse(
+                                    responseType = GeminiSummaryType.CONCISE,
+                                    Responses = bulletPoints
+                                )
+                                GeminiSummaryType.DETAILED -> _geminiResponse.value = GeminiResponse(
+                                    responseType = GeminiSummaryType.DETAILED,
+                                    Responses = bulletPoints
+                                )
+                            }
                             _isResponseFetched.value = true
                         } else {
                             Log.e(

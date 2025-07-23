@@ -29,6 +29,7 @@ import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.ui.screens.AppMainUI
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
+import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -62,6 +63,7 @@ class MainActivity : ComponentActivity() {
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             newsList.refresh()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
+            val aiViewModel: AiViewModel = viewModel()
             LaunchedEffect(Unit) {
                 val isFirstLaunch = dataStore.firstLaunch.first()
                 delay(300)
@@ -120,6 +122,7 @@ class MainActivity : ComponentActivity() {
                     isPortrait = isPortrait,
                     rootNavController = rootNavController,
                     rootCurrentDestination = rootCurrentDestination,
+                    aiViewModel = aiViewModel
                 )
             }
         }

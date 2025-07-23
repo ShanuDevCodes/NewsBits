@@ -37,32 +37,43 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.DataStoreManager
+import com.shanudevcodes.newsbits.data.GeminiSummaryType
 import com.shanudevcodes.newsbits.ui.animation.LottieLoader
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AiBottomSheetContent(
     aiViewModel: AiViewModel = viewModel()
 ){
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val dataStore = DataStoreManager(context)
     var isDropdownExpanded by remember { mutableStateOf(false) }
     val newsViewModel: NewsViewModel = viewModel()
     val topNews by newsViewModel.topNews.collectAsState()
     val isFetched by aiViewModel.isResponseFetched.collectAsState()
     newsViewModel.loadTopNews()
+    val summaryType by dataStore.geminiSummaryTypeFlow.collectAsState(initial = GeminiSummaryType.CONCISE)
     LaunchedEffect(topNews) {
         if (topNews.isNotEmpty() && !isFetched) {
-            aiViewModel.getGeminiResponse(topNews)
+            val geminiSummaryType = dataStore.geminiSummaryTypeFlow.first()
+            aiViewModel.getGeminiResponse(topNews,geminiSummaryType)
         }
     }
     val summary by aiViewModel.geminiResponse.collectAsState()
@@ -127,8 +138,15 @@ fun AiBottomSheetContent(
                                 verticalAlignment = Alignment.CenterVertically,
                             ){
                                 RadioButton(
-                                    selected = true,
-                                    onClick = {}
+                                    selected = summaryType == GeminiSummaryType.CONCISE,
+                                    onClick = {
+                                        scope.launch {
+                                            dataStore.setGeminiType(GeminiSummaryType.CONCISE)
+                                            aiViewModel.resetIsResponseFetched()
+                                            val geminiSummaryType = dataStore.geminiSummaryTypeFlow.first()
+                                            aiViewModel.getGeminiResponse(topNews,geminiSummaryType)
+                                        }
+                                    }
                                 )
                                 Text(
                                     text = "Concise",
@@ -138,7 +156,14 @@ fun AiBottomSheetContent(
                                 )
                             }
                         },
-                        onClick = {  }
+                        onClick = {
+                            scope.launch {
+                                dataStore.setGeminiType(GeminiSummaryType.CONCISE)
+                                aiViewModel.resetIsResponseFetched()
+                                val geminiSummaryType = dataStore.geminiSummaryTypeFlow.first()
+                                aiViewModel.getGeminiResponse(topNews, geminiSummaryType)
+                            }
+                        }
                     )
                     DropdownMenuItem(
                         text = {
@@ -146,8 +171,15 @@ fun AiBottomSheetContent(
                                 verticalAlignment = Alignment.CenterVertically,
                             ){
                                 RadioButton(
-                                    selected = false,
-                                    onClick = {}
+                                    selected = summaryType == GeminiSummaryType.DETAILED,
+                                    onClick = {
+                                        scope.launch {
+                                            dataStore.setGeminiType(GeminiSummaryType.DETAILED)
+                                            aiViewModel.resetIsResponseFetched()
+                                            val geminiSummaryType = dataStore.geminiSummaryTypeFlow.first()
+                                            aiViewModel.getGeminiResponse(topNews,geminiSummaryType)
+                                        }
+                                    }
                                 )
                                 Text(
                                     text = "Detailed",
@@ -157,7 +189,14 @@ fun AiBottomSheetContent(
                                 )
                             }
                         },
-                        onClick = {  }
+                        onClick = {
+                            scope.launch {
+                                dataStore.setGeminiType(GeminiSummaryType.DETAILED)
+                                aiViewModel.resetIsResponseFetched()
+                                val geminiSummaryType = dataStore.geminiSummaryTypeFlow.first()
+                                aiViewModel.getGeminiResponse(topNews, geminiSummaryType)
+                            }
+                        }
                     )
                 }
             }
@@ -187,7 +226,11 @@ fun AiBottomSheetContent(
                             }
                             item {
                                 Text(
-                                    text = /*"Detailed"*/ "Concise",
+                                    text = when(summary.responseType){
+                                        GeminiSummaryType.CONCISE -> "Concise"
+                                        GeminiSummaryType.DETAILED -> "Detailed"
+                                        else -> ""
+                                    },
                                     style = MaterialTheme.typography.bodySmallEmphasized,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold
@@ -196,7 +239,7 @@ fun AiBottomSheetContent(
                             item {
                                 Spacer(Modifier.height(8.dp))
                             }
-                            items(summary) {
+                            items(summary.Responses) {
                                 Text(
                                     text = "- " + it,
                                     style = MaterialTheme.typography.bodyMedium,

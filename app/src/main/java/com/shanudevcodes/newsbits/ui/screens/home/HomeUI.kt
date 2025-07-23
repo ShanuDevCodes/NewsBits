@@ -32,13 +32,14 @@ import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
+import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsViewModel){
+fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsViewModel, aiViewModel: AiViewModel){
     val searchNavController = rememberNavController()
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -79,7 +80,8 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                                 drawerState.open()
                             }
                         },
-                        newsViewModel = newsViewModel
+                        newsViewModel = newsViewModel,
+                        aiViewModel = aiViewModel
                     )
                 }
             }
@@ -147,7 +149,8 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
 //                                                    wideNavigationRailState.expand()
                                     }
                                 },
-                                newsViewModel = newsViewModel
+                                newsViewModel = newsViewModel,
+                                aiViewModel = aiViewModel
                             )
                         } else {
                             EmptyScreen()

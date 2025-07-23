@@ -70,6 +70,7 @@ import com.shanudevcodes.newsbits.data.items
 import com.shanudevcodes.newsbits.ui.screens.bookmark.BookmarkUI
 import com.shanudevcodes.newsbits.ui.screens.home.HomeUI
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
+import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,7 +84,8 @@ fun AppMainUI(
     themeOption: ThemeOptions,
     dynamicColor: Boolean,
     newsViewModel: NewsViewModel,
-    isPortrait: Boolean
+    isPortrait: Boolean,
+    aiViewModel: AiViewModel
 ){
     val saveableStateHolder = rememberSaveableStateHolder()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -361,7 +363,8 @@ fun AppMainUI(
                             HomeUI(
                                 isPortrait = isPortrait,
                                 drawerState = drawerState,
-                                newsViewModel = newsViewModel
+                                newsViewModel = newsViewModel,
+                                aiViewModel = aiViewModel
                             )
                         }
                     }
