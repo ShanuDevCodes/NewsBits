@@ -76,7 +76,6 @@ fun BookMarksScreen(
     roomViewModel.onEvent(RoomEvents.GetArticles)
     val viewModelState = roomViewModel.state.collectAsState()
     val newsList = viewModelState.value.savedArticles
-    val notificationCount = 11
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0),
