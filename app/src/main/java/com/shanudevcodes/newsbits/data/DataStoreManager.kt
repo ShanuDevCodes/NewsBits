@@ -39,7 +39,7 @@ class DataStoreManager(private val context: Context) {
     }
 
     val dynamicColorFlow: Flow<Boolean> = context.dataStore.data.map{ preferences->
-        preferences[DYNAMIC_COLOR_KEY] ?: false
+        preferences[DYNAMIC_COLOR_KEY] ?: true
     }
 
     suspend fun setDynamicColor(dynamicColor: Boolean){
