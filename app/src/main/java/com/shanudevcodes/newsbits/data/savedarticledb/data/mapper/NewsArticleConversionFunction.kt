@@ -1,7 +1,8 @@
-package com.shanudevcodes.newsbits.data.savedarticledb
+package com.shanudevcodes.newsbits.data.savedarticledb.data.mapper
 
 import com.google.firebase.Timestamp
 import com.shanudevcodes.newsbits.data.NewsArticle
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
 import java.text.SimpleDateFormat
 import java.util.*
 

@@ -1,4 +1,4 @@
-package com.shanudevcodes.newsbits.data.savedarticledb
+package com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase
 
 import android.content.Context
 import androidx.room.Database
@@ -6,6 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.data.dao.RoomDao
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.History
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
 
 @Database(
     entities = [SavedArticle::class, History::class],

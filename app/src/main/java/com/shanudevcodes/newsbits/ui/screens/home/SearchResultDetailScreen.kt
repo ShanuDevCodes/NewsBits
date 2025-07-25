@@ -60,10 +60,10 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
-import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
+import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.viewmodel.SearchResultDetailScreenViewModel
 import java.util.TimeZone

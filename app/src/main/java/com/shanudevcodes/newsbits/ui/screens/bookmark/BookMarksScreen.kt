@@ -53,11 +53,12 @@ import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.BookmarkDestination
 import com.shanudevcodes.newsbits.data.formatDateString
-import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
-import com.shanudevcodes.newsbits.data.savedarticledb.SavedArticle
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
+import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
+import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 
@@ -219,7 +220,7 @@ fun BookMarksScreen(
                                     }
                                 )
                         ) {
-                            BookMarkedNewsListItem(news = news)
+                            BookMarkedNewsListItem(news = news.toEntity())
                         }
                     }
                 }

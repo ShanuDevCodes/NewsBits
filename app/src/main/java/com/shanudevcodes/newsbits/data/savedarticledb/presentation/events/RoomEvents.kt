@@ -1,6 +1,8 @@
-package com.shanudevcodes.newsbits.data.savedarticledb
+package com.shanudevcodes.newsbits.data.savedarticledb.presentation.events
 
 import com.shanudevcodes.newsbits.data.NewsArticle
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.History
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
 
 sealed interface RoomEvents {
     data class SaveArticle(val article: NewsArticle?): RoomEvents

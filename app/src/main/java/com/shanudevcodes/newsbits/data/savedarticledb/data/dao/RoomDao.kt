@@ -1,9 +1,11 @@
-package com.shanudevcodes.newsbits.data.savedarticledb
+package com.shanudevcodes.newsbits.data.savedarticledb.data.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.History
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
 import kotlinx.coroutines.flow.Flow
 
 @Dao

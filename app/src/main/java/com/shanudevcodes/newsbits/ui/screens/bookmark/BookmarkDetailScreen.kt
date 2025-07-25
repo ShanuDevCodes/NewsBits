@@ -83,11 +83,12 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
-import com.shanudevcodes.newsbits.data.savedarticledb.AppDatabase
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomEvents
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.RoomViewModelFactory
-import com.shanudevcodes.newsbits.data.savedarticledb.SavedArticle
+import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
+import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
+import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -212,7 +213,7 @@ fun BookmarkDetailScreen(
                         )
                     }
 
-                    BottomSheetContentBookMarked(newsArticle, lazyListState)
+                    BottomSheetContentBookMarked(newsArticle?.toEntity(), lazyListState)
                 }
             },
         ) {paddingValues ->
@@ -316,7 +317,7 @@ fun BookmarkDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContentBookMarked(news: SavedArticle?,listState: LazyListState){
+fun BottomSheetContentBookMarked(news: SavedArticle?, listState: LazyListState){
     val scrollInterop = rememberNestedScrollInteropConnection()
     Box(
         modifier = Modifier
