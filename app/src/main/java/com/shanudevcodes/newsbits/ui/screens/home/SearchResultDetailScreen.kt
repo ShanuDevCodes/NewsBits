@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.util.Log
@@ -68,6 +69,7 @@ import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.viewmodel.SearchResultDetailScreenViewModel
 import java.util.TimeZone
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchResultDetailScreen(

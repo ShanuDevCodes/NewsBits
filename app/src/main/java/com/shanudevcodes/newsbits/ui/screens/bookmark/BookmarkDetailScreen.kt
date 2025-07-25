@@ -1,11 +1,9 @@
 package com.shanudevcodes.newsbits.ui.screens.bookmark
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +75,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter

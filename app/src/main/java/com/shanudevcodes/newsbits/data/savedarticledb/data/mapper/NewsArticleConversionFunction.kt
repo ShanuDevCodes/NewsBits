@@ -9,14 +9,14 @@ import java.util.*
 fun NewsArticle.toSavedArticle(): SavedArticle {
     return SavedArticle(
         article_id = article_id,
-        category = category?.joinToString(", ") ?: "",
+        category = category.joinToString(", "),
         content = content,
-        country = country?.joinToString(", ") ?: "",
+        country = country.joinToString(", "),
         createdAt = createdAt.toFormattedLocalString(),
-        creator = creator?.joinToString(", ") ?: "",
+        creator = creator.joinToString(", "),
         description = description,
         image_url = image_url,
-        keywords = keywords?.joinToString(", ") ?: "",
+        keywords = keywords.joinToString(", "),
         link = link,
         pubDate = pubDate,
         source_icon = source_icon,
