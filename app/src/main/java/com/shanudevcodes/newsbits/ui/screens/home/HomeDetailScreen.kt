@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -373,16 +374,19 @@ fun BottomSheetContent(news: NewsArticle?, listState: LazyListState){
     }
 }
 fun openUrlInBrowser(context: Context, url: String) {
-    var finalUrl = url
     // Ensure the URL starts with http:// or https://
-    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
-        finalUrl = "http://$finalUrl"
+    val finalUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        "http://$url"
+    } else {
+        url
     }
-    val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
-    // Check if there is an app to handle the intent
+
+    val browserIntent = Intent(Intent.ACTION_VIEW, finalUrl.toUri())
+
     try {
         context.startActivity(browserIntent)
-    } catch (e: Exception) {
+    } catch (e: ActivityNotFoundException) {
+        e.printStackTrace()
         Toast.makeText(context, "No browser found to open the link.", Toast.LENGTH_SHORT).show()
     }
 }

@@ -201,7 +201,7 @@ fun SearchResultDetailScreen(
                     if (isNewsFetched) {
                         BottomSheetContent(news, listState = lazyListState)
                     }else{
-                        for(i in 1 .. 8){
+                        repeat(8){
                             Box(
                                 modifier = Modifier
                                     .padding(top = 8.dp, start = 8.dp, end = 8.dp)

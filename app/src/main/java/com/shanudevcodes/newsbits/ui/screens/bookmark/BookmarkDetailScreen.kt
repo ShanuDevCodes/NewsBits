@@ -382,20 +382,6 @@ fun BottomSheetContentBookMarked(news: SavedArticle?, listState: LazyListState){
         }
     }
 }
-fun openUrlInBrowser(context: Context, url: String) {
-    var finalUrl = url
-    // Ensure the URL starts with http:// or https://
-    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
-        finalUrl = "http://$finalUrl"
-    }
-    val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
-    // Check if there is an app to handle the intent
-    try {
-        context.startActivity(browserIntent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "No browser found to open the link.", Toast.LENGTH_SHORT).show()
-    }
-}
 
 @Composable
 fun DeleteWarningDialogBox(

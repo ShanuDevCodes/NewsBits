@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -85,6 +86,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalMaterial3AdaptiveApi::class, FlowPreview::class
 )
@@ -250,7 +252,6 @@ fun HomeListUi(
         contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            val notificationCount = 11 // Replace with actual notification count
             Column {
                 TopAppBar(
                     navigationIcon = {
