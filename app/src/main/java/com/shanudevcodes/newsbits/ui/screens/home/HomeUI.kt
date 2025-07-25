@@ -44,10 +44,12 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val scope = rememberCoroutineScope()
-    if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false){
-        BackHandler {
-            navController.popBackStack()
-        }
+    val isHome = currentBackStackEntry?.destination
+        ?.hierarchy
+        ?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true
+
+    BackHandler(enabled = !isHome) {
+        navController.popBackStack()
     }
     Box(
         modifier = Modifier
