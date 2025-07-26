@@ -534,7 +534,7 @@ fun HomeScreen(
                         }
                     }
                     true -> {
-                        for (i in 1 .. 10){
+                        repeat(10){
                             DummySearchResultItem()
                         }
                     }

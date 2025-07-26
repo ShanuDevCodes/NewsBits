@@ -15,6 +15,7 @@ import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.SearchSuggestion
 import com.shanudevcodes.newsbits.data.fetchTopNews
 import com.shanudevcodes.newsbits.data.getNewsPagingFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class NewsViewModel : ViewModel() {
 
     private val _searchResults = MutableStateFlow<List<NewsArticleSearch>>(emptyList())
