@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,13 +18,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,6 +36,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +53,9 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.ConnectivityObserver
 import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.data.NetworkConnectivityObserver
 import com.shanudevcodes.newsbits.data.NewsArticleSearch
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.shimmerEffect
@@ -53,8 +63,10 @@ import com.shanudevcodes.newsbits.data.shortenName
 import com.shanudevcodes.newsbits.isOnline
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.isActive
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchResultScreen(
     navController: NavHostController,
@@ -64,9 +76,40 @@ fun SearchResultScreen(
     val context = LocalContext.current
     val searchResults by newsViewModel.searchResults.collectAsState()
     val isSearchResultsLoaded by newsViewModel.isSearchResultsLoaded.collectAsState()
+    val isLoadingMore by newsViewModel.isLoadingMore.collectAsState()
+    var pageNo by rememberSaveable { mutableIntStateOf(0) }
+    val listState = rememberLazyListState()
+    val networkStatus by NetworkConnectivityObserver(context).observe().collectAsState(
+        initial = ConnectivityObserver.Status.Available
+    )
+    val isPaginationFailed by newsViewModel.paginationFailed.collectAsState()
 
-    LaunchedEffect(Unit) {
-        while (true) {
+    LaunchedEffect(networkStatus) {
+        if (networkStatus == ConnectivityObserver.Status.Available && isPaginationFailed) {
+            newsViewModel.loadMoreNewsFromAlgolia(query, pageNo)
+        }
+    }
+
+    if (searchResults.isNotEmpty()) {
+        LaunchedEffect(listState, searchResults.size) {
+            snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+                .distinctUntilChanged()
+                .collect { lastVisibleIndex ->
+                    Log.d("ScrollDebug", "Last visible index: $lastVisibleIndex")
+                    Log.d("ScrollDebug", "Search results last index: ${searchResults.lastIndex}")
+                    Log.d("ScrollDebug", "Is loading more: $isLoadingMore")
+
+                    if ((lastVisibleIndex != null) && (lastVisibleIndex >= searchResults.lastIndex - 2)) {
+                        Log.d("ScrollDebug", ">>> Reached end of list. Triggering loadMore.")
+                        pageNo += 1
+                        newsViewModel.loadMoreNewsFromAlgolia(query, pageNo)
+                    }
+                }
+        }
+    }
+
+    LaunchedEffect(query) {
+        while (isActive) {
             if (isOnline(context)) {
                 newsViewModel.searchNewsInAlgolia(query = query)
                 break
@@ -90,7 +133,8 @@ fun SearchResultScreen(
                 val density = LocalResources.current.displayMetrics.density
                 val screenHeightDp = screenHeightPx / density
                 val placeholderCount = (screenHeightDp / itemHeightDp.value).toInt() // limit max to avoid overdraw
-                LazyColumn {
+                LazyColumn(
+                ) {
                     items(placeholderCount) {
                         DummySearchResultItem()
                     }
@@ -103,7 +147,9 @@ fun SearchResultScreen(
                 Text("No results found", modifier = Modifier.padding(16.dp))
             } else {
                 // Show actual results
-                LazyColumn {
+                LazyColumn(
+                    state = listState
+                ) {
                     itemsIndexed(searchResults) { index, news ->
                         Card(
                             shape = RoundedCornerShape(24.dp),
@@ -127,6 +173,18 @@ fun SearchResultScreen(
                                     }
                             ) {
                                 NewsSearchListItem(news = news)
+                            }
+                        }
+                    }
+                    if (isLoadingMore) {
+                        item {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                CircularWavyProgressIndicator()
+                                Spacer(modifier = Modifier.height(16.dp+WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()))
                             }
                         }
                     }

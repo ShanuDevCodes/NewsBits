@@ -35,6 +35,12 @@ class NewsViewModel : ViewModel() {
     private val _isSearchResultsLoaded = MutableStateFlow(false)
     val isSearchResultsLoaded: StateFlow<Boolean> = _isSearchResultsLoaded
 
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
+
+    private var _paginationFailed = MutableStateFlow(false)
+    val paginationFailed: StateFlow<Boolean> = _paginationFailed
+
     fun resetSearchResults(){
         _searchResults.value = emptyList()
     }
@@ -161,6 +167,74 @@ class NewsViewModel : ViewModel() {
                 Log.e("AlgoliaSearch", "Search failed: ${e.message}", e)
                 _searchResults.value = emptyList()
             }
+        }
+    }
+
+    fun loadMoreNewsFromAlgolia(query: String, page: Int){
+        viewModelScope.launch {
+
+            _isLoadingMore.value = true
+
+            val appID = BuildConfig.ALGOLIA_APP_ID
+            val apiKey = BuildConfig.ALGOLIA_SEARCH_KEY
+            val indexName = BuildConfig.ALGOLIA_INDEX
+
+            val client = SearchClient(appID, apiKey)
+
+            try {
+                val response = client.search(
+                    SearchMethodParams(
+                        requests = listOf(
+                            SearchForHits(
+                                indexName = indexName,
+                                query = query,
+                                page = page
+                            )
+                        )
+                    )
+                )
+
+                Log.d("AlgoliaSearchResponse", "Search result: ${response.results.filterIsInstance<SearchResult.SearchResponseValue>()}")
+
+                val json = Json { ignoreUnknownKeys = true }
+
+
+                val articles = response.results.mapNotNull { result ->
+                    when (result) {
+                        is SearchResult.SearchResponseValue -> {
+                            // Old behavior: wrapped
+                            result.value.hits.mapNotNull { hit ->
+                                hit.additionalProperties?.let {
+                                    val jsonObject = JsonObject(it)
+                                    json.decodeFromJsonElement<NewsArticleSearch>(jsonObject)
+                                }
+                            }
+                        }
+
+                        is SearchResponse -> {
+                            // Newer SDK behavior: direct SearchResponse
+                            result.hits.mapNotNull { hit ->
+                                hit.additionalProperties?.let {
+                                    val jsonObject = JsonObject(it)
+                                    json.decodeFromJsonElement<NewsArticleSearch>(jsonObject)
+                                }
+                            }
+                        }
+
+                        else -> null
+                    }
+                }.flatten()
+
+                _searchResults.value = _searchResults.value + articles
+                Log.d("AlgoliaSearchResponseArticle", "Parsed articles: $articles")
+                _isLoadingMore.value = false
+                _paginationFailed.value = false
+
+            } catch (e: Exception) {
+                _paginationFailed.value = true
+                Log.e("AlgoliaSearch", "Search failed: ${e.message}", e)
+            }
+
         }
     }
 
