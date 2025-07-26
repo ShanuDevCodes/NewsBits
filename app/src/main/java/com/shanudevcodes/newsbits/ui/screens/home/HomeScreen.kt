@@ -308,9 +308,8 @@ fun HomeScreen(
                                                 lastViewedIndex.value = index
                                                 lastViewedType.value = News.NEWS_TOP.name
                                                 navController.navigate(
-                                                    HomeDestination.NEWSDETAILSCREEN(
-                                                        index,
-                                                        News.NEWS_TOP.name
+                                                    HomeDestination.SEARCHRESULTDETAILSCREEN(
+                                                        currentItem.link,
                                                     )
                                                 ) {
                                                     popUpTo(navController.graph.findStartDestination().id)
@@ -447,9 +446,8 @@ fun HomeScreen(
                                         lastViewedIndex.value = index
                                         lastViewedType.value = News.NEWS_ALL.name
                                         navController.navigate(
-                                            HomeDestination.NEWSDETAILSCREEN(
-                                                index,
-                                                News.NEWS_ALL.name
+                                            HomeDestination.SEARCHRESULTDETAILSCREEN(
+                                                news.link,
                                             )
                                         ) {
                                             popUpTo(navController.graph.findStartDestination().id)

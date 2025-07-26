@@ -29,7 +29,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
-import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
@@ -158,22 +157,20 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                             EmptyScreen()
                         }
                     }
-                    composable<HomeDestination.NEWSDETAILSCREEN> {
-                        HomeDetailScreen(
-                            it.arguments?.getInt("newsId") ?: 1,
-                            navController,
-                            newsViewModel,
-                            it.arguments?.getString("news")
-                                ?: News.NEWS_ALL.name
-                        )
-                    }
+//                    composable<HomeDestination.NEWSDETAILSCREEN> {
+//                        HomeDetailScreen(
+//                            it.arguments?.getInt("newsId") ?: 1,
+//                            navController,
+//                            newsViewModel,
+//                            it.arguments?.getString("news")
+//                                ?: News.NEWS_ALL.name
+//                        )
+//                    }
                     composable<HomeDestination.SEARCHRESULTDETAILSCREEN> {
-
                         SearchResultDetailScreen(
                             navController = navController,
                             link = it.arguments?.getString("link") ?: ""
                         )
-
                     }
                 }
             }
