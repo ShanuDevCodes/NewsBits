@@ -187,9 +187,9 @@ fun HomeScreen(
                     inclusive = false
                 )
                 viewModel.loadTopNews()
-                state.animateScrollToItem(0)
                 newsList.refresh()
                 delay(1000)
+                state.animateScrollToItem(0)
                 isRefreshing = false
             }
         },

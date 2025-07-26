@@ -41,6 +41,10 @@ class NewsViewModel : ViewModel() {
     private var _paginationFailed = MutableStateFlow(false)
     val paginationFailed: StateFlow<Boolean> = _paginationFailed
 
+    fun resetSearchResultsLoaded(){
+        _isSearchResultsLoaded.value = false
+    }
+
     fun resetSearchResults(){
         _searchResults.value = emptyList()
     }

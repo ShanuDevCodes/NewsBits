@@ -2,6 +2,7 @@ package com.shanudevcodes.newsbits.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -83,6 +84,7 @@ import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.Roo
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
@@ -183,7 +185,6 @@ fun HomeListUi(
                                         navHostController.popBackStack()
                                     }
                                     textFieldState.clearText()
-                                    newsViewModel.resetSearchResults()
                                     searchBarState.animateToCollapsed()
                                 }
                             }
@@ -246,6 +247,15 @@ fun HomeListUi(
                 .collect { newText ->
                     roomViewModel.onEvent(RoomEvents.SetHistoryQuery(newText))
                 }
+        }
+    }
+    LaunchedEffect(searchBackStackEntry?.destination?.hierarchy) {
+        if (searchBackStackEntry?.destination?.hierarchy?.any { it.route == SearchDestination.HOMESEARCHSCREEN::class.qualifiedName } == true) {
+            Log.d( "BackStack",  "Home Search Screen")
+            textFieldState.clearText()
+            delay(600)
+            newsViewModel.resetSearchResults()
+            newsViewModel.resetSearchResultsLoaded()
         }
     }
     Scaffold(
