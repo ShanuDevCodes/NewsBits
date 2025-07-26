@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,6 +55,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,6 +68,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.shanudevcodes.newsbits.BuildConfig
+import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
@@ -111,11 +117,24 @@ fun AppMainUI(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Column {
-                            Text(
-                                "News Bits",
-                                color = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.padding(16.dp)
-                            )
+//                            Text(
+//                                "News Bits",
+//                                color = MaterialTheme.colorScheme.tertiary,
+//                                modifier = Modifier.padding(16.dp)
+//                            )
+                            Row(
+                                modifier = Modifier.height(60.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.newsbits_logo_new),
+                                    contentDescription = "News Bits Logo",
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .padding(16.dp)
+                                )
+                            }
                             HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                             Spacer(modifier = Modifier.height(8.dp))
                             items.forEachIndexed { index, item ->

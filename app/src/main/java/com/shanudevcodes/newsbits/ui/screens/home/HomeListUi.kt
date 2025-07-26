@@ -3,6 +3,7 @@ package com.shanudevcodes.newsbits.ui.screens.home
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,10 +62,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -278,17 +280,27 @@ fun HomeListUi(
                     title = {
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .height(40.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "NEWS BITS",
-                                color = MaterialTheme.colorScheme.tertiary,
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.weight(1f)
+//                            Text(
+//                                text = "NEWS BITS",
+//                                color = MaterialTheme.colorScheme.tertiary,
+//                                style = MaterialTheme.typography.titleMedium,
+//                                textAlign = TextAlign.Center,
+//                                modifier = Modifier.weight(1f)
+//                            )
+                            Spacer(Modifier.weight(1f))
+                            Image(
+                                painter = painterResource(R.drawable.newsbits_logo_new),
+                                contentDescription = "News Bits Logo",
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.size(100.dp)
                             )
+                            Spacer(Modifier.weight(1f))
 //                            Box(
 //                                contentAlignment = Alignment.BottomEnd,
 //                            ) {
