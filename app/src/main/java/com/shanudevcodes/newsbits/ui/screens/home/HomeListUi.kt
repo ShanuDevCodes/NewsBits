@@ -3,6 +3,8 @@ package com.shanudevcodes.newsbits.ui.screens.home
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,24 +34,29 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExpandedDockedSearchBar
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.IconToggleButtonColors
+import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopSearchBar
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.rememberSearchBarState
@@ -57,16 +64,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -77,12 +93,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
 import com.shanudevcodes.newsbits.data.SearchDestination
 import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
 import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
+import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
@@ -90,7 +108,40 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
-@SuppressLint("ConfigurationScreenWidthHeight")
+data class HomeUiDestination(
+    val name: String,
+    val selectedIcon: Int,
+    val unselectedIcon: Int,
+)
+
+val homeUiDestinations = listOf(
+    HomeUiDestination(
+        name = "For You",
+        selectedIcon = R.drawable.home_filled,
+        unselectedIcon = R.drawable.home
+    ),
+    HomeUiDestination(
+        name = "Explore",
+        selectedIcon = R.drawable.explore_filled,
+        unselectedIcon = R.drawable.explore
+    ),
+    HomeUiDestination(
+        name = "AI",
+        selectedIcon = R.drawable.sparkler,
+        unselectedIcon = R.drawable.sparkler
+    ),
+    HomeUiDestination(
+        name = "Bookmarks",
+        selectedIcon = R.drawable.bookmark_filled,
+        unselectedIcon = R.drawable.bookmark
+    ),
+    HomeUiDestination(
+        name = "Profile",
+        selectedIcon = R.drawable.account_filled,
+        unselectedIcon = R.drawable.account
+    )
+)
+@SuppressLint("ConfigurationScreenWidthHeight", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalMaterial3AdaptiveApi::class, FlowPreview::class
 )
@@ -113,6 +164,8 @@ fun HomeListUi(
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val bottomBatScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
     val textFieldState = rememberTextFieldState()
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
@@ -124,12 +177,15 @@ fun HomeListUi(
     val inputField =
         @Composable {
             SearchBarDefaults.InputField(
-                modifier = Modifier.width(
-                    when(isPortrait) {
+                colors = SearchBarDefaults.inputFieldColors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+                modifier = Modifier
+                    .width(width = when(isPortrait) {
                         false -> screenWidthDp * 0.337f
                         true -> screenWidthDp
-                    }
-                ),
+                    }),
                 searchBarState = searchBarState,
                 textFieldState = textFieldState,
                 onSearch = {
@@ -213,7 +269,7 @@ fun HomeListUi(
                                     SearchDestination.SEARCHRESULTSCREEN(
                                         query = textFieldState.text.toString()
                                     )
-                                ){
+                                ) {
                                     popUpTo(searchNavController.graph.findStartDestination().id)
                                     launchSingleTop = true
                                 }
@@ -236,10 +292,8 @@ fun HomeListUi(
                 .debounce(300)
                 .collect { newText ->
                     if (newText.isNotBlank()) {
-//                        newsViewModel.searchNewsInAlgolia(newText)
                         newsViewModel.searchSuggestionInAlgolia(newText)
                     } else {
-//                        newsViewModel.resetSearchResults()
                         newsViewModel.resetSearchSuggestions()
                     }
                 }
@@ -263,117 +317,128 @@ fun HomeListUi(
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            Column {
-                TopAppBar(
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { openNavDraw() },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                modifier = Modifier.size(48.dp),
+        bottomBar = {
+            FlexibleBottomAppBar(
+                scrollBehavior = bottomBatScrollBehavior,
+                horizontalArrangement = Arrangement.SpaceAround,
+                containerColor = Color.Transparent,
+                content = {
+                    val density = LocalDensity.current
+                    val iconPositions = remember { mutableStateListOf<Dp>() }
+                    var selected by remember { mutableIntStateOf(0) }
+                    val animatedOffsetX by animateDpAsState(
+                        targetValue = if (iconPositions.size > selected) 4.dp + iconPositions[selected] else 4.dp,
+                        animationSpec = tween(
+                            easing = ExpressiveEasing.EmphasizedDecelerate,
+                            durationMillis = 200
+                        ),
+                        label = "CircleSlide"
+                    )
+                    HorizontalFloatingToolbar(
+                        expanded = true,
+                        expandedShadowElevation = 2.dp
+                    ) {
+                        Box{
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .offset(x = animatedOffsetX, y = 4.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        shape = CircleShape
+                                    )
                             )
-                        }
-                    },
-                    title = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-//                            Text(
-//                                text = "NEWS BITS",
-//                                color = MaterialTheme.colorScheme.tertiary,
-//                                style = MaterialTheme.typography.titleMedium,
-//                                textAlign = TextAlign.Center,
-//                                modifier = Modifier.weight(1f)
-//                            )
-                            Spacer(Modifier.weight(1f))
-                            Image(
-                                painter = painterResource(R.drawable.newsbits_logo_new),
-                                contentDescription = "News Bits Logo",
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier.size(100.dp)
-                            )
-                            Spacer(Modifier.weight(1f))
-//                            Box(
-//                                contentAlignment = Alignment.BottomEnd,
-//                            ) {
-//                                IconButton(
-//                                    onClick = { },
-//                                    modifier = Modifier.offset(x = 6.dp)
-//                                ) {
-//                                    Icon(
-//                                        imageVector = Icons.Default.Notifications,
-//                                        contentDescription = "Notifications",
-//                                        modifier = Modifier.size(48.dp)
-//                                    )
-//                                }
-//                                if (notificationCount > 0) {
-//                                    val notificationCountString by remember {
-//                                        mutableStateOf(
-//                                            if (notificationCount > 9) {
-//                                                "9+"
-//                                            } else {
-//                                                "$notificationCount"
-//                                            }
-//                                        )
-//                                    }
-//                                    Box(
-//                                        modifier = Modifier
-//                                            .offset(x = 1.dp, y = -5.dp)
-//                                            .size(18.dp)
-//                                            .clip(CircleShape)
-//                                            .background(Color.White)
-//                                            .border(1.dp, Color.Black, CircleShape),
-//                                        contentAlignment = Alignment.TopCenter
-//                                    ) {
-//                                        Text(
-//                                            text = notificationCountString,
-//                                            color = MaterialTheme.colorScheme.tertiary,
-//                                            fontSize = 10.sp,
-//                                            fontWeight = FontWeight.Bold,
-//                                            modifier = Modifier.offset(y = -5.dp)
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                            IconButton(
-//                                onClick = {
-//                                    val intent = Intent(context, AiActivity::class.java)
-//                                    context.startActivity(intent)
-//                                },
-//                                modifier = Modifier.offset(x = 8.dp)
-//                            ) {
-//                                Icon(
-//                                    painter = painterResource(id = R.drawable.sparkler),
-//                                    contentDescription = "AI",
-//                                    modifier = Modifier.size(32.dp)
-//                                )
-//                            }
-                            IconButton(
-                                onClick = {
-                                    openUrlInBrowser(context = context, url = "https://github.com/shanudevcodes")
-                                },
-                                modifier = Modifier.offset(x = 8.dp)
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .background(
+                                        color = Color.Transparent,
+                                        shape = RoundedCornerShape(28.dp)
+                                    ),
                             ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.github),
-                                    contentDescription = "Github",
-                                    modifier = Modifier.size(35.dp)
-                                )
+                                homeUiDestinations.forEachIndexed { index, item ->
+                                    IconToggleButton(
+                                        checked = selected == index,
+                                        onCheckedChange = {
+                                            selected = index
+                                            scope.launch {
+                                                delay(100)
+                                                selected = index
+                                            }
+                                        },
+                                        shapes = IconToggleButtonShapes(
+                                            shape = CircleShape,
+                                            pressedShape = CircleShape,
+                                            checkedShape = CircleShape
+                                        ),
+                                        colors = IconToggleButtonColors(
+                                            containerColor = Color.Transparent,
+                                            contentColor = MaterialTheme.colorScheme.onSurface,
+                                            disabledContainerColor = Color.Gray,
+                                            disabledContentColor = Color.Gray,
+                                            checkedContainerColor = Color.Transparent,
+                                            checkedContentColor = MaterialTheme.colorScheme.onPrimary
+                                        ),
+                                        modifier = Modifier
+                                            .padding(horizontal = 4.dp)
+                                            .onGloballyPositioned { coordinates ->
+                                                val xPx = coordinates.positionInParent().x
+                                                val xDp = with(density) { xPx.toDp() }
+
+                                                if (iconPositions.size <= index) {
+                                                    iconPositions.add(xDp)
+                                                } else {
+                                                    iconPositions[index] = xDp
+                                                }
+                                            },
+                                        interactionSource = NoRippleInteractionSource
+                                    ) {
+                                        Icon(
+                                            painterResource(
+                                                if (selected == index) {
+                                                    item.selectedIcon
+                                                } else {
+                                                    item.unselectedIcon
+                                                }
+                                            ),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
-                    },
-                    modifier = Modifier.padding(0.dp)
-                )
+                    }
+                }
+            )
+        },
+        topBar = {
+            Column{
+                Row(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(
+                            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                            start = 16.dp,
+                            end = 16.dp
+                        )
+                        .fillMaxWidth()
+                        .height(40.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Image(
+                        painter = painterResource(R.drawable.newsbits_logo_new),
+                        contentDescription = "News Bits Logo",
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(100.dp)
+                    )
+                }
                 Box {
                     TopSearchBar(
+                        shadowElevation = 2.dp,
                         scrollBehavior = scrollBehavior,
                         state = searchBarState,
                         inputField = inputField,
@@ -384,6 +449,9 @@ fun HomeListUi(
                             tonalElevation = 48.dp,
                             state = searchBarState,
                             inputField = inputField,
+                            colors = SearchBarDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            )
                         ) {
                             LaunchedEffect(Unit) {
                                 roomViewModel.onEvent(RoomEvents.GetHistory)
@@ -410,7 +478,11 @@ fun HomeListUi(
                                                                 replace(0, length, it.query)
                                                             }
                                                             scope.launch {
-                                                                roomViewModel.onEvent(RoomEvents.SaveHistory(it.query))
+                                                                roomViewModel.onEvent(
+                                                                    RoomEvents.SaveHistory(
+                                                                        it.query
+                                                                    )
+                                                                )
                                                                 searchBarState.animateToCollapsed()
                                                                 if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
                                                                     navHostController.popBackStack()
@@ -420,7 +492,7 @@ fun HomeListUi(
                                                                 SearchDestination.SEARCHRESULTSCREEN(
                                                                     query = it.query
                                                                 )
-                                                            ){
+                                                            ) {
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
                                                             }
@@ -469,7 +541,7 @@ fun HomeListUi(
                                                                 SearchDestination.SEARCHRESULTSCREEN(
                                                                     query = it.query
                                                                 )
-                                                            ){
+                                                            ) {
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
                                                             }
@@ -524,6 +596,9 @@ fun HomeListUi(
                             tonalElevation = 48.dp,
                             state = searchBarState,
                             inputField = inputField,
+                            colors = SearchBarDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            ),
                             windowInsets = { WindowInsets.statusBars },
                         ) {
                             LaunchedEffect(Unit) {
@@ -554,7 +629,11 @@ fun HomeListUi(
                                                                 replace(0, length, it.query)
                                                             }
                                                             scope.launch {
-                                                                roomViewModel.onEvent(RoomEvents.SaveHistory(it.query))
+                                                                roomViewModel.onEvent(
+                                                                    RoomEvents.SaveHistory(
+                                                                        it.query
+                                                                    )
+                                                                )
                                                                 searchBarState.animateToCollapsed()
                                                                 if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == false) {
                                                                     navHostController.popBackStack()
@@ -564,7 +643,7 @@ fun HomeListUi(
                                                                 SearchDestination.SEARCHRESULTSCREEN(
                                                                     query = it.query
                                                                 )
-                                                            ){
+                                                            ) {
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
                                                             }
@@ -613,7 +692,7 @@ fun HomeListUi(
                                                                 SearchDestination.SEARCHRESULTSCREEN(
                                                                     query = it.query
                                                                 )
-                                                            ){
+                                                            ) {
                                                                 popUpTo(searchNavController.graph.findStartDestination().id)
                                                                 launchSingleTop = true
                                                             }
@@ -668,9 +747,7 @@ fun HomeListUi(
             }
         },
     ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding)
-        ) {
+        Box{
             NavHost(
                 startDestination = SearchDestination.HOMESEARCHSCREEN,
                 navController = searchNavController,
@@ -681,13 +758,12 @@ fun HomeListUi(
                             modifier = Modifier
                                 .padding(start = 12.dp, end = 12.dp)
                         ) {
-                            // Screen content goes here
                             HomeScreen(
                                 navController = navHostController,
-//                navigator = navigator,
                                 scrollBehavior = scrollBehavior,
                                 viewModel = newsViewModel,
-                                aiViewModel = aiViewModel
+                                aiViewModel = aiViewModel,
+                                bottomAppBarScrollBehavior = bottomBatScrollBehavior
                             )
                         }
                     }
