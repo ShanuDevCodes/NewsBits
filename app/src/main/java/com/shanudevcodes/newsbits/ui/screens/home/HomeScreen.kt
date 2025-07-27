@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,6 +39,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -80,6 +82,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.rememberAsyncImagePainter
+import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.ConnectivityObserver
 import com.shanudevcodes.newsbits.data.HomeDestination
@@ -144,13 +147,19 @@ fun HomeScreen(
     val isTopNewsLoaded by viewModel.isTopNewsLoaded.collectAsState()
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
-    val scrollOffset = scrollBehavior.scrollOffset // ranges from 0 to -max
-    val maxHeightOffset = scrollBehavior.scrollOffsetLimit // e.g., -180f
-    val dynamicTopPadding = with(LocalDensity.current) {
-        // Convert heightOffset from px to dp
-        val collapsedDp = -scrollOffset.toDp()
-        val maxDp = -maxHeightOffset.toDp()
-        max(0.dp, 160.dp - collapsedDp.coerceIn(0.dp, maxDp))
+    val density = LocalDensity.current
+    val scrollPx = scrollBehavior.scrollOffset
+    val maxPx = scrollBehavior.scrollOffsetLimit // e.g. -180f
+
+    val topPaddingDp = with(density) {
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 105.dp
+    }
+
+    val dynamicTopPadding = with(density) {
+        val collapsedDp = (-scrollPx).toDp()
+        val maxDp = (-maxPx).toDp()
+        val clampedDp = collapsedDp.coerceIn(0.dp, maxDp)
+        max(0.dp, topPaddingDp - clampedDp)
     }
 
     LaunchedEffect(newsList.loadState.refresh) {
@@ -210,7 +219,7 @@ fun HomeScreen(
                 isRefreshing = isRefreshing,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .offset(y = 180.dp)
+                    .offset(y = dynamicTopPadding)
                 ,
             )
         },
@@ -220,6 +229,9 @@ fun HomeScreen(
             contentPadding = PaddingValues(top = dynamicTopPadding),
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
         ) {
+            if(BuildConfig.DEBUG) {
+                item { HorizontalDivider() }
+            }
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
