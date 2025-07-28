@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -23,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -31,6 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,12 +47,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -71,7 +78,9 @@ import kotlinx.coroutines.isActive
 fun SearchResultScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
-    query: String
+    query: String,
+    scrollBehavior: SearchBarScrollBehavior,
+    bottomAppBarScrollBehavior: BottomAppBarScrollBehavior
 ){
     val context = LocalContext.current
     val searchResults by newsViewModel.searchResults.collectAsState()
@@ -83,6 +92,20 @@ fun SearchResultScreen(
         initial = ConnectivityObserver.Status.Available
     )
     val isPaginationFailed by newsViewModel.paginationFailed.collectAsState()
+    val density = LocalDensity.current
+    val scrollPx = scrollBehavior.scrollOffset
+    val maxPx = scrollBehavior.scrollOffsetLimit // e.g. -180f
+
+    val topPaddingDp = with(density) {
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 105.dp
+    }
+
+    val dynamicTopPadding = with(density) {
+        val collapsedDp = (-scrollPx).toDp()
+        val maxDp = (-maxPx).toDp()
+        val clampedDp = collapsedDp.coerceIn(0.dp, maxDp)
+        max(0.dp, topPaddingDp - clampedDp)
+    }
 
     LaunchedEffect(networkStatus) {
         if (networkStatus == ConnectivityObserver.Status.Available && isPaginationFailed) {
@@ -134,6 +157,8 @@ fun SearchResultScreen(
                 val screenHeightDp = screenHeightPx / density
                 val placeholderCount = (screenHeightDp / itemHeightDp.value).toInt() // limit max to avoid overdraw
                 LazyColumn(
+                    contentPadding = PaddingValues(top = dynamicTopPadding + 8.dp),
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
                 ) {
                     items(placeholderCount) {
                         DummySearchResultItem()
@@ -148,7 +173,9 @@ fun SearchResultScreen(
             } else {
                 // Show actual results
                 LazyColumn(
-                    state = listState
+                    state = listState,
+                    contentPadding = PaddingValues(top = dynamicTopPadding + 8.dp),
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
                 ) {
                     itemsIndexed(searchResults) { index, news ->
                         Card(

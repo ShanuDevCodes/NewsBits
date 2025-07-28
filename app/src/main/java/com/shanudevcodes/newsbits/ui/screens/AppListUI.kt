@@ -25,11 +25,11 @@ import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -108,12 +108,24 @@ fun AppListUI(
 ){
     val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
     val rootCurrentDestination = rootNavBackStackEntry?.destination
-    val scope = rememberCoroutineScope()
-    val bottomBatScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
+    val bottomBarScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
+    LaunchedEffect(rootCurrentDestination) {
+        if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.HOME::class.qualifiedName } == true){
+            viewModel.updatePosition(0)
+        }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.EXPLORE::class.qualifiedName } == true){
+            viewModel.updatePosition(1)
+        }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.AI::class.qualifiedName } == true){
+            viewModel.updatePosition(2)
+        }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.BOOKMARKS::class.qualifiedName } == true){
+            viewModel.updatePosition(3)
+        }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.PROFILE::class.qualifiedName } == true){
+            viewModel.updatePosition(4)
+        }
+    }
     Scaffold(
         bottomBar = {
             FlexibleBottomAppBar(
-                scrollBehavior = bottomBatScrollBehavior,
+                scrollBehavior = bottomBarScrollBehavior,
                 horizontalArrangement = Arrangement.SpaceAround,
                 containerColor = Color.Transparent,
                 content = {
@@ -157,7 +169,6 @@ fun AppListUI(
                                     IconToggleButton(
                                         checked = selected,
                                         onCheckedChange = {
-                                            viewModel.updatePosition(index)
                                             rootNavController.navigate(item.destination) {
                                                 popUpTo(rootNavController.graph.findStartDestination().id) {
                                                     saveState = true
@@ -222,7 +233,8 @@ fun AppListUI(
                     searchNavController = searchNavController,
                     navHostController = navController,
                     newsViewModel = newsViewModel,
-                    aiViewModel = aiViewModel
+                    aiViewModel = aiViewModel,
+                    bottomAppBarScrollBehavior = bottomBarScrollBehavior
                 )
             }
             composable<Destination.EXPLORE> {
@@ -233,8 +245,7 @@ fun AppListUI(
             }
             composable<Destination.BOOKMARKS> {
                 BookMarksScreen(
-                    openNavDraw = {
-                    },
+                    bottomAppBarScrollBehavior = bottomBarScrollBehavior,
                     navController = navController
                 )
             }

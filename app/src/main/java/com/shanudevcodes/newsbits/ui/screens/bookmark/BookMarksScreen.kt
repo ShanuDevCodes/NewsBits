@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -62,7 +64,7 @@ import com.shanudevcodes.newsbits.data.shortenName
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookMarksScreen(
-    openNavDraw: () -> Unit,
+    bottomAppBarScrollBehavior: BottomAppBarScrollBehavior,
     navController: NavHostController
 ) {
     val context = LocalContext.current
@@ -111,7 +113,9 @@ fun BookMarksScreen(
                     lastViewedId.value = null
                 }
             }
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier.nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
+            ) {
                 item{
                     Spacer(modifier = Modifier.height(8.dp))
                 }

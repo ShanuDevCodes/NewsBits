@@ -32,7 +32,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExpandedDockedSearchBar
@@ -48,7 +48,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopSearchBar
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.rememberSearchBarState
@@ -95,6 +94,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun HomeListUi(
+    bottomAppBarScrollBehavior: BottomAppBarScrollBehavior,
     searchNavController: NavHostController,
     navHostController: NavHostController,
     newsViewModel: NewsViewModel,
@@ -111,8 +111,6 @@ fun HomeListUi(
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
-    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val bottomBatScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
     val textFieldState = rememberTextFieldState()
     val searchBarState = rememberSearchBarState()
     val scope = rememberCoroutineScope()
@@ -613,13 +611,19 @@ fun HomeListUi(
                                 scrollBehavior = scrollBehavior,
                                 viewModel = newsViewModel,
                                 aiViewModel = aiViewModel,
-                                bottomAppBarScrollBehavior = bottomBatScrollBehavior
+                                bottomAppBarScrollBehavior = bottomAppBarScrollBehavior
                             )
                         }
                     }
                 }
                 composable<SearchDestination.SEARCHRESULTSCREEN> {
-                    SearchResultScreen(navController = navHostController, newsViewModel = newsViewModel, query = it.arguments?.getString("query") ?: "",)
+                    SearchResultScreen(
+                        navController = navHostController,
+                        newsViewModel = newsViewModel,
+                        query = it.arguments?.getString("query") ?: "",
+                        scrollBehavior = scrollBehavior,
+                        bottomAppBarScrollBehavior = bottomAppBarScrollBehavior
+                    )
                 }
             }
         }
