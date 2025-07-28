@@ -59,9 +59,7 @@ class MainActivity : ComponentActivity() {
             val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
             val rootCurrentDestination = rootNavBackStackEntry?.destination
             val newsViewModel: NewsViewModel = viewModel()
-            newsViewModel.loadTopNews()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
-            newsList.refresh()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
             val aiViewModel: AiViewModel = viewModel()
             LaunchedEffect(Unit) {

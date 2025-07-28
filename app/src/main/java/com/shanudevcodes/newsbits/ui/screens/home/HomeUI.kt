@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
@@ -23,22 +22,32 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
+import com.shanudevcodes.newsbits.ui.screens.AppListUI
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
+import com.shanudevcodes.newsbits.ui.screens.bookmark.BookmarkDetailScreen
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
+import com.shanudevcodes.newsbits.viewmodel.AppListUIViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsViewModel, aiViewModel: AiViewModel){
+fun HomeUI(
+    rootNavController: NavHostController,
+    isPortrait: Boolean,
+    newsViewModel: NewsViewModel,
+    aiViewModel: AiViewModel
+){
+    val appListUIViewModel: AppListUIViewModel = viewModel()
     val searchNavController = rememberNavController()
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -73,16 +82,13 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
             }
             if (animatedWeight.value > 0f) {
                 Box(modifier = Modifier.weight(animatedWeight.value)) {
-                    HomeListUi(
+                    AppListUI(
+                        rootNavController = rootNavController,
                         searchNavController = searchNavController,
-                        navHostController = navController,
-                        openNavDraw = {
-                            scope.launch {
-                                drawerState.open()
-                            }
-                        },
+                        navController = navController,
                         newsViewModel = newsViewModel,
-                        aiViewModel = aiViewModel
+                        aiViewModel = aiViewModel,
+                        viewModel = appListUIViewModel
                     )
                 }
             }
@@ -141,17 +147,13 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                 ) {
                     composable<HomeDestination.HOMESCREEN> {
                         if (isPortrait) {
-                            HomeListUi(
+                            AppListUI(
+                                rootNavController = rootNavController,
                                 searchNavController = searchNavController,
-                                navHostController = navController,
-                                openNavDraw = {
-                                    scope.launch {
-                                        drawerState.open()
-//                                                    wideNavigationRailState.expand()
-                                    }
-                                },
+                                navController = navController,
                                 newsViewModel = newsViewModel,
-                                aiViewModel = aiViewModel
+                                aiViewModel = aiViewModel,
+                                viewModel = appListUIViewModel
                             )
                         } else {
                             EmptyScreen()
@@ -170,6 +172,13 @@ fun HomeUI(isPortrait: Boolean, drawerState: DrawerState, newsViewModel: NewsVie
                         SearchResultDetailScreen(
                             navController = navController,
                             link = it.arguments?.getString("link") ?: ""
+                        )
+                    }
+                    composable<HomeDestination.BOOKMARKDETAILSCREEN>{
+                        val arg = it.arguments
+                        BookmarkDetailScreen(
+                            newsId = arg?.getString("newsId")?: "",
+                            navController = navController
                         )
                     }
                 }

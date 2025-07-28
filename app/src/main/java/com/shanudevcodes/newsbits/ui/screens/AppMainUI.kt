@@ -4,8 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,15 +63,11 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.DataStoreManager
-import com.shanudevcodes.newsbits.data.Destination
 import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
 import com.shanudevcodes.newsbits.data.items
-import com.shanudevcodes.newsbits.ui.screens.bookmark.BookmarkUI
 import com.shanudevcodes.newsbits.ui.screens.home.HomeUI
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
@@ -361,40 +355,46 @@ fun AppMainUI(
             Box(
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface)
             ) {
-                NavHost(
-                    navController = rootNavController,
-                    startDestination = Destination.HOME,
-                    enterTransition = {
-                        fadeIn()
-                    },
-                    exitTransition = {
-                        fadeOut()
-                    },
-                    popEnterTransition = {
-                        fadeIn()
-                    },
-                    popExitTransition = {
-                        fadeOut()
-                    }
-                ) {
-                    composable<Destination.HOME> {
-                        saveableStateHolder.SaveableStateProvider("home") {
-                            HomeUI(
-                                isPortrait = isPortrait,
-                                drawerState = drawerState,
-                                newsViewModel = newsViewModel,
-                                aiViewModel = aiViewModel
-                            )
-                        }
-                    }
-                    composable<Destination.BOOKMARKS> {
-                        saveableStateHolder.SaveableStateProvider("bookmark") {
-                            BookmarkUI(
-                                drawerState = drawerState,
-                            )
-                        }
-                    }
-                }
+//                NavHost(
+//                    navController = rootNavController,
+//                    startDestination = Destination.HOME,
+//                    enterTransition = {
+//                        fadeIn()
+//                    },
+//                    exitTransition = {
+//                        fadeOut()
+//                    },
+//                    popEnterTransition = {
+//                        fadeIn()
+//                    },
+//                    popExitTransition = {
+//                        fadeOut()
+//                    }
+//                ) {
+//                    composable<Destination.HOME> {
+//                        saveableStateHolder.SaveableStateProvider("home") {
+//                            HomeUI(
+//                                isPortrait = isPortrait,
+//                                drawerState = drawerState,
+//                                newsViewModel = newsViewModel,
+//                                aiViewModel = aiViewModel
+//                            )
+//                        }
+//                    }
+//                    composable<Destination.BOOKMARKS> {
+//                        saveableStateHolder.SaveableStateProvider("bookmark") {
+//                            BookmarkUI(
+//                                drawerState = drawerState,
+//                            )
+//                        }
+//                    }
+//                }
+                HomeUI(
+                    rootNavController = rootNavController,
+                    isPortrait = isPortrait,
+                    newsViewModel = newsViewModel,
+                    aiViewModel = aiViewModel
+                )
             }
         }
     }

@@ -3,8 +3,6 @@ package com.shanudevcodes.newsbits.ui.screens.home
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -42,15 +39,10 @@ import androidx.compose.material3.ExpandedDockedSearchBar
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.IconToggleButton
-import androidx.compose.material3.IconToggleButtonColors
-import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
@@ -64,25 +56,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -93,14 +76,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
-import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
 import com.shanudevcodes.newsbits.data.SearchDestination
 import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
 import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
-import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
@@ -108,39 +89,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
-data class HomeUiDestination(
-    val name: String,
-    val selectedIcon: Int,
-    val unselectedIcon: Int,
-)
-
-val homeUiDestinations = listOf(
-    HomeUiDestination(
-        name = "For You",
-        selectedIcon = R.drawable.home_filled,
-        unselectedIcon = R.drawable.home
-    ),
-    HomeUiDestination(
-        name = "Explore",
-        selectedIcon = R.drawable.explore_filled,
-        unselectedIcon = R.drawable.explore
-    ),
-    HomeUiDestination(
-        name = "AI",
-        selectedIcon = R.drawable.sparkler,
-        unselectedIcon = R.drawable.sparkler
-    ),
-    HomeUiDestination(
-        name = "Bookmarks",
-        selectedIcon = R.drawable.bookmark_filled,
-        unselectedIcon = R.drawable.bookmark
-    ),
-    HomeUiDestination(
-        name = "Profile",
-        selectedIcon = R.drawable.account_filled,
-        unselectedIcon = R.drawable.account
-    )
-)
 @SuppressLint("ConfigurationScreenWidthHeight", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalMaterial3AdaptiveApi::class, FlowPreview::class
@@ -149,7 +97,6 @@ val homeUiDestinations = listOf(
 fun HomeListUi(
     searchNavController: NavHostController,
     navHostController: NavHostController,
-    openNavDraw:() -> Unit,
     newsViewModel: NewsViewModel,
     aiViewModel: AiViewModel
 ) {
@@ -317,103 +264,6 @@ fun HomeListUi(
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.surface,
-        bottomBar = {
-            FlexibleBottomAppBar(
-                scrollBehavior = bottomBatScrollBehavior,
-                horizontalArrangement = Arrangement.SpaceAround,
-                containerColor = Color.Transparent,
-                content = {
-                    val density = LocalDensity.current
-                    val iconPositions = remember { mutableStateListOf<Dp>() }
-                    var selected by remember { mutableIntStateOf(0) }
-                    val animatedOffsetX by animateDpAsState(
-                        targetValue = if (iconPositions.size > selected) 4.dp + iconPositions[selected] else 4.dp,
-                        animationSpec = tween(
-                            easing = ExpressiveEasing.EmphasizedDecelerate,
-                            durationMillis = 200
-                        ),
-                        label = "CircleSlide"
-                    )
-                    HorizontalFloatingToolbar(
-                        expanded = true,
-                        expandedShadowElevation = 2.dp
-                    ) {
-                        Box{
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .offset(x = animatedOffsetX, y = 4.dp)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        shape = CircleShape
-                                    )
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .height(56.dp)
-                                    .background(
-                                        color = Color.Transparent,
-                                        shape = RoundedCornerShape(28.dp)
-                                    ),
-                            ) {
-                                homeUiDestinations.forEachIndexed { index, item ->
-                                    IconToggleButton(
-                                        checked = selected == index,
-                                        onCheckedChange = {
-                                            selected = index
-                                            scope.launch {
-                                                delay(100)
-                                                selected = index
-                                            }
-                                        },
-                                        shapes = IconToggleButtonShapes(
-                                            shape = CircleShape,
-                                            pressedShape = CircleShape,
-                                            checkedShape = CircleShape
-                                        ),
-                                        colors = IconToggleButtonColors(
-                                            containerColor = Color.Transparent,
-                                            contentColor = MaterialTheme.colorScheme.onSurface,
-                                            disabledContainerColor = Color.Gray,
-                                            disabledContentColor = Color.Gray,
-                                            checkedContainerColor = Color.Transparent,
-                                            checkedContentColor = MaterialTheme.colorScheme.onPrimary
-                                        ),
-                                        modifier = Modifier
-                                            .padding(horizontal = 4.dp)
-                                            .onGloballyPositioned { coordinates ->
-                                                val xPx = coordinates.positionInParent().x
-                                                val xDp = with(density) { xPx.toDp() }
-
-                                                if (iconPositions.size <= index) {
-                                                    iconPositions.add(xDp)
-                                                } else {
-                                                    iconPositions[index] = xDp
-                                                }
-                                            },
-                                        interactionSource = NoRippleInteractionSource
-                                    ) {
-                                        Icon(
-                                            painterResource(
-                                                if (selected == index) {
-                                                    item.selectedIcon
-                                                } else {
-                                                    item.unselectedIcon
-                                                }
-                                            ),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-        },
         topBar = {
             Column{
                 Row(

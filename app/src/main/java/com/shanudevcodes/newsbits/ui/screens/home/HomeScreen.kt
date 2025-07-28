@@ -161,7 +161,10 @@ fun HomeScreen(
         val clampedDp = collapsedDp.coerceIn(0.dp, maxDp)
         max(0.dp, topPaddingDp - clampedDp)
     }
-
+    LaunchedEffect(newsTopList) {
+        viewModel.loadTopNews()
+        newsList.refresh()
+    }
     LaunchedEffect(newsList.loadState.refresh) {
         if (newsList.loadState.refresh is LoadState.Error){
             Log.d("NewsBitsLoadError", "Error: 1")
