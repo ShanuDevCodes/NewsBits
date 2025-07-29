@@ -58,7 +58,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
@@ -230,13 +232,16 @@ fun SearchResultDetailScreen(
                         .aspectRatio(16f / 12f)
                 ) {
                     val overlayColor = MaterialTheme.colorScheme.surface
-                    Image(
-                        painter = if (news?.image_url != null) rememberAsyncImagePainter(
-                            model = news?.image_url ?: ""
-                        ) else painterResource(R.drawable.img_6),
-                        contentDescription = news?.source_id ?: "",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(news?.image_url)
+                            .crossfade(true)
+                            .error(R.drawable.img_6)
+                            .placeholder(R.drawable.img_6)
+                            .build(),
+                        contentDescription = news?.description,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize()
                     )
                     Box(
                         modifier = Modifier

@@ -1,10 +1,12 @@
 package com.shanudevcodes.newsbits.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +51,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -71,6 +75,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -81,7 +87,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.ConnectivityObserver
@@ -99,6 +107,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalMaterial3AdaptiveApi::class
 )
@@ -270,6 +279,8 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .height(280.dp),
                         itemSpacing = 8.dp,
+                        flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state),
+//                        contentPadding = PaddingValues(start = 48.dp, end = 48.dp)
                     ) { index ->
                         val currentItem = newsTopList[index]
                         Box(
@@ -301,24 +312,26 @@ fun HomeScreen(
                                         }
                                     )
                             ) {
-                                Image(
-                                    painter = if (currentItem.image_url != null) rememberAsyncImagePainter(
-                                        model = currentItem.image_url
-                                    ) else painterResource(R.drawable.img_6),
-                                    contentDescription = "item $index",
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(currentItem.image_url)
+                                        .crossfade(true)
+                                        .error(R.drawable.img_6)
+                                        .placeholder(R.drawable.img_6)
+                                        .build(),
+                                    contentDescription = currentItem.description,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(220.dp)
+                                        .fillMaxHeight()
                                         .maskClip(MaterialTheme.shapes.extraLarge)
                                 )
                                 Box(
                                     modifier = Modifier
+                                        .align(alignment = Alignment.BottomCenter)
                                         .fillMaxWidth()
                                         .height(140.dp)
                                         .maskClip(MaterialTheme.shapes.extraLarge)
-                                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                                        .align(alignment = Alignment.BottomStart),
+                                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Column(
@@ -554,8 +567,13 @@ fun NewsListItem(news: NewsArticle) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Thumbnail Image (landscape rectangle)
-        Image(
-            painter = if (news.image_url != null) rememberAsyncImagePainter(model = news.image_url) else painterResource(R.drawable.img_6),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(news.image_url)
+                .crossfade(true)
+                .error(R.drawable.img_6)
+                .placeholder(R.drawable.img_6)
+                .build(),
             contentDescription = news.description,
             contentScale = ContentScale.Crop,
             modifier = Modifier

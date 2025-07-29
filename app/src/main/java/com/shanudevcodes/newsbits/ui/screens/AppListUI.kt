@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -23,13 +26,17 @@ import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.IconToggleButtonColors
 import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +54,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.Destination
+import com.shanudevcodes.newsbits.data.NavigationItem
 import com.shanudevcodes.newsbits.data.NoRippleInteractionSource
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.ui.screens.bookmark.BookMarksScreen
@@ -106,6 +114,7 @@ fun AppListUI(
     aiViewModel: AiViewModel,
     viewModel: AppListUIViewModel
 ){
+    val saveableStateHolder = rememberSaveableStateHolder()
     val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
     val rootCurrentDestination = rootNavBackStackEntry?.destination
     val bottomBarScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
@@ -142,15 +151,16 @@ fun AppListUI(
                     )
                     HorizontalFloatingToolbar(
                         expanded = true,
-                        expandedShadowElevation = 2.dp
+                        expandedShadowElevation = 2.dp,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     ) {
                         Box{
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .offset(x = animatedOffsetX, y = 4.dp)
+                                    .offset(x = animatedOffsetX, y = 0.dp)
                                     .background(
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
                                         shape = CircleShape
                                     )
                             )
@@ -188,7 +198,7 @@ fun AppListUI(
                                             disabledContainerColor = Color.Gray,
                                             disabledContentColor = Color.Gray,
                                             checkedContainerColor = Color.Transparent,
-                                            checkedContentColor = MaterialTheme.colorScheme.onPrimary
+                                            checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
                                         modifier = Modifier
                                             .padding(horizontal = 4.dp)
@@ -229,28 +239,37 @@ fun AppListUI(
             navController = rootNavController
         ) {
             composable<Destination.HOME> {
-                HomeListUi(
-                    searchNavController = searchNavController,
-                    navHostController = navController,
-                    newsViewModel = newsViewModel,
-                    aiViewModel = aiViewModel,
-                    bottomAppBarScrollBehavior = bottomBarScrollBehavior
-                )
+                saveableStateHolder.SaveableStateProvider("explore") {
+                    HomeListUi(
+                        searchNavController = searchNavController,
+                        navHostController = navController,
+                        newsViewModel = newsViewModel,
+                        aiViewModel = aiViewModel,
+                        bottomAppBarScrollBehavior = bottomBarScrollBehavior
+                    )
+                }
             }
             composable<Destination.EXPLORE> {
-
+                saveableStateHolder.SaveableStateProvider("home") {
+                    ForYouPage()
+                }
             }
             composable<Destination.AI> {
-
+                saveableStateHolder.SaveableStateProvider("ai") {
+                }
             }
             composable<Destination.BOOKMARKS> {
-                BookMarksScreen(
-                    bottomAppBarScrollBehavior = bottomBarScrollBehavior,
-                    navController = navController
-                )
+                saveableStateHolder.SaveableStateProvider("bookmark") {
+                    BookMarksScreen(
+                        bottomAppBarScrollBehavior = bottomBarScrollBehavior,
+                        navController = navController
+                    )
+                }
             }
             composable<Destination.PROFILE> {
+                saveableStateHolder.SaveableStateProvider("profile") {
 
+                }
             }
         }
     }
