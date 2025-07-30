@@ -192,7 +192,11 @@ fun ProfileScreen(){
                                     imageVector = item.icon,
                                     contentDescription = item.name,
                                     modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.secondary
+                                    tint = if(item.name == "Logout"){
+                                        Color(0xFFB32727)
+                                    }else{
+                                        MaterialTheme.colorScheme.primary
+                                    }
                                 )
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column(
@@ -205,14 +209,18 @@ fun ProfileScreen(){
                                         color = if(item.name == "Logout"){
                                             Color(0xFFB32727)
                                         }else{
-                                            MaterialTheme.colorScheme.secondary
+                                            MaterialTheme.colorScheme.primary
                                         }
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = item.description,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.secondary
+                                        color = if(item.name == "Logout"){
+                                            MaterialTheme.colorScheme.onErrorContainer
+                                        }else{
+                                            MaterialTheme.colorScheme.primary
+                                        }
                                     )
                                 }
                                 IconButton(
@@ -222,7 +230,11 @@ fun ProfileScreen(){
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                                         contentDescription = "Edit Profile",
-                                        tint = MaterialTheme.colorScheme.secondary
+                                        tint = if(item.name == "Logout"){
+                                            Color(0xFFB32727)
+                                        }else{
+                                            MaterialTheme.colorScheme.primary
+                                        }
                                     )
                                 }
                             }
