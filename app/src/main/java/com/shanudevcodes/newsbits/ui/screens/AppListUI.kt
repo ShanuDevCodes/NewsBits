@@ -65,7 +65,7 @@ data class HomeUiDestination(
 
 val homeUiDestinations = listOf(
     HomeUiDestination(
-        name = "For You",
+        name = "Home",
         selectedIcon = R.drawable.home_filled,
         unselectedIcon = R.drawable.home,
         destination = Destination.HOME
@@ -77,10 +77,10 @@ val homeUiDestinations = listOf(
         destination = Destination.EXPLORE
     ),
     HomeUiDestination(
-        name = "AI",
-        selectedIcon = R.drawable.sparkler,
-        unselectedIcon = R.drawable.sparkler,
-        destination = Destination.AI
+        name = "Bit Digest",
+        selectedIcon = R.drawable.digest_400,
+        unselectedIcon = R.drawable.digest_300,
+        destination = Destination.BITDIGEST
     ),
     HomeUiDestination(
         name = "Bookmarks",
@@ -116,7 +116,7 @@ fun AppListUI(
             viewModel.updatePosition(0)
         }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.EXPLORE::class.qualifiedName } == true){
             viewModel.updatePosition(1)
-        }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.AI::class.qualifiedName } == true){
+        }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.BITDIGEST::class.qualifiedName } == true){
             viewModel.updatePosition(2)
         }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.BOOKMARKS::class.qualifiedName } == true){
             viewModel.updatePosition(3)
@@ -244,11 +244,15 @@ fun AppListUI(
             }
             composable<Destination.EXPLORE> {
                 saveableStateHolder.SaveableStateProvider("home") {
-                    ForYouPage(newsViewModel = newsViewModel)
+                    ForYouPage(
+                        newsViewModel = newsViewModel,
+                        navController = navController
+                    )
                 }
             }
-            composable<Destination.AI> {
-                saveableStateHolder.SaveableStateProvider("ai") {
+            composable<Destination.BITDIGEST> {
+                saveableStateHolder.SaveableStateProvider("bit_digest") {
+                    BitDigestScreen()
                 }
             }
             composable<Destination.BOOKMARKS> {
@@ -261,7 +265,7 @@ fun AppListUI(
             }
             composable<Destination.PROFILE> {
                 saveableStateHolder.SaveableStateProvider("profile") {
-
+                    ProfileScreen()
                 }
             }
         }

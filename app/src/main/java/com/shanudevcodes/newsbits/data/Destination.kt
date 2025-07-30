@@ -9,7 +9,7 @@ sealed class Destination {
     @Serializable
     object EXPLORE : Destination()
     @Serializable
-    object AI : Destination()
+    object BITDIGEST : Destination()
     @Serializable
     object BOOKMARKS : Destination()
     @Serializable

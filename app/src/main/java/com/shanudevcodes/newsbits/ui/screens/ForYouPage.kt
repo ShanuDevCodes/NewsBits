@@ -2,6 +2,7 @@ package com.shanudevcodes.newsbits.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,10 +49,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlin.math.absoluteValue
@@ -60,7 +64,8 @@ import kotlin.math.absoluteValue
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ForYouPage(
-    newsViewModel: NewsViewModel
+    newsViewModel: NewsViewModel,
+    navController: NavHostController
 ) {
     val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     LaunchedEffect(newsList) {
@@ -105,8 +110,9 @@ fun ForYouPage(
                             news = article,
                             modifier = Modifier.carouselTransition(
                                 page = page,
-                                pagerState = pagerState
-                            )
+                                pagerState = pagerState,
+                            ),
+                            navController = navController
                         )
                     }
                 }
@@ -140,9 +146,22 @@ fun ForYouPage(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier) {
+fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier, navController: NavHostController) {
     Card(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .clickable(
+                onClick = {
+                    navController.navigate(
+                        HomeDestination.SEARCHRESULTDETAILSCREEN(
+                            news.link,
+                        )
+                    ) {
+                        popUpTo(navController.graph.findStartDestination().id)
+                        launchSingleTop = true
+                    }
+                }
+            )
     ) {
         Column(
             modifier = Modifier.fillMaxSize()

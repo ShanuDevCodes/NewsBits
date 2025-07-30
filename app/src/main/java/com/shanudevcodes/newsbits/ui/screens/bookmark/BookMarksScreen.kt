@@ -117,7 +117,7 @@ fun BookMarksScreen(
                 modifier = Modifier.nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
             ) {
                 item{
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
                 itemsIndexed(newsList) { index, news ->
                     Card(
@@ -125,7 +125,7 @@ fun BookMarksScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 16.dp),
                     ) {
                         Box(
                             modifier = Modifier

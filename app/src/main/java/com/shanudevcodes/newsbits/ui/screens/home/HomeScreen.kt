@@ -3,10 +3,10 @@ package com.shanudevcodes.newsbits.ui.screens.home
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +28,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTimeFilled
@@ -51,10 +55,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.carousel.CarouselDefaults
-import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
-import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -75,7 +75,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -88,7 +87,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.R
@@ -101,6 +99,7 @@ import com.shanudevcodes.newsbits.data.getTimeAgo
 import com.shanudevcodes.newsbits.data.rememberNetworkStatus
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.data.shortenName
+import com.shanudevcodes.newsbits.ui.screens.carouselTransition
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
@@ -122,7 +121,6 @@ fun HomeScreen(
     val networkStatus = rememberNetworkStatus()
     val newsList =viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val newsTopList by viewModel.topNews.collectAsState()
-    val state = rememberCarouselState { newsTopList.size }
     val options = listOf(
         "All",
         "business",
@@ -159,6 +157,7 @@ fun HomeScreen(
     val density = LocalDensity.current
     val scrollPx = scrollBehavior.scrollOffset
     val maxPx = scrollBehavior.scrollOffsetLimit // e.g. -180f
+    val pagerState = rememberPagerState(pageCount = { newsTopList.size })
 
     val topPaddingDp = with(density) {
         WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 105.dp
@@ -221,7 +220,7 @@ fun HomeScreen(
                 viewModel.loadTopNews()
                 newsList.refresh()
                 delay(1000)
-                state.animateScrollToItem(0)
+                pagerState.animateScrollToPage(0)
                 isRefreshing = false
             }
         },
@@ -271,138 +270,154 @@ fun HomeScreen(
                 }
             }
 
-            item {
-                if (isTopNewsLoaded){
-                    HorizontalCenteredHeroCarousel(
-                        state = state,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(280.dp),
-                        itemSpacing = 8.dp,
-                        flingBehavior = CarouselDefaults.singleAdvanceFlingBehavior(state),
-//                        contentPadding = PaddingValues(start = 48.dp, end = 48.dp)
-                    ) { index ->
-                        val currentItem = newsTopList[index]
-                        Box(
+            item{
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (isTopNewsLoaded) {
+                        HorizontalPager(
+                            state = pagerState,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .fillMaxHeight()
-                                .clip(MaterialTheme.shapes.extraLarge),
-                        ) {
-                            // Image with rounded corners
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.extraLarge)
-                                    .clickable(
-                                        onClick = {
-                                            if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_TOP.name) {
-                                                lastViewedIndex.value = index
-                                                lastViewedType.value = News.NEWS_TOP.name
-                                                navController.navigate(
-                                                    HomeDestination.SEARCHRESULTDETAILSCREEN(
-                                                        currentItem.link,
-                                                    )
-                                                ) {
-                                                    popUpTo(navController.graph.findStartDestination().id)
-                                                    launchSingleTop = true
-                                                }
-                                            }
-                                        }
-                                    )
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(currentItem.image_url)
-                                        .crossfade(true)
-                                        .error(R.drawable.img_6)
-                                        .placeholder(R.drawable.img_6)
-                                        .build(),
-                                    contentDescription = currentItem.description,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .maskClip(MaterialTheme.shapes.extraLarge)
-                                )
+                                .height(280.dp)
+                        ) { page ->
+                            val currentItem = newsTopList.getOrNull(page)
+                            if (currentItem != null) {
                                 Box(
                                     modifier = Modifier
-                                        .align(alignment = Alignment.BottomCenter)
                                         .fillMaxWidth()
-                                        .height(140.dp)
-                                        .maskClip(MaterialTheme.shapes.extraLarge)
-                                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
-                                    contentAlignment = Alignment.Center
+                                        .fillMaxHeight()
+                                        .clip(MaterialTheme.shapes.extraLarge)
+                                        .carouselTransition(page, pagerState),
                                 ) {
-                                    Column(
+                                    // Image with rounded corners
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxWidth()
                                             .fillMaxHeight()
-                                            .padding(12.dp),
-//                                        .alpha(animatedAlpha), // padding inside image,
-                                        verticalArrangement = Arrangement.SpaceEvenly
+                                            .fillMaxWidth()
+                                            .clip(MaterialTheme.shapes.extraLarge)
+                                            .clickable(
+                                                onClick = {
+                                                    if (lastViewedIndex.value != page || lastViewedType.value != News.NEWS_TOP.name) {
+                                                        lastViewedIndex.value = page
+                                                        lastViewedType.value = News.NEWS_TOP.name
+                                                        navController.navigate(
+                                                            HomeDestination.SEARCHRESULTDETAILSCREEN(
+                                                                currentItem.link,
+                                                            )
+                                                        ) {
+                                                            popUpTo(navController.graph.findStartDestination().id)
+                                                            launchSingleTop = true
+                                                        }
+                                                    }
+                                                }
+                                            )
                                     ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.AccessTimeFilled,
-                                                contentDescription = "Time",
-                                                modifier = Modifier.size(16.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(
-                                                text = getTimeAgo(currentItem.pubDate), // mock time
-                                                color = MaterialTheme.colorScheme.primary, // soft orange
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = currentItem.source_name, // mock writer
-                                                color = Color.Gray,
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = currentItem.title,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            maxLines = 3
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(currentItem.image_url)
+                                                .crossfade(true)
+                                                .error(R.drawable.img_6)
+                                                .placeholder(R.drawable.img_6)
+                                                .build(),
+                                            contentDescription = currentItem.description,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .clip(MaterialTheme.shapes.extraLarge)
                                         )
+                                        Box(
+                                            modifier = Modifier
+                                                .align(alignment = Alignment.BottomCenter)
+                                                .fillMaxWidth()
+                                                .height(140.dp)
+                                                .clip(MaterialTheme.shapes.extraLarge)
+                                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .fillMaxHeight()
+                                                    .padding(12.dp),
+                                                verticalArrangement = Arrangement.SpaceEvenly
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.AccessTimeFilled,
+                                                        contentDescription = "Time",
+                                                        modifier = Modifier.size(16.dp),
+                                                        tint = MaterialTheme.colorScheme.primary
+                                                    )
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = getTimeAgo(currentItem.pubDate),
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = currentItem.source_name,
+                                                        color = Color.Gray,
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text(
+                                                    text = currentItem.title,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    maxLines = 3
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                }else{
-                    HorizontalCenteredHeroCarousel(
-                        state = rememberCarouselState{10},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(280.dp),
-                        itemSpacing = 8.dp,
-                    ) {
-                        Box(
+                    }else{
+                        HorizontalPager(
+                            state = rememberPagerState(pageCount = {10}),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(280.dp)
-                                .clip(MaterialTheme.shapes.extraLarge),
-                        ){
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(280.dp)
-                                    .maskClip(MaterialTheme.shapes.extraLarge)
-                                    .shimmerEffect()
-                            )
+                        ) {
+                            repeat(10) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(280.dp)
+                                        .clip(MaterialTheme.shapes.extraLarge),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(280.dp)
+                                            .clip(MaterialTheme.shapes.extraLarge)
+                                            .shimmerEffect()
+                                    )
+                                }
+                            }
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (pagerState.pageCount == 0){
+                        DotIndicators(
+                            pageCount = 10,
+                            pagerState = rememberPagerState(pageCount = {0}),
+                        )
+                    }
+                    DotIndicators(
+                        pageCount = newsTopList.size,
+                        pagerState = pagerState,
+                    )
                 }
             }
             item {
@@ -644,6 +659,35 @@ fun NewsListItem(news: NewsArticle) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun DotIndicators(
+    pageCount: Int,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(pageCount) { iteration ->
+            val color by animateColorAsState(
+                targetValue = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.onSurface else Color.Gray,
+                animationSpec = tween(durationMillis = 300),
+                label = "DotColorAnim"
+            )
+
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .size(if (pagerState.currentPage == iteration) 10.dp else 8.dp)
+                    .clip(CircleShape)
+                    .background(color)
+            )
         }
     }
 }
