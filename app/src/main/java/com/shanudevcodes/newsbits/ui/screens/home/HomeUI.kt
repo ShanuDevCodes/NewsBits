@@ -52,7 +52,6 @@ fun HomeUI(
     val searchNavController = rememberNavController()
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val scope = rememberCoroutineScope()
     val isHome = currentBackStackEntry?.destination
         ?.hierarchy
         ?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true
