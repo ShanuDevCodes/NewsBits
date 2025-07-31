@@ -24,6 +24,9 @@ sealed class HomeDestination{
     data class SEARCHRESULTDETAILSCREEN(val link: String) : HomeDestination()
     @Serializable
     data class BOOKMARKDETAILSCREEN(val newsId: String) : HomeDestination()
+    @Serializable
+    object SETTINGS : HomeDestination()
+
 }
 
 @Serializable

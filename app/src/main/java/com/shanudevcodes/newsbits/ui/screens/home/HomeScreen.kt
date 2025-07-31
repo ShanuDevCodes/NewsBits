@@ -45,7 +45,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -88,7 +87,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.ConnectivityObserver
 import com.shanudevcodes.newsbits.data.HomeDestination
@@ -240,9 +238,6 @@ fun HomeScreen(
             contentPadding = PaddingValues(top = dynamicTopPadding),
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
         ) {
-            if(BuildConfig.DEBUG) {
-                item { HorizontalDivider() }
-            }
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -460,11 +455,32 @@ fun HomeScreen(
                 val news = newsList[index]
                 if (news != null) {
                     Card(
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(
+                            topStart = if (index == 0) {
+                                24.dp
+                            }else {
+                                4.dp
+                            },
+                            topEnd = if (index == 0) {
+                                24.dp
+                            }else {
+                                4.dp
+                            },
+                            bottomStart = if (index == newsList.itemCount-1) {
+                                24.dp
+                            }else {
+                                4.dp
+                            },
+                            bottomEnd = if (index == newsList.itemCount-1) {
+                                24.dp
+                            }else {
+                                4.dp
+                            }
+                        ),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(bottom = 2.dp),
                     ) {
                         Box(
                             modifier = Modifier

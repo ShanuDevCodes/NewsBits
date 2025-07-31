@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -30,7 +31,8 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,10 +47,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.shanudevcodes.newsbits.R
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProfileScreen(){
     Surface {
@@ -72,7 +76,7 @@ fun ProfileScreen(){
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
-            }
+            },
         ) {innerPadding->
             Box(
                 modifier = Modifier
@@ -89,12 +93,14 @@ fun ProfileScreen(){
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                             ),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(24.dp)
                         ) {
                             Row(
                                 modifier = Modifier
                                     .clickable(
-                                        onClick = {}
+                                        onClick = {
+
+                                        }
                                     )
                                     .padding(16.dp)
                                     .fillMaxWidth()
@@ -137,17 +143,13 @@ fun ProfileScreen(){
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                                         contentDescription = "Edit Profile",
-                                        tint = MaterialTheme.colorScheme.secondary
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
                         }
                     }
-                    item{
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
-                    }
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
                     itemsIndexed(profileScreenItemList){index, item->
                         Card(
                             colors = CardDefaults.cardColors(
@@ -157,22 +159,22 @@ fun ProfileScreen(){
                                 .padding(bottom = 2.dp),
                             shape = RoundedCornerShape(
                                 topStart = if (index == 0) {
-                                    16.dp
+                                    24.dp
                                 }else {
                                     4.dp
                                 },
                                 topEnd = if (index == 0) {
-                                    16.dp
+                                    24.dp
                                 }else {
                                     4.dp
                                 },
                                 bottomStart = if (index == profileScreenItemList.lastIndex) {
-                                    16.dp
+                                    24.dp
                                 }else {
                                     4.dp
                                 },
                                 bottomEnd = if (index == profileScreenItemList.lastIndex) {
-                                    16.dp
+                                    24.dp
                                 }else {
                                     4.dp
                                 }
@@ -181,23 +183,36 @@ fun ProfileScreen(){
                             Row(
                                 modifier = Modifier
                                     .clickable(
-                                        onClick = {}
+                                        onClick = item.onClick
                                     )
                                     .padding(16.dp)
                                     .fillMaxWidth()
                                     .height(56.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Icon(
-                                    imageVector = item.icon,
-                                    contentDescription = item.name,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = if(item.name == "Logout"){
-                                        Color(0xFFB32727)
-                                    }else{
-                                        MaterialTheme.colorScheme.primary
-                                    }
-                                )
+                                if (item.icon != null) {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = item.name,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = if (item.name == "Logout") {
+                                            Color(0xFFB32727)
+                                        } else {
+                                            MaterialTheme.colorScheme.primary
+                                        }
+                                    )
+                                }else if(item.iconId != null){
+                                    Icon(
+                                        imageVector = ImageVector.vectorResource(id = item.iconId),
+                                        contentDescription = item.name,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = if (item.name == "Logout") {
+                                            Color(0xFFB32727)
+                                        } else {
+                                            MaterialTheme.colorScheme.primary
+                                        }
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column(
                                     modifier = Modifier.weight(1f)
@@ -219,7 +234,7 @@ fun ProfileScreen(){
                                         color = if(item.name == "Logout"){
                                             MaterialTheme.colorScheme.onErrorContainer
                                         }else{
-                                            MaterialTheme.colorScheme.primary
+                                            MaterialTheme.colorScheme.secondary
                                         }
                                     )
                                 }
@@ -240,6 +255,14 @@ fun ProfileScreen(){
                             }
                         }
                     }
+                    item {
+                        Spacer(
+                            modifier = Modifier.height(
+                                WindowInsets.navigationBars.asPaddingValues()
+                                    .calculateBottomPadding() + 54.dp
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -248,39 +271,67 @@ fun ProfileScreen(){
 
 data class ProfileScreenData(
     val name: String,
-    val icon: ImageVector,
-    val description: String
+    val icon: ImageVector? = null,
+    val iconId: Int? = null,
+    val description: String,
+    val onClick: () -> Unit = {}
 )
 
 val profileScreenItemList = listOf(
     ProfileScreenData(
         name = "Settings",
         icon = Icons.Outlined.Settings,
-        description = "Change your preferences"
+        description = "Change your preferences",
+        onClick = {
+
+        }
     ),
     ProfileScreenData(
         name = "About",
         icon = Icons.Outlined.Info,
-        description = "About the app"
+        description = "About the app",
+        onClick = {
+
+        }
     ),
     ProfileScreenData(
         name = "Share",
         icon = Icons.Outlined.IosShare,
-        description = "Share the app"
+        description = "Share the app",
+        onClick = {
+
+        }
     ),
     ProfileScreenData(
         name = "Rate us",
         icon = Icons.Outlined.StarRate,
-        description = "Rate the app"
+        description = "Rate the app",
+        onClick = {
+
+        }
     ),
     ProfileScreenData(
         name = "Help Center",
         icon = Icons.AutoMirrored.Outlined.Help,
-        description = "Get help"
+        description = "Get help",
+        onClick = {
+
+        }
+    ),
+    ProfileScreenData(
+        name = "Github",
+        iconId = R.drawable.github,
+        description = "Github profile",
+        onClick = {
+
+        }
     ),
     ProfileScreenData(
         name = "Logout",
         icon = Icons.AutoMirrored.Outlined.Logout,
-        description = "Logout from the app"
+        description = "Logout from the app",
+        onClick = {
+
+        }
     )
 )

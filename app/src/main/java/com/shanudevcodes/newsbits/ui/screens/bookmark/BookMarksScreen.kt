@@ -121,11 +121,32 @@ fun BookMarksScreen(
                 }
                 itemsIndexed(newsList) { index, news ->
                     Card(
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(
+                            topStart = if (index == 0) {
+                                24.dp
+                            }else {
+                                4.dp
+                            },
+                            topEnd = if (index == 0) {
+                                24.dp
+                            }else {
+                                4.dp
+                            },
+                            bottomStart = if (index == newsList.lastIndex) {
+                                24.dp
+                            }else {
+                                4.dp
+                            },
+                            bottomEnd = if (index == newsList.lastIndex) {
+                                24.dp
+                            }else {
+                                4.dp
+                            }
+                        ),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(bottom = 2.dp),
                     ) {
                         Box(
                             modifier = Modifier
