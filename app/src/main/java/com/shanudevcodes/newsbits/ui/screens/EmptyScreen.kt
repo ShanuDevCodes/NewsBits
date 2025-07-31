@@ -25,10 +25,12 @@ import com.shanudevcodes.newsbits.R
 @Preview
 @Composable
 fun EmptyScreen(){
-    Scaffold {innerPadding->
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
+    ) {innerPadding->
         Box(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.surfaceDim)
                 .fillMaxSize()
                 .padding(innerPadding),
             contentAlignment = Alignment.Center

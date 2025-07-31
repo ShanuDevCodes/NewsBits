@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 fun BitDigestScreen(){
     Surface {
         Scaffold(
+            containerColor = MaterialTheme.colorScheme.surfaceDim,
             contentWindowInsets = WindowInsets(0),
             topBar = {
                 Row(

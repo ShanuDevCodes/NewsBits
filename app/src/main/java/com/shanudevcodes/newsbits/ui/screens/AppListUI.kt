@@ -125,6 +125,7 @@ fun AppListUI(
         }
     }
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
         bottomBar = {
             FlexibleBottomAppBar(
                 scrollBehavior = bottomBarScrollBehavior,

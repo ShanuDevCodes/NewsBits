@@ -328,7 +328,7 @@ fun HomeScreen(
                                                 .fillMaxWidth()
                                                 .height(140.dp)
                                                 .clip(MaterialTheme.shapes.extraLarge)
-                                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                                                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Column(
@@ -438,7 +438,7 @@ fun HomeScreen(
                                     else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                                 },
                             colors = ToggleButtonDefaults.toggleButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 checkedContainerColor = MaterialTheme.colorScheme.primary,
                             )
                         ) {
@@ -477,7 +477,7 @@ fun HomeScreen(
                                 4.dp
                             }
                         ),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 2.dp),

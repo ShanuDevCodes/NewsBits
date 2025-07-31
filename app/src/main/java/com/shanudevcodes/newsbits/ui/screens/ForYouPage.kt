@@ -2,7 +2,6 @@ package com.shanudevcodes.newsbits.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.BookmarkAdded
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +38,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,13 +52,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlin.math.absoluteValue
@@ -68,12 +74,25 @@ fun ForYouPage(
     navController: NavHostController
 ) {
     val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val lastViewedIndex = rememberSaveable { mutableStateOf<Int?>(null) }
+    val lastViewedType = rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(newsList) {
         newsList.refresh()
     }
+    LaunchedEffect(currentBackStackEntry?.destination) {
+        if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
+            lastViewedIndex.value = null
+            lastViewedType.value = null
+        }
+    }
     val pagerState = rememberPagerState(pageCount = { newsList.itemCount })
-    Surface {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceDim
+    ) {
         Scaffold(
+            contentColor = MaterialTheme.colorScheme.surfaceDim,
+            containerColor = MaterialTheme.colorScheme.surfaceDim,
             contentWindowInsets = WindowInsets(0),
             topBar = {
                 Row(
@@ -112,7 +131,20 @@ fun ForYouPage(
                                 page = page,
                                 pagerState = pagerState,
                             ),
-                            navController = navController
+                            onClick = {
+                                if (lastViewedIndex.value != page || lastViewedType.value != News.NEWS_TOP.name) {
+                                    lastViewedIndex.value = page
+                                    lastViewedType.value = News.NEWS_TOP.name
+                                    navController.navigate(
+                                        HomeDestination.SEARCHRESULTDETAILSCREEN(
+                                            article.link,
+                                        )
+                                    ) {
+                                        popUpTo(navController.graph.findStartDestination().id)
+                                        launchSingleTop = true
+                                    }
+                                }
+                            }
                         )
                     }
                 }
@@ -122,7 +154,7 @@ fun ForYouPage(
                         .fillMaxWidth()
                         .background(brush = Brush.verticalGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceDim,
                                 Color.Transparent
                             )
                         )),
@@ -135,7 +167,7 @@ fun ForYouPage(
                         .background(brush = Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                MaterialTheme.colorScheme.surface
+                                MaterialTheme.colorScheme.surfaceDim
                             ),
                         )),
                 )
@@ -146,22 +178,16 @@ fun ForYouPage(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier, navController: NavHostController) {
+fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier, onClick: () -> Unit) {
     Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
         modifier = modifier
-            .fillMaxSize()
-            .clickable(
-                onClick = {
-                    navController.navigate(
-                        HomeDestination.SEARCHRESULTDETAILSCREEN(
-                            news.link,
-                        )
-                    ) {
-                        popUpTo(navController.graph.findStartDestination().id)
-                        launchSingleTop = true
-                    }
-                }
-            )
+            .fillMaxSize(),
+        onClick = {
+            onClick()
+        }
     ) {
         Column(
             modifier = Modifier.fillMaxSize()

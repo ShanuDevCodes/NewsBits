@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,14 +51,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
@@ -107,6 +104,10 @@ fun SearchResultDetailScreen(
             .fillMaxWidth()
     ) {
         BottomSheetScaffold(
+            sheetContentColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            sheetContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.surfaceDim,
+            containerColor = MaterialTheme.colorScheme.surfaceDim,
             sheetSwipeEnabled = isAtTop.value,
             scaffoldState = scaffoldState,
             sheetMaxWidth = screenWidthDp,
@@ -231,7 +232,7 @@ fun SearchResultDetailScreen(
                         .fillMaxWidth()
                         .aspectRatio(16f / 12f)
                 ) {
-                    val overlayColor = MaterialTheme.colorScheme.surface
+                    val overlayColor = MaterialTheme.colorScheme.surfaceDim
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(news?.image_url)

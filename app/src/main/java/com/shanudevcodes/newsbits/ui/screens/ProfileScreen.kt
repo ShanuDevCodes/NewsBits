@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,6 +81,7 @@ fun ProfileScreen(){
         ) {innerPadding->
             Box(
                 modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceDim)
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp)
@@ -91,7 +93,7 @@ fun ProfileScreen(){
                     item {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                             ),
                             shape = RoundedCornerShape(24.dp)
                         ) {
@@ -153,7 +155,7 @@ fun ProfileScreen(){
                     itemsIndexed(profileScreenItemList){index, item->
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                             ),
                             modifier = Modifier
                                 .padding(bottom = 2.dp),
@@ -255,6 +257,75 @@ fun ProfileScreen(){
                             }
                         }
                     }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                            ),
+                            modifier = Modifier
+                                .padding(bottom = 2.dp),
+                            shape = RoundedCornerShape(
+                                size = 24.dp
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .clickable(
+                                        onClick = {
+
+                                        }
+                                    )
+                                    .padding(16.dp)
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.Logout,
+                                    contentDescription = "Logout",
+                                    modifier = Modifier.size(28.dp),
+                                    tint = Color(0xFFB32727)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = "Logout",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFB32727)
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Logout from the app",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {},
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                        contentDescription = "Edit Profile",
+                                        tint = Color(0xFFB32727)
+
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     item {
                         Spacer(
                             modifier = Modifier.height(
@@ -287,9 +358,9 @@ val profileScreenItemList = listOf(
         }
     ),
     ProfileScreenData(
-        name = "About",
-        icon = Icons.Outlined.Info,
-        description = "About the app",
+        name = "Rate us",
+        icon = Icons.Outlined.StarRate,
+        description = "Rate the app",
         onClick = {
 
         }
@@ -303,14 +374,6 @@ val profileScreenItemList = listOf(
         }
     ),
     ProfileScreenData(
-        name = "Rate us",
-        icon = Icons.Outlined.StarRate,
-        description = "Rate the app",
-        onClick = {
-
-        }
-    ),
-    ProfileScreenData(
         name = "Help Center",
         icon = Icons.AutoMirrored.Outlined.Help,
         description = "Get help",
@@ -319,17 +382,17 @@ val profileScreenItemList = listOf(
         }
     ),
     ProfileScreenData(
-        name = "Github",
-        iconId = R.drawable.github,
-        description = "Github profile",
+        name = "About",
+        icon = Icons.Outlined.Info,
+        description = "About the app",
         onClick = {
 
         }
     ),
     ProfileScreenData(
-        name = "Logout",
-        icon = Icons.AutoMirrored.Outlined.Logout,
-        description = "Logout from the app",
+        name = "Github",
+        iconId = R.drawable.github,
+        description = "Github profile",
         onClick = {
 
         }

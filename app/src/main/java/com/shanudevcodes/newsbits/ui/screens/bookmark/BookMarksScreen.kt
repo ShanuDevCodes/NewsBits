@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -77,12 +78,12 @@ fun BookMarksScreen(
     val viewModelState = roomViewModel.state.collectAsState()
     val newsList = viewModelState.value.savedArticles
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
         contentWindowInsets = WindowInsets(0),
         topBar = {
             Row(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surfaceDim)
                     .padding(
                         top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
                         start = 16.dp,
@@ -143,7 +144,7 @@ fun BookMarksScreen(
                                 4.dp
                             }
                         ),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 2.dp),
@@ -169,6 +170,9 @@ fun BookMarksScreen(
                             BookMarkedNewsListItem(news = news.toEntity())
                         }
                     }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 16.dp))
                 }
             }
         }

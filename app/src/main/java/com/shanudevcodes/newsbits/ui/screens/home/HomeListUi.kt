@@ -123,8 +123,8 @@ fun HomeListUi(
         @Composable {
             SearchBarDefaults.InputField(
                 colors = SearchBarDefaults.inputFieldColors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
                 modifier = Modifier
                     .width(width = when(isPortrait) {
@@ -261,12 +261,12 @@ fun HomeListUi(
     }
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
         topBar = {
             Column{
                 Row(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surface)
+                        .background(MaterialTheme.colorScheme.surfaceDim)
                         .padding(
                             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
                             start = 16.dp,
@@ -298,7 +298,7 @@ fun HomeListUi(
                             state = searchBarState,
                             inputField = inputField,
                             colors = SearchBarDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                             )
                         ) {
                             LaunchedEffect(Unit) {
@@ -445,7 +445,7 @@ fun HomeListUi(
                             state = searchBarState,
                             inputField = inputField,
                             colors = SearchBarDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                             ),
                             windowInsets = { WindowInsets.statusBars },
                         ) {
@@ -458,7 +458,7 @@ fun HomeListUi(
                             ) {
                                 Card(
                                     colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                                     ),
                                     shape = RoundedCornerShape(24.dp),
                                     modifier = Modifier
