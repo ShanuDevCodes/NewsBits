@@ -33,6 +33,7 @@ import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.ui.screens.AppListUI
 import com.shanudevcodes.newsbits.ui.screens.EmptyScreen
+import com.shanudevcodes.newsbits.ui.screens.SettingsScreen
 import com.shanudevcodes.newsbits.ui.screens.bookmark.BookmarkDetailScreen
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.AppListUIViewModel
@@ -159,15 +160,6 @@ fun HomeUI(
                             EmptyScreen()
                         }
                     }
-//                    composable<HomeDestination.NEWSDETAILSCREEN> {
-//                        HomeDetailScreen(
-//                            it.arguments?.getInt("newsId") ?: 1,
-//                            navController,
-//                            newsViewModel,
-//                            it.arguments?.getString("news")
-//                                ?: News.NEWS_ALL.name
-//                        )
-//                    }
                     composable<HomeDestination.SEARCHRESULTDETAILSCREEN> {
                         SearchResultDetailScreen(
                             navController = navController,
@@ -180,6 +172,15 @@ fun HomeUI(
                             newsId = arg?.getString("newsId")?: "",
                             navController = navController
                         )
+                    }
+                    composable<HomeDestination.SETTINGS> {
+                        SettingsScreen(navController = navController)
+                    }
+                    composable<HomeDestination.HELPCENTER> {
+
+                    }
+                    composable<HomeDestination.ABOUT> {
+
                     }
                 }
             }

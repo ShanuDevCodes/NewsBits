@@ -26,6 +26,10 @@ sealed class HomeDestination{
     data class BOOKMARKDETAILSCREEN(val newsId: String) : HomeDestination()
     @Serializable
     object SETTINGS : HomeDestination()
+    @Serializable
+    object HELPCENTER : HomeDestination()
+    @Serializable
+    object ABOUT : HomeDestination()
 
 }
 

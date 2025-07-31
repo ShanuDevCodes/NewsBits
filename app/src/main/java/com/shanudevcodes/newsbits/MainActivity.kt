@@ -22,11 +22,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.shanudevcodes.newsbits.data.DataStoreManager
-import com.shanudevcodes.newsbits.ui.screens.AppMainUI
+import com.shanudevcodes.newsbits.ui.screens.home.HomeUI
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
@@ -56,8 +55,6 @@ class MainActivity : ComponentActivity() {
             val dynamicColor by dataStore.dynamicColorFlow.collectAsState(initial = false)
             var themeLoaded by remember { mutableStateOf(false) }
             val rootNavController = rememberNavController()
-            val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
-            val rootCurrentDestination = rootNavBackStackEntry?.destination
             val newsViewModel: NewsViewModel = viewModel()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
@@ -112,14 +109,10 @@ class MainActivity : ComponentActivity() {
                 themeOption = themeOption,
                 dynamicColor = dynamicColor
             ) {
-                AppMainUI(
-                    dataStore = dataStore,
-                    themeOption = themeOption,
-                    dynamicColor = dynamicColor,
-                    newsViewModel = newsViewModel,
-                    isPortrait = isPortrait,
+                HomeUI(
                     rootNavController = rootNavController,
-                    rootCurrentDestination = rootCurrentDestination,
+                    isPortrait = isPortrait,
+                    newsViewModel = newsViewModel,
                     aiViewModel = aiViewModel
                 )
             }

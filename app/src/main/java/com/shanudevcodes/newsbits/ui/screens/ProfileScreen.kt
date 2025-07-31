@@ -51,11 +51,71 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.HomeDestination
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ProfileScreen(){
+fun ProfileScreen(navController: NavHostController){
+    val profileScreenItemList = listOf(
+        ProfileScreenData(
+            name = "Settings",
+            icon = Icons.Outlined.Settings,
+            description = "Change your preferences",
+            onClick = {
+                navController.navigate(HomeDestination.SETTINGS) {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = false
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        ),
+        ProfileScreenData(
+            name = "Rate us",
+            icon = Icons.Outlined.StarRate,
+            description = "Rate the app",
+            onClick = {
+
+            }
+        ),
+        ProfileScreenData(
+            name = "Share",
+            icon = Icons.Outlined.IosShare,
+            description = "Share the app",
+            onClick = {
+
+            }
+        ),
+        ProfileScreenData(
+            name = "Help Center",
+            icon = Icons.AutoMirrored.Outlined.Help,
+            description = "Get help",
+            onClick = {
+
+            }
+        ),
+        ProfileScreenData(
+            name = "About",
+            icon = Icons.Outlined.Info,
+            description = "About the app",
+            onClick = {
+
+            }
+        ),
+        ProfileScreenData(
+            name = "Github",
+            iconId = R.drawable.github,
+            description = "Github profile",
+            onClick = {
+
+            }
+        )
+    )
     Surface {
         Scaffold(
             contentWindowInsets = WindowInsets(0),
@@ -241,7 +301,9 @@ fun ProfileScreen(){
                                     )
                                 }
                                 IconButton(
-                                    onClick = {},
+                                    onClick = {
+                                        item.onClick()
+                                    },
                                     modifier = Modifier.size(28.dp)
                                 ) {
                                     Icon(
@@ -309,7 +371,8 @@ fun ProfileScreen(){
                                     )
                                 }
                                 IconButton(
-                                    onClick = {},
+                                    onClick = {
+                                    },
                                     modifier = Modifier.size(28.dp)
                                 ) {
                                     Icon(
@@ -346,55 +409,4 @@ data class ProfileScreenData(
     val iconId: Int? = null,
     val description: String,
     val onClick: () -> Unit = {}
-)
-
-val profileScreenItemList = listOf(
-    ProfileScreenData(
-        name = "Settings",
-        icon = Icons.Outlined.Settings,
-        description = "Change your preferences",
-        onClick = {
-
-        }
-    ),
-    ProfileScreenData(
-        name = "Rate us",
-        icon = Icons.Outlined.StarRate,
-        description = "Rate the app",
-        onClick = {
-
-        }
-    ),
-    ProfileScreenData(
-        name = "Share",
-        icon = Icons.Outlined.IosShare,
-        description = "Share the app",
-        onClick = {
-
-        }
-    ),
-    ProfileScreenData(
-        name = "Help Center",
-        icon = Icons.AutoMirrored.Outlined.Help,
-        description = "Get help",
-        onClick = {
-
-        }
-    ),
-    ProfileScreenData(
-        name = "About",
-        icon = Icons.Outlined.Info,
-        description = "About the app",
-        onClick = {
-
-        }
-    ),
-    ProfileScreenData(
-        name = "Github",
-        iconId = R.drawable.github,
-        description = "Github profile",
-        onClick = {
-
-        }
-    )
 )

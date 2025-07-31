@@ -266,7 +266,7 @@ fun AppListUI(
             }
             composable<Destination.PROFILE> {
                 saveableStateHolder.SaveableStateProvider("profile") {
-                    ProfileScreen()
+                    ProfileScreen(navController = navController)
                 }
             }
         }
