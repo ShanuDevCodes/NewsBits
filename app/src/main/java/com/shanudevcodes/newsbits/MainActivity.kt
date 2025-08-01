@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
             val aiViewModel: AiViewModel = viewModel()
+            val navController = rememberNavController()
             LaunchedEffect(Unit) {
                 val isFirstLaunch = dataStore.firstLaunch.first()
                 delay(300)
@@ -113,7 +114,8 @@ class MainActivity : ComponentActivity() {
                     rootNavController = rootNavController,
                     isPortrait = isPortrait,
                     newsViewModel = newsViewModel,
-                    aiViewModel = aiViewModel
+                    aiViewModel = aiViewModel,
+                    navController = navController,
                 )
             }
         }

@@ -101,7 +101,6 @@ val homeUiDestinations = listOf(
 @Composable
 fun AppListUI(
     rootNavController: NavHostController,
-    searchNavController: NavHostController,
     navController: NavHostController,
     newsViewModel: NewsViewModel,
     aiViewModel: AiViewModel,
@@ -243,7 +242,6 @@ fun AppListUI(
             composable<Destination.EXPLORE> {
                 saveableStateHolder.SaveableStateProvider("home") {
                     HomeListUi(
-                        searchNavController = searchNavController,
                         navHostController = navController,
                         newsViewModel = newsViewModel,
                         aiViewModel = aiViewModel,

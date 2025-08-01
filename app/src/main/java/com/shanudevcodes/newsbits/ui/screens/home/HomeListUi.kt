@@ -3,7 +3,6 @@ package com.shanudevcodes.newsbits.ui.screens.home
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,11 +59,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -73,7 +69,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.shanudevcodes.newsbits.R
+import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.SearchDestination
 import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
@@ -95,7 +91,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeListUi(
     bottomAppBarScrollBehavior: BottomAppBarScrollBehavior,
-    searchNavController: NavHostController,
+    searchNavController: NavHostController = rememberNavController(),
     navHostController: NavHostController,
     newsViewModel: NewsViewModel,
     aiViewModel: AiViewModel
@@ -267,21 +263,28 @@ fun HomeListUi(
         containerColor = MaterialTheme.colorScheme.surfaceDim,
         topBar = {
             Column{
-                Row(
+                Box (
                     modifier = Modifier
-                        .padding(
-                            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                            start = 12.dp,
-                            end = 12.dp
+                        .background(MaterialTheme.colorScheme.surfaceDim)
+                ){
+                    Row(
+                        modifier = Modifier
+                            .padding(
+                                top = WindowInsets.statusBars.asPaddingValues()
+                                    .calculateTopPadding(),
+                                start = 12.dp,
+                                end = 12.dp,
+                                bottom = 4.dp
+                            )
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Explore",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.displayMediumEmphasized
                         )
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Explore",
-                        color = MaterialTheme.colorScheme.tertiary,
-                        style = MaterialTheme.typography.displayMediumEmphasized
-                    )
+                    }
                 }
                 Box {
                     TopSearchBar(

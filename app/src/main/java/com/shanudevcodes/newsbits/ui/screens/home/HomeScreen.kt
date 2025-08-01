@@ -52,7 +52,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -124,23 +123,23 @@ fun HomeScreen(
     val newsTopList by viewModel.topNews.collectAsState()
     val options = listOf(
         "All",
-        "business",
-        "crime",
-        "domestic",
-        "education",
-        "entertainment",
-        "environment",
-        "food",
-        "health",
-        "lifestyle",
-        "other",
-        "politics",
-        "science",
-        "sports",
-        "technology",
-        "top",
-        "tourism",
-        "world"
+        "Business",
+        "Crime",
+        "Domestic",
+        "Education",
+        "Entertainment",
+        "Environment",
+        "Food",
+        "Health",
+        "Lifestyle",
+        "Other",
+        "Politics",
+        "Science",
+        "Sports",
+        "Technology",
+        "Top",
+        "Tourism",
+        "World"
     )
     var selectedIndex by remember { mutableIntStateOf(0) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -439,28 +438,38 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
                 ) {
                     itemsIndexed(options) { index, label ->
+//                        ToggleButton(
+//                            checked = selectedIndex == index,
+//                            onCheckedChange = {
+//                                selectedIndex = index
+//                                val selectedCategory = options[index]
+//                                viewModel.setCategory(if (selectedCategory == "All") null else selectedCategory.lowercase())
+//                            },
+//                            shapes =
+//                                when (index) {
+//                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+//                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+//                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+//                                },
+//                            colors = ToggleButtonDefaults.toggleButtonColors(
+//                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+//                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+//                            )
+//                        ) {
+//                            Text(
+//                                text = label,
+//                                style = MaterialTheme.typography.titleMediumEmphasized
+//                            )
+//                        }
                         ToggleButton(
                             checked = selectedIndex == index,
                             onCheckedChange = {
                                 selectedIndex = index
                                 val selectedCategory = options[index]
                                 viewModel.setCategory(if (selectedCategory == "All") null else selectedCategory.lowercase())
-                            },
-                            shapes =
-                                when (index) {
-                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                                },
-                            colors = ToggleButtonDefaults.toggleButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                checkedContainerColor = MaterialTheme.colorScheme.primary,
-                            )
+                            }
                         ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.titleMediumEmphasized
-                            )
+                            Text(label)
                         }
                     }
                 }

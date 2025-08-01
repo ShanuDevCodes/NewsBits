@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
@@ -28,7 +27,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
 import com.shanudevcodes.newsbits.ui.screens.AppListUI
@@ -43,14 +41,13 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeUI(
+    navController : NavHostController,
     rootNavController: NavHostController,
     isPortrait: Boolean,
     newsViewModel: NewsViewModel,
     aiViewModel: AiViewModel
 ){
     val appListUIViewModel: AppListUIViewModel = viewModel()
-    val searchNavController = rememberNavController()
-    val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isHome = currentBackStackEntry?.destination
         ?.hierarchy
@@ -84,7 +81,6 @@ fun HomeUI(
                 Box(modifier = Modifier.weight(animatedWeight.value)) {
                     AppListUI(
                         rootNavController = rootNavController,
-                        searchNavController = searchNavController,
                         navController = navController,
                         newsViewModel = newsViewModel,
                         aiViewModel = aiViewModel,
@@ -149,7 +145,6 @@ fun HomeUI(
                         if (isPortrait) {
                             AppListUI(
                                 rootNavController = rootNavController,
-                                searchNavController = searchNavController,
                                 navController = navController,
                                 newsViewModel = newsViewModel,
                                 aiViewModel = aiViewModel,
