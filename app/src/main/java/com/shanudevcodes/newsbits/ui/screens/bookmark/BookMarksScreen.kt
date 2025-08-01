@@ -27,6 +27,7 @@ import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -44,6 +45,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -62,7 +64,7 @@ import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.Roo
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shortenName
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BookMarksScreen(
     bottomAppBarScrollBehavior: BottomAppBarScrollBehavior,
@@ -86,17 +88,16 @@ fun BookMarksScreen(
                     .background(MaterialTheme.colorScheme.surfaceDim)
                     .padding(
                         top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                        start = 16.dp,
-                        end = 16.dp
+                        start = 12.dp,
+                        end = 12.dp
                     )
-                    .fillMaxWidth()
-                    .height(40.dp),
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "BookMarks",
                     color = MaterialTheme.colorScheme.tertiary,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.displayMediumEmphasized,
                 )
             }
         }
@@ -179,6 +180,7 @@ fun BookMarksScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BookMarkedNewsListItem(news: SavedArticle) {
     Row(
@@ -193,8 +195,8 @@ fun BookMarkedNewsListItem(news: SavedArticle) {
             contentDescription = news.description,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .width(120.dp)
-                .height(90.dp)
+                .width(140.dp)
+                .height(100.dp)
                 .clip(RoundedCornerShape(16.dp))
         )
 
@@ -207,7 +209,7 @@ fun BookMarkedNewsListItem(news: SavedArticle) {
             // Headline
             Text(
                 text = news.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 maxLines = 2
             )
 
@@ -226,7 +228,7 @@ fun BookMarkedNewsListItem(news: SavedArticle) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = news.source_name,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -249,15 +251,19 @@ fun BookMarkedNewsListItem(news: SavedArticle) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = shortenName(news.category), // You can make this dynamic
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        style = MaterialTheme.typography.labelMediumEmphasized,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-
+                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = formatDateString(news.pubDate),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelMediumEmphasized,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

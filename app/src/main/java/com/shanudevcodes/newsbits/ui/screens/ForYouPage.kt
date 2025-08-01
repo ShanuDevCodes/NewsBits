@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,10 +47,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -99,17 +103,19 @@ fun ForYouPage(
                     modifier = Modifier
                         .padding(
                             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                            start = 16.dp,
-                            end = 16.dp
+                            start = 12.dp,
+                            end = 12.dp
                         )
                         .fillMaxWidth()
-                        .height(40.dp),
+                        .height(50.dp),
                     verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "For You",
-                        color = MaterialTheme.colorScheme.tertiary,
-                        style = MaterialTheme.typography.titleLarge
+                ){
+                    Image(
+                        painter = painterResource(R.drawable.newsbits_logo_new),
+                        contentDescription = "News Bits Logo",
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(200.dp)
                     )
                 }
             }
@@ -214,18 +220,23 @@ fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier, onClick: () -> U
             Text(
                 text = news.title,
                 modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.titleLargeEmphasized,
+                style = MaterialTheme.typography.headlineMediumEmphasized,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.SemiBold
             )
             Box(
                 modifier = Modifier
-                    .weight(1f).fillMaxSize()
+                    .weight(1f)
+                    .fillMaxSize()
             ) {
                 Text(
-                    text = news.description?: "",
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    text = news.description ?: "",
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                    style = MaterialTheme.typography.bodyLargeEmphasized,
+                    color = Color.Gray,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Row(
@@ -241,7 +252,7 @@ fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier, onClick: () -> U
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = news.source_name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.labelLargeEmphasized,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.weight(1f))

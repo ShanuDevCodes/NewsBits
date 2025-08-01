@@ -72,13 +72,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import androidx.compose.ui.util.lerp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -97,11 +100,11 @@ import com.shanudevcodes.newsbits.data.getTimeAgo
 import com.shanudevcodes.newsbits.data.rememberNetworkStatus
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.data.shortenName
-import com.shanudevcodes.newsbits.ui.screens.carouselTransition
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -155,10 +158,21 @@ fun HomeScreen(
     val density = LocalDensity.current
     val scrollPx = scrollBehavior.scrollOffset
     val maxPx = scrollBehavior.scrollOffsetLimit // e.g. -180f
-    val pagerState = rememberPagerState(pageCount = { newsTopList.size })
+    val pageCount = Int.MAX_VALUE
+    val startPage = (pageCount / 2) - ((pageCount / 2) % 10)
+    val pagerState = rememberPagerState(
+        initialPage = startPage,
+        pageCount = {pageCount}
+    )
+    val dummyPageCount = 10
+    val dummyStartPage = (pageCount / 2) - ((pageCount / 2) % dummyPageCount)
+    val dummyPagerState = rememberPagerState(
+        initialPage = dummyStartPage,
+        pageCount = { pageCount }
+    )
 
     val topPaddingDp = with(density) {
-        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 105.dp
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 115.dp
     }
 
     val dynamicTopPadding = with(density) {
@@ -193,6 +207,7 @@ fun HomeScreen(
     }
     if (showBottomSheet) {
         ModalBottomSheet(
+            containerColor = MaterialTheme.colorScheme.surfaceDim,
             sheetGesturesEnabled = false,
             onDismissRequest = {
                 showBottomSheet = false
@@ -218,7 +233,7 @@ fun HomeScreen(
                 viewModel.loadTopNews()
                 newsList.refresh()
                 delay(1000)
-                pagerState.animateScrollToPage(0)
+                pagerState.animateScrollToPage(startPage)
                 isRefreshing = false
             }
         },
@@ -240,12 +255,14 @@ fun HomeScreen(
         ) {
             item {
                 Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Top News",
                         color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleLargeEmphasized
                     )
                     IconButton(
                         onClick = {
@@ -253,13 +270,14 @@ fun HomeScreen(
                                 showBottomSheet = true
                             }
                         },
-                        modifier = Modifier.offset(x = 15.dp)
+                        modifier = Modifier
+                            .size(30.dp)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.sparkler),
                             contentDescription = "AI",
                             tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
@@ -272,19 +290,20 @@ fun HomeScreen(
                 ) {
                     if (isTopNewsLoaded) {
                         HorizontalPager(
+                            contentPadding = PaddingValues(horizontal = 28.dp),
                             state = pagerState,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(280.dp)
                         ) { page ->
-                            val currentItem = newsTopList.getOrNull(page)
+                            val currentItem = newsTopList.getOrNull(page % newsTopList.size)
                             if (currentItem != null) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .fillMaxHeight()
                                         .clip(MaterialTheme.shapes.extraLarge)
-                                        .carouselTransition(page, pagerState),
+                                        .horizontalCarouselTransition(page, pagerState),
                                 ) {
                                     // Image with rounded corners
                                     Box(
@@ -352,7 +371,7 @@ fun HomeScreen(
                                                     Text(
                                                         text = getTimeAgo(currentItem.pubDate),
                                                         color = MaterialTheme.colorScheme.primary,
-                                                        style = MaterialTheme.typography.bodySmall
+                                                        style = MaterialTheme.typography.labelLargeEmphasized
                                                     )
                                                 }
                                                 Spacer(modifier = Modifier.height(8.dp))
@@ -362,14 +381,15 @@ fun HomeScreen(
                                                     Text(
                                                         text = currentItem.source_name,
                                                         color = Color.Gray,
-                                                        style = MaterialTheme.typography.bodySmall
+                                                        style = MaterialTheme.typography.labelLargeEmphasized
                                                     )
                                                 }
                                                 Spacer(modifier = Modifier.height(8.dp))
                                                 Text(
                                                     text = currentItem.title,
-                                                    style = MaterialTheme.typography.bodyLarge,
-                                                    maxLines = 3
+                                                    style = MaterialTheme.typography.titleMediumEmphasized,
+                                                    maxLines = 3,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
@@ -379,38 +399,32 @@ fun HomeScreen(
                         }
                     }else{
                         HorizontalPager(
-                            state = rememberPagerState(pageCount = {10}),
+                            contentPadding = PaddingValues(horizontal = 28.dp),
+                            state = dummyPagerState,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(280.dp)
-                        ) {
-                            repeat(10) {
+                        ) { page ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(280.dp)
+                                    .clip(MaterialTheme.shapes.extraLarge)
+                                    .horizontalCarouselTransition(page, dummyPagerState),
+                            ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(280.dp)
-                                        .clip(MaterialTheme.shapes.extraLarge),
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(280.dp)
-                                            .clip(MaterialTheme.shapes.extraLarge)
-                                            .shimmerEffect()
-                                    )
-                                }
+                                        .clip(MaterialTheme.shapes.extraLarge)
+                                        .shimmerEffect()
+                                )
                             }
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    if (pagerState.pageCount == 0){
-                        DotIndicators(
-                            pageCount = 10,
-                            pagerState = rememberPagerState(pageCount = {0}),
-                        )
-                    }
                     DotIndicators(
-                        pageCount = newsTopList.size,
+                        pageCount = 10,
                         pagerState = pagerState,
                     )
                 }
@@ -421,6 +435,7 @@ fun HomeScreen(
 
             item {
                 LazyRow(
+                    contentPadding = PaddingValues(horizontal = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
                 ) {
                     itemsIndexed(options) { index, label ->
@@ -442,7 +457,10 @@ fun HomeScreen(
                                 checkedContainerColor = MaterialTheme.colorScheme.primary,
                             )
                         ) {
-                            Text(label)
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.titleMediumEmphasized
+                            )
                         }
                     }
                 }
@@ -480,7 +498,7 @@ fun HomeScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 2.dp),
+                            .padding(start = 12.dp, end = 12.dp, bottom = 2.dp),
                     ) {
                         Box(
                             modifier = Modifier
@@ -577,7 +595,36 @@ fun HomeScreen(
                     }
                     true -> {
                         repeat(10){
-                            DummySearchResultItem()
+                            Card(
+                                shape = RoundedCornerShape(
+                                    topStart = if (it == 0) {
+                                        24.dp
+                                    }else {
+                                        4.dp
+                                    },
+                                    topEnd = if (it == 0) {
+                                        24.dp
+                                    }else {
+                                        4.dp
+                                    },
+                                    bottomStart = if (it == 9) {
+                                        24.dp
+                                    }else {
+                                        4.dp
+                                    },
+                                    bottomEnd = if (it == 9) {
+                                        24.dp
+                                    }else {
+                                        4.dp
+                                    }
+                                ),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 16.dp, bottom = 2.dp),
+                            ) {
+                                DummySearchResultItem()
+                            }
                         }
                     }
                 }
@@ -589,6 +636,7 @@ fun HomeScreen(
         }
     }
 }
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NewsListItem(news: NewsArticle) {
     Row(
@@ -608,8 +656,8 @@ fun NewsListItem(news: NewsArticle) {
             contentDescription = news.description,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .width(120.dp)
-                .height(90.dp)
+                .width(140.dp)
+                .height(100.dp)
                 .clip(RoundedCornerShape(16.dp))
         )
 
@@ -622,7 +670,7 @@ fun NewsListItem(news: NewsArticle) {
             // Headline
             Text(
                 text = news.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 maxLines = 2
             )
 
@@ -641,7 +689,7 @@ fun NewsListItem(news: NewsArticle) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = news.source_name,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -664,14 +712,18 @@ fun NewsListItem(news: NewsArticle) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = shortenName(news.category.joinToString(", ")), // You can make this dynamic
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        style = MaterialTheme.typography.labelMediumEmphasized,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-
+                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = formatDateString(news.pubDate),
-                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -692,7 +744,7 @@ fun DotIndicators(
     ) {
         repeat(pageCount) { iteration ->
             val color by animateColorAsState(
-                targetValue = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.onSurface else Color.Gray,
+                targetValue = if (pagerState.currentPage % pageCount == iteration) MaterialTheme.colorScheme.onSurface else Color.Gray,
                 animationSpec = tween(durationMillis = 300),
                 label = "DotColorAnim"
             )
@@ -700,10 +752,27 @@ fun DotIndicators(
             Box(
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
-                    .size(if (pagerState.currentPage == iteration) 10.dp else 8.dp)
+                    .size(if (pagerState.currentPage % pageCount == iteration) 10.dp else 8.dp)
                     .clip(CircleShape)
                     .background(color)
             )
         }
     }
 }
+
+fun Modifier.horizontalCarouselTransition(page: Int, pagerState: PagerState) =
+    graphicsLayer {
+        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val scale = lerp(
+            start = 0.92f,
+            stop = 1f,
+            fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
+        )
+        scaleX = scale
+        scaleY = scale
+        alpha = lerp(
+            start = 0.5f,
+            stop = 1f,
+            fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
+        )
+    }

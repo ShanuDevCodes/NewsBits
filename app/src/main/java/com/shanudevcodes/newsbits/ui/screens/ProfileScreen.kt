@@ -25,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.Help
-import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Settings
@@ -124,17 +123,16 @@ fun ProfileScreen(navController: NavHostController){
                     modifier = Modifier
                         .padding(
                             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                            start = 16.dp,
-                            end = 16.dp
+                            start = 12.dp,
+                            end = 12.dp
                         )
-                        .fillMaxWidth()
-                        .height(40.dp),
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Profile",
                         color = MaterialTheme.colorScheme.tertiary,
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.displayMediumEmphasized
                     )
                 }
             },
@@ -144,7 +142,7 @@ fun ProfileScreen(navController: NavHostController){
                     .background(MaterialTheme.colorScheme.surfaceDim)
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 12.dp)
             ){
                 LazyColumn(
                     contentPadding = PaddingValues(vertical = 16.dp),
@@ -187,14 +185,14 @@ fun ProfileScreen(navController: NavHostController){
                                 ) {
                                     Text(
                                         text = "Shanu",
-                                        style = MaterialTheme.typography.labelLarge,
+                                        style = MaterialTheme.typography.titleLargeEmphasized,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = "ShanuDevCodes@gmail.com",
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = MaterialTheme.typography.bodySmallEmphasized,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
                                 }
@@ -256,7 +254,7 @@ fun ProfileScreen(navController: NavHostController){
                                     Icon(
                                         imageVector = item.icon,
                                         contentDescription = item.name,
-                                        modifier = Modifier.size(28.dp),
+                                        modifier = Modifier.size(32.dp),
                                         tint = if (item.name == "Logout") {
                                             Color(0xFFB32727)
                                         } else {
@@ -267,7 +265,7 @@ fun ProfileScreen(navController: NavHostController){
                                     Icon(
                                         imageVector = ImageVector.vectorResource(id = item.iconId),
                                         contentDescription = item.name,
-                                        modifier = Modifier.size(28.dp),
+                                        modifier = Modifier.size(32.dp),
                                         tint = if (item.name == "Logout") {
                                             Color(0xFFB32727)
                                         } else {
@@ -281,7 +279,7 @@ fun ProfileScreen(navController: NavHostController){
                                 ) {
                                     Text(
                                         text = item.name,
-                                        style = MaterialTheme.typography.labelLarge,
+                                        style = MaterialTheme.typography.titleMediumEmphasized,
                                         fontWeight = FontWeight.Bold,
                                         color = if(item.name == "Logout"){
                                             Color(0xFFB32727)
@@ -292,7 +290,7 @@ fun ProfileScreen(navController: NavHostController){
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = item.description,
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = MaterialTheme.typography.bodySmallEmphasized,
                                         color = if(item.name == "Logout"){
                                             MaterialTheme.colorScheme.onErrorContainer
                                         }else{
@@ -348,9 +346,9 @@ fun ProfileScreen(navController: NavHostController){
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.Logout,
+                                    imageVector = Icons.Outlined.Settings,
                                     contentDescription = "Logout",
-                                    modifier = Modifier.size(28.dp),
+                                    modifier = Modifier.size(32.dp),
                                     tint = Color(0xFFB32727)
                                 )
                                 Spacer(modifier = Modifier.width(16.dp))
@@ -359,14 +357,14 @@ fun ProfileScreen(navController: NavHostController){
                                 ) {
                                     Text(
                                         text = "Logout",
-                                        style = MaterialTheme.typography.labelLarge,
+                                        style = MaterialTheme.typography.titleMediumEmphasized,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFFB32727)
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = "Logout from the app",
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = MaterialTheme.typography.bodySmallEmphasized,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                 }

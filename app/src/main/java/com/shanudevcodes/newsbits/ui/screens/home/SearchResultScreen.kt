@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -97,7 +98,7 @@ fun SearchResultScreen(
     val maxPx = scrollBehavior.scrollOffsetLimit // e.g. -180f
 
     val topPaddingDp = with(density) {
-        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 105.dp
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 115.dp
     }
 
     val dynamicTopPadding = with(density) {
@@ -143,7 +144,7 @@ fun SearchResultScreen(
     }
     Scaffold(
         contentWindowInsets = WindowInsets(0.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -161,7 +162,36 @@ fun SearchResultScreen(
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
                 ) {
                     items(placeholderCount) {
-                        DummySearchResultItem()
+                        Card(
+                            shape = RoundedCornerShape(
+                                topStart = if (it == 0) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                },
+                                topEnd = if (it == 0) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                },
+                                bottomStart = if (it == placeholderCount-1) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                },
+                                bottomEnd = if (it == placeholderCount-1) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                }
+                            ),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 2.dp),
+                        ) {
+                            DummySearchResultItem()
+                        }
                     }
                     item{
                         Spacer(modifier = Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()))
@@ -179,11 +209,32 @@ fun SearchResultScreen(
                 ) {
                     itemsIndexed(searchResults) { index, news ->
                         Card(
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                            shape = RoundedCornerShape(
+                                topStart = if (index == 0) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                },
+                                topEnd = if (index == 0) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                },
+                                bottomStart = if (index == searchResults.size) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                },
+                                bottomEnd = if (index == searchResults.size) {
+                                    24.dp
+                                }else {
+                                    4.dp
+                                }
+                            ),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp),
+                                .padding(bottom = 2.dp),
                         ) {
                             Box(
                                 modifier = Modifier
@@ -305,6 +356,7 @@ fun DummySearchResultItem() {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NewsSearchListItem(news: NewsArticleSearch) {
     Row(
@@ -319,8 +371,8 @@ fun NewsSearchListItem(news: NewsArticleSearch) {
             contentDescription = news.description,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .width(120.dp)
-                .height(90.dp)
+                .width(140.dp)
+                .height(100.dp)
                 .clip(RoundedCornerShape(16.dp))
         )
 
@@ -333,7 +385,7 @@ fun NewsSearchListItem(news: NewsArticleSearch) {
             // Headline
             Text(
                 text = news.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 maxLines = 2
             )
 
@@ -352,7 +404,7 @@ fun NewsSearchListItem(news: NewsArticleSearch) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = news.source_name,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -375,15 +427,19 @@ fun NewsSearchListItem(news: NewsArticleSearch) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = shortenName(news.category.joinToString(", ")),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        style = MaterialTheme.typography.labelMediumEmphasized,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-
+                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = formatDateString(news.pubDate),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelMediumEmphasized,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

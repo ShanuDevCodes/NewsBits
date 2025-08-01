@@ -6,15 +6,30 @@ import java.util.*
 fun formatDateString(rawDate: String): String {
     return try {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).apply {
-            timeZone = TimeZone.getTimeZone("UTC") // Parse assuming input is UTC
+            timeZone = TimeZone.getTimeZone("UTC") // Parse as UTC
         }
 
-        val outputFormat = SimpleDateFormat("dd MMMM yy, hh:mm a", Locale.getDefault()).apply {
-            timeZone = TimeZone.getDefault() // Convert to device's local time zone
-        }
+        val date = inputFormat.parse(rawDate) ?: return rawDate
+        val now = Date()
 
-        val date = inputFormat.parse(rawDate)
-        outputFormat.format(date!!)
+        val diffMillis = now.time - date.time
+        val diffDays = diffMillis / (24 * 60 * 60 * 1000)
+
+        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+
+        when {
+            // Today → exact time
+            diffDays == 0L -> "${timeFormat.format(date)}"
+
+            // Within 1 month
+            diffDays in 1..30 -> "${diffDays} days ago"
+
+            // Older than 1 month
+            else -> {
+                val outputFormat = SimpleDateFormat("dd MMM yy", Locale.getDefault())
+                outputFormat.format(date)
+            }
+        }
     } catch (e: Exception) {
         rawDate // Fallback if parsing fails
     }

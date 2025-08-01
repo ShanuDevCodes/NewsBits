@@ -86,6 +86,7 @@ fun AiBottomSheetContent(
     Column(
         modifier = Modifier
             .padding(8.dp)
+            .background(MaterialTheme.colorScheme.surfaceDim)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -102,7 +103,7 @@ fun AiBottomSheetContent(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "AI Top News Summary",
-                style = MaterialTheme.typography.titleSmallEmphasized,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 color = MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Bold
             )
@@ -132,7 +133,7 @@ fun AiBottomSheetContent(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Powered By Gemini 2.5 Flash",
-                        style = MaterialTheme.typography.bodySmallEmphasized,
+                        style = MaterialTheme.typography.bodyLargeEmphasized,
                         modifier = Modifier.padding(horizontal = 16.dp),
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -165,7 +166,7 @@ fun AiBottomSheetContent(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Summary Style",
-                        style = MaterialTheme.typography.titleSmallEmphasized,
+                        style = MaterialTheme.typography.titleMediumEmphasized,
                         modifier = Modifier.padding(start = 16.dp),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -189,7 +190,7 @@ fun AiBottomSheetContent(
                                 )
                                 Text(
                                     text = "Concise",
-                                    style = MaterialTheme.typography.bodySmallEmphasized,
+                                    style = MaterialTheme.typography.bodyMediumEmphasized,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -222,7 +223,7 @@ fun AiBottomSheetContent(
                                 )
                                 Text(
                                     text = "Detailed",
-                                    style = MaterialTheme.typography.bodySmallEmphasized,
+                                    style = MaterialTheme.typography.bodyMediumEmphasized,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -246,7 +247,7 @@ fun AiBottomSheetContent(
             modifier = Modifier
                 .height(300.dp)
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, shape = RoundedCornerShape(16.dp))
         ) {
             Box(
                 modifier = Modifier
@@ -336,7 +337,7 @@ fun FadingSummaryList(
                     GeminiSummaryType.DETAILED -> "Detailed"
                     else -> ""
                 },
-                style = MaterialTheme.typography.bodySmallEmphasized,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.graphicsLayer { this.alpha = alpha }
@@ -355,7 +356,7 @@ fun FadingSummaryList(
             )
             Text(
                 text = "- $response",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMediumEmphasized,
                 modifier = Modifier
                     .padding(vertical = 4.dp, horizontal = 4.dp)
                     .graphicsLayer { this.alpha = alpha }

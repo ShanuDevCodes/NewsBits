@@ -123,8 +123,8 @@ fun HomeListUi(
         @Composable {
             SearchBarDefaults.InputField(
                 colors = SearchBarDefaults.inputFieldColors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
                 modifier = Modifier
                     .width(width = when(isPortrait) {
@@ -150,7 +150,10 @@ fun HomeListUi(
                         launchSingleTop = true
                     }
                 },
-                placeholder = { Text("Search News Bits...") },
+                placeholder = { Text(
+                    text = "Search News Bits...",
+                    style = MaterialTheme.typography.titleMediumEmphasized
+                ) },
                 leadingIcon = {
                     if (searchBackStackEntry?.destination?.hierarchy?.any{it.route == SearchDestination.HOMESEARCHSCREEN::class.qualifiedName} == true) {
                         if (searchBarState.currentValue == SearchBarValue.Expanded) {
@@ -253,7 +256,7 @@ fun HomeListUi(
     LaunchedEffect(searchBackStackEntry?.destination?.hierarchy) {
         if (searchBackStackEntry?.destination?.hierarchy?.any { it.route == SearchDestination.HOMESEARCHSCREEN::class.qualifiedName } == true) {
             Log.d( "BackStack",  "Home Search Screen")
-            textFieldState.clearText()
+            //textFieldState.clearText()
             delay(600)
             newsViewModel.resetSearchResults()
             newsViewModel.resetSearchResultsLoaded()
@@ -266,22 +269,18 @@ fun HomeListUi(
             Column{
                 Row(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceDim)
                         .padding(
                             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                            start = 16.dp,
-                            end = 16.dp
+                            start = 12.dp,
+                            end = 12.dp
                         )
-                        .fillMaxWidth()
-                        .height(40.dp),
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
-                ){
-                    Image(
-                        painter = painterResource(R.drawable.newsbits_logo_new),
-                        contentDescription = "News Bits Logo",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.size(100.dp)
+                ) {
+                    Text(
+                        text = "Explore",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        style = MaterialTheme.typography.displayMediumEmphasized
                     )
                 }
                 Box {
@@ -298,7 +297,7 @@ fun HomeListUi(
                             state = searchBarState,
                             inputField = inputField,
                             colors = SearchBarDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             )
                         ) {
                             LaunchedEffect(Unit) {
@@ -309,6 +308,9 @@ fun HomeListUi(
                                     .padding(start = 8.dp, end = 8.dp)
                             ) {
                                 Card(
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                    ),
                                     shape = RoundedCornerShape(24.dp),
                                     modifier = Modifier
                                         .padding(top = 8.dp, bottom = 8.dp)
@@ -445,7 +447,7 @@ fun HomeListUi(
                             state = searchBarState,
                             inputField = inputField,
                             colors = SearchBarDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             ),
                             windowInsets = { WindowInsets.statusBars },
                         ) {
@@ -458,7 +460,7 @@ fun HomeListUi(
                             ) {
                                 Card(
                                     colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                                     ),
                                     shape = RoundedCornerShape(24.dp),
                                     modifier = Modifier
@@ -604,7 +606,6 @@ fun HomeListUi(
                     Column {
                         Box(
                             modifier = Modifier
-                                .padding(start = 12.dp, end = 12.dp)
                         ) {
                             HomeScreen(
                                 navController = navHostController,

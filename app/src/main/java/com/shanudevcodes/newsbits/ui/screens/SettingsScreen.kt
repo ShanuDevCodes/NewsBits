@@ -106,7 +106,12 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .height(56.dp)
                             .padding(bottom = 2.dp),
-                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp),
+                        onClick = {
+                            scope.launch {
+                                dataStore.setDynamicColor(!dynamicColor)
+                            }
+                        }
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -144,7 +149,10 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .height(56.dp)
                             .padding(bottom = 2.dp),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(4.dp),
+                        onClick = {
+                            isDropDownEnabled = true
+                        }
                     ){
                         Box(
                             modifier = Modifier.fillMaxSize(),

@@ -188,7 +188,7 @@ fun AppListUI(
                                         ),
                                         colors = IconToggleButtonColors(
                                             containerColor = Color.Transparent,
-                                            contentColor = MaterialTheme.colorScheme.onSurface,
+                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                             disabledContainerColor = Color.Gray,
                                             disabledContentColor = Color.Gray,
                                             checkedContainerColor = Color.Transparent,
@@ -234,20 +234,20 @@ fun AppListUI(
         ) {
             composable<Destination.HOME> {
                 saveableStateHolder.SaveableStateProvider("explore") {
+                    ForYouPage(
+                        newsViewModel = newsViewModel,
+                        navController = navController
+                    )
+                }
+            }
+            composable<Destination.EXPLORE> {
+                saveableStateHolder.SaveableStateProvider("home") {
                     HomeListUi(
                         searchNavController = searchNavController,
                         navHostController = navController,
                         newsViewModel = newsViewModel,
                         aiViewModel = aiViewModel,
                         bottomAppBarScrollBehavior = bottomBarScrollBehavior
-                    )
-                }
-            }
-            composable<Destination.EXPLORE> {
-                saveableStateHolder.SaveableStateProvider("home") {
-                    ForYouPage(
-                        newsViewModel = newsViewModel,
-                        navController = navController
                     )
                 }
             }

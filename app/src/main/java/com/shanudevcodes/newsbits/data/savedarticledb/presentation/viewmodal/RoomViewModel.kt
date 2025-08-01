@@ -2,8 +2,6 @@ package com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.states.RoomStates
 import com.shanudevcodes.newsbits.data.savedarticledb.data.dao.RoomDao
 import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toDomain
 import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toSavedArticle
@@ -17,6 +15,8 @@ import com.shanudevcodes.newsbits.data.savedarticledb.domain.usecase.GetHistoryU
 import com.shanudevcodes.newsbits.data.savedarticledb.domain.usecase.IsArticleSavedUseCase
 import com.shanudevcodes.newsbits.data.savedarticledb.domain.usecase.SaveArticleUseCase
 import com.shanudevcodes.newsbits.data.savedarticledb.domain.usecase.SaveHistoryUseCase
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
+import com.shanudevcodes.newsbits.data.savedarticledb.presentation.states.RoomStates
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -95,7 +95,7 @@ class RoomViewModel(
 
             is RoomEvents.SaveHistory -> {
                 viewModelScope.launch {
-                    saveHistoryUseCase(_state.value.historyQuery)
+                    saveHistoryUseCase(query = event.query)
                 }
             }
 
