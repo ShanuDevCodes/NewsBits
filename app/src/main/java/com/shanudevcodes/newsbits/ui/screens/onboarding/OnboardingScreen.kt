@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -30,6 +31,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -323,6 +325,23 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                         }
                     )
                 }
+            }
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        dataStore.setFirstLaunch(false)
+                        context.startActivity(Intent(context, MainActivity::class.java))
+                        (context as? OnboardingActivity)?.finish()
+                    }
+                },
+                modifier = Modifier
+                    .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .align(Alignment.TopEnd)
+            ) {
+                Text(
+                    text = "Skip",
+                )
             }
         }
     }
