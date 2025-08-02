@@ -115,7 +115,7 @@ fun ForYouPage(
             ) {
                 VerticalPager(
                     modifier = Modifier.padding(horizontal = 12.dp),
-                    contentPadding = PaddingValues(vertical = 150.dp),
+                    contentPadding = PaddingValues(vertical = 120.dp),
                     state = pagerState
                 ) { page ->
                     newsList[page]?.let { article ->

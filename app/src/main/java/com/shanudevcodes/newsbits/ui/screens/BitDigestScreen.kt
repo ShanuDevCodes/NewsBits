@@ -99,7 +99,7 @@ fun BitDigestScreen(){
                                 .padding(),
                             contentAlignment = Alignment.Center
                         ) {
-                            ComingSoonAnimation(true)
+                            ComingSoonAnimation()
                         }
                         Spacer(
                             modifier = Modifier.height(
@@ -108,21 +108,6 @@ fun BitDigestScreen(){
                             )
                         )
                     }
-//                ExtendedFloatingActionButton(
-//                    onClick = {  },
-//                    icon = {
-//                        Icon(
-//                            imageVector = Icons.Outlined.Notifications,
-//                            contentDescription = "Notify me"
-//                        )
-//                    },
-//                    text = {
-//                        Text(
-//                            text = "Notify me",
-//                        )
-//                    },
-//                    modifier = Modifier.align(alignment = Alignment.BottomEnd)
-//                )
                 }
             }
         }
