@@ -179,7 +179,6 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 fontWeight = FontWeight.SemiBold,
                                 lineHeight = MaterialTheme.typography.headlineLarge.lineHeight * 1.1f
                             ),
-//                            textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 20.dp)
                         )
@@ -190,7 +189,6 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3f,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
-//                            textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp)
@@ -206,7 +204,6 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 fontWeight = FontWeight.SemiBold,
                                 lineHeight = MaterialTheme.typography.headlineLarge.lineHeight * 1.1f
                             ),
-//                            textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -219,7 +216,6 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3f,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
-//                            textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp)
@@ -235,7 +231,6 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 fontWeight = FontWeight.SemiBold,
                                 lineHeight = MaterialTheme.typography.headlineLarge.lineHeight * 1.1f
                             ),
-//                            textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -248,7 +243,6 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3f,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
-//                            textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp)
