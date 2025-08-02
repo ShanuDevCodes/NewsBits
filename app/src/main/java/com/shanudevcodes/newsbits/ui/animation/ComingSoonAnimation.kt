@@ -12,7 +12,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
-fun ComingSoonAnimation(isDark: Boolean) {
+fun ComingSoonAnimation() {
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("under_maintenance.json"))
     val progress by animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
     LottieAnimation(

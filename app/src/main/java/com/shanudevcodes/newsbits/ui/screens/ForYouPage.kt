@@ -75,7 +75,6 @@ fun ForYouPage(
     navController: NavHostController
 ) {
     val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentLink by newsViewModel.currentLink.collectAsState()
     LaunchedEffect(newsList) {
         newsList.refresh()
