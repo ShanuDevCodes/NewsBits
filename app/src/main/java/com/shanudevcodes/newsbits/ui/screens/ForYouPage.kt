@@ -173,7 +173,7 @@ fun ForYouPage(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier, onClick: () -> Unit) {
+fun VerticalCarouselItem(news: NewsArticle, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh

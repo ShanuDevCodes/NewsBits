@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.net.ConnectivityManager
@@ -60,25 +61,40 @@ class MainActivity : ComponentActivity() {
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
             val aiViewModel: AiViewModel = viewModel()
             val navController = rememberNavController()
+            var keepOnScreenCondition by remember { mutableStateOf(true) }
+//            LaunchedEffect(Unit) {
+//                val isFirstLaunch = dataStore.firstLaunch.first()
+//                delay(300)
+//                if (!isOnline(applicationContext)) {
+//                    if (!isFirstLaunch) {
+//                        Toast.makeText(
+//                            applicationContext,
+//                            "You're offline. Showing old news.",
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                    } else {
+//                        Toast.makeText(
+//                            applicationContext,
+//                            "You're offline",
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                    }
+//                }
+//                dataStore.setFirstLaunch(false)
+//            }
             LaunchedEffect(Unit) {
                 val isFirstLaunch = dataStore.firstLaunch.first()
-                delay(300)
-                if (!isOnline(applicationContext)) {
-                    if (!isFirstLaunch) {
-                        Toast.makeText(
-                            applicationContext,
-                            "You're offline. Showing old news.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            applicationContext,
-                            "You're offline",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                if (isFirstLaunch) {
+                    startActivity(Intent(this@MainActivity, OnboardingActivity::class.java)
+//                        .apply {
+//                            addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+//                        }
+                    )
+                    finish()
+                    keepOnScreenCondition = false
+                }else{
+                    keepOnScreenCondition = false
                 }
-                dataStore.setFirstLaunch(false)
             }
             LaunchedEffect(Unit) {
                 var refreshTime = 0
@@ -105,7 +121,7 @@ class MainActivity : ComponentActivity() {
                 dataStore.themeFlow.first()
                 themeLoaded = true
             }
-            splashScreen.setKeepOnScreenCondition { !themeLoaded && !isNewsLoaded.value }
+            splashScreen.setKeepOnScreenCondition { !themeLoaded && !isNewsLoaded.value || keepOnScreenCondition }
             NewsBitsTheme(
                 themeOption = themeOption,
                 dynamicColor = dynamicColor

@@ -112,14 +112,19 @@ fun AppListUI(
     val bottomBarScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
     LaunchedEffect(rootCurrentDestination) {
         if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.HOME::class.qualifiedName } == true){
+            bottomBarScrollBehavior.state.heightOffset = 0f
             viewModel.updatePosition(0)
         }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.EXPLORE::class.qualifiedName } == true){
+            bottomBarScrollBehavior.state.heightOffset = 0f
             viewModel.updatePosition(1)
         }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.BITDIGEST::class.qualifiedName } == true){
+            bottomBarScrollBehavior.state.heightOffset = 0f
             viewModel.updatePosition(2)
         }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.BOOKMARKS::class.qualifiedName } == true){
+            bottomBarScrollBehavior.state.heightOffset = 0f
             viewModel.updatePosition(3)
         }else if (rootCurrentDestination?.hierarchy?.any { it.route == Destination.PROFILE::class.qualifiedName } == true){
+            bottomBarScrollBehavior.state.heightOffset = 0f
             viewModel.updatePosition(4)
         }
     }
