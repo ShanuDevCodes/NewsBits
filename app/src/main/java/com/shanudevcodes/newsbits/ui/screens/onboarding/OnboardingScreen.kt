@@ -314,7 +314,8 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 )
                             }else{
                                 LoadingIndicator(
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(32.dp),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         },
