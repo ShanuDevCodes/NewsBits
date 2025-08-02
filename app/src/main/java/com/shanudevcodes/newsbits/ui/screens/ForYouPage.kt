@@ -39,9 +39,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +55,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -65,7 +63,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
-import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlin.math.absoluteValue
@@ -79,16 +76,9 @@ fun ForYouPage(
 ) {
     val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val lastViewedIndex = rememberSaveable { mutableStateOf<Int?>(null) }
-    val lastViewedType = rememberSaveable { mutableStateOf<String?>(null) }
+    val currentLink by newsViewModel.currentLink.collectAsState()
     LaunchedEffect(newsList) {
         newsList.refresh()
-    }
-    LaunchedEffect(currentBackStackEntry?.destination) {
-        if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
-            lastViewedIndex.value = null
-            lastViewedType.value = null
-        }
     }
     val pagerState = rememberPagerState(pageCount = { newsList.itemCount })
     Surface(
@@ -138,9 +128,7 @@ fun ForYouPage(
                                 pagerState = pagerState,
                             ),
                             onClick = {
-                                if (lastViewedIndex.value != page || lastViewedType.value != News.NEWS_TOP.name) {
-                                    lastViewedIndex.value = page
-                                    lastViewedType.value = News.NEWS_TOP.name
+                                if (currentLink != article.link) {
                                     navController.navigate(
                                         HomeDestination.SEARCHRESULTDETAILSCREEN(
                                             article.link,
@@ -149,6 +137,7 @@ fun ForYouPage(
                                         popUpTo(navController.graph.findStartDestination().id)
                                         launchSingleTop = true
                                     }
+                                    newsViewModel.setCurrentLink(article.link)
                                 }
                             }
                         )

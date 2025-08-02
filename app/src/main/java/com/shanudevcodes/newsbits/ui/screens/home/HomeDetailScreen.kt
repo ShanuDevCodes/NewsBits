@@ -307,7 +307,7 @@ fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BottomSheetContent(news: NewsArticle?, listState: LazyListState){
     val scrollInterop = rememberNestedScrollInteropConnection()
@@ -326,7 +326,10 @@ fun BottomSheetContent(news: NewsArticle?, listState: LazyListState){
                         selected = true,
                         onClick = {},
                         label = {
-                            Text(text = category)
+                            Text(
+                                text = category,
+                                style = MaterialTheme.typography.bodyLargeEmphasized
+                            )
                         },
                         shape = RoundedCornerShape(16.dp),
                     )
@@ -349,7 +352,7 @@ fun BottomSheetContent(news: NewsArticle?, listState: LazyListState){
                             textAlign = TextAlign.Justify,
                             modifier = Modifier.fillMaxWidth(),
                             softWrap = true,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.labelLargeEmphasized
                         )
                     }
                     item {
@@ -366,7 +369,8 @@ fun BottomSheetContent(news: NewsArticle?, listState: LazyListState){
                         text = "No description available",
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.labelLargeEmphasized
                     )
                 }
             }

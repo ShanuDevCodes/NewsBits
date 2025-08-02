@@ -54,10 +54,14 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ProfileScreen(navController: NavHostController){
+fun ProfileScreen(
+    navController: NavHostController,
+    newsViewModel: NewsViewModel
+){
     val profileScreenItemList = listOf(
         ProfileScreenData(
             name = "Settings",
@@ -72,6 +76,7 @@ fun ProfileScreen(navController: NavHostController){
                     launchSingleTop = true
                     restoreState = true
                 }
+                newsViewModel.resetCurrentLink()
             }
         ),
         ProfileScreenData(

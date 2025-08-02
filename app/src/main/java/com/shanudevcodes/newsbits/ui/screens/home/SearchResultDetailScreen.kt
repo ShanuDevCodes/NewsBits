@@ -137,7 +137,7 @@ fun SearchResultDetailScreen(
                                 Text(
                                     text = news?.title ?: "",
                                     fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleMediumEmphasized,
+                                    style = MaterialTheme.typography.titleLargeEmphasized,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     textAlign = TextAlign.Center
                                 )
@@ -188,18 +188,18 @@ fun SearchResultDetailScreen(
                     ) {
                         Text(
                             text = news?.source_name?:"",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLargeEmphasized,
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = formatDateString(news?.pubDate?:""),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLargeEmphasized,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = " $timeZoneAbbreviation",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLargeEmphasized,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }

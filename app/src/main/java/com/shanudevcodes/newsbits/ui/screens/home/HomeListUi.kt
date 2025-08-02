@@ -94,7 +94,7 @@ fun HomeListUi(
     searchNavController: NavHostController = rememberNavController(),
     navHostController: NavHostController,
     newsViewModel: NewsViewModel,
-    aiViewModel: AiViewModel
+    aiViewModel: AiViewModel,
 ) {
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)

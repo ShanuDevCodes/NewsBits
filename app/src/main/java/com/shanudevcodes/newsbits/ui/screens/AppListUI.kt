@@ -104,7 +104,7 @@ fun AppListUI(
     navController: NavHostController,
     newsViewModel: NewsViewModel,
     aiViewModel: AiViewModel,
-    viewModel: AppListUIViewModel
+    viewModel: AppListUIViewModel,
 ){
     val saveableStateHolder = rememberSaveableStateHolder()
     val rootNavBackStackEntry by rootNavController.currentBackStackEntryAsState()
@@ -235,7 +235,7 @@ fun AppListUI(
                 saveableStateHolder.SaveableStateProvider("explore") {
                     ForYouPage(
                         newsViewModel = newsViewModel,
-                        navController = navController
+                        navController = navController,
                     )
                 }
             }
@@ -245,7 +245,7 @@ fun AppListUI(
                         navHostController = navController,
                         newsViewModel = newsViewModel,
                         aiViewModel = aiViewModel,
-                        bottomAppBarScrollBehavior = bottomBarScrollBehavior
+                        bottomAppBarScrollBehavior = bottomBarScrollBehavior,
                     )
                 }
             }
@@ -258,13 +258,17 @@ fun AppListUI(
                 saveableStateHolder.SaveableStateProvider("bookmark") {
                     BookMarksScreen(
                         bottomAppBarScrollBehavior = bottomBarScrollBehavior,
-                        navController = navController
+                        navController = navController,
+                        newsViewModel = newsViewModel
                     )
                 }
             }
             composable<Destination.PROFILE> {
                 saveableStateHolder.SaveableStateProvider("profile") {
-                    ProfileScreen(navController = navController)
+                    ProfileScreen(
+                        navController = navController,
+                        newsViewModel
+                    )
                 }
             }
         }

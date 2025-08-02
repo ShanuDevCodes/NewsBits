@@ -96,9 +96,10 @@ fun SearchResultScreen(
     val density = LocalDensity.current
     val scrollPx = scrollBehavior.scrollOffset
     val maxPx = scrollBehavior.scrollOffsetLimit // e.g. -180f
+    val currentLink by newsViewModel.currentLink.collectAsState()
 
     val topPaddingDp = with(density) {
-        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 115.dp
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 127.dp
     }
 
     val dynamicTopPadding = with(density) {
@@ -240,13 +241,16 @@ fun SearchResultScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        navController.navigate(
-                                            HomeDestination.SEARCHRESULTDETAILSCREEN(
-                                                link = news.link
-                                            )
-                                        ) {
-                                            popUpTo(navController.graph.findStartDestination().id)
-                                            launchSingleTop = true
+                                        if (currentLink != news.link) {
+                                            navController.navigate(
+                                                HomeDestination.SEARCHRESULTDETAILSCREEN(
+                                                    news.link,
+                                                )
+                                            ) {
+                                                popUpTo(navController.graph.findStartDestination().id)
+                                                launchSingleTop = true
+                                            }
+                                            newsViewModel.setCurrentLink(news.link)
                                         }
                                     }
                             ) {
@@ -389,7 +393,7 @@ fun NewsSearchListItem(news: NewsArticleSearch) {
                 maxLines = 2
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Writer row
             Row(
@@ -409,7 +413,7 @@ fun NewsSearchListItem(news: NewsArticleSearch) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Bottom row (tag + time)
             Row(

@@ -167,7 +167,7 @@ fun BookmarkDetailScreen(
                             Text(
                                 text = newsArticle?.title?:"",
                                 fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMediumEmphasized,
+                                style = MaterialTheme.typography.titleLargeEmphasized,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center
                             )
@@ -197,18 +197,18 @@ fun BookmarkDetailScreen(
                     ) {
                         Text(
                             text = newsArticle?.source_name?:"",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLargeEmphasized,
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = formatDateString(newsArticle?.pubDate?:""),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLargeEmphasized,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = " $timeZoneAbbreviation",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLargeEmphasized,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -320,7 +320,7 @@ fun BookmarkDetailScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BottomSheetContentBookMarked(news: SavedArticle?, listState: LazyListState){
     val scrollInterop = rememberNestedScrollInteropConnection()
@@ -340,7 +340,10 @@ fun BottomSheetContentBookMarked(news: SavedArticle?, listState: LazyListState){
                         selected = true,
                         onClick = {},
                         label = {
-                            Text(text = category)
+                            Text(
+                                text = category,
+                                style = MaterialTheme.typography.bodyLargeEmphasized
+                            )
                         },
                         shape = RoundedCornerShape(16.dp),
                     )
@@ -363,7 +366,7 @@ fun BottomSheetContentBookMarked(news: SavedArticle?, listState: LazyListState){
                             textAlign = TextAlign.Justify,
                             modifier = Modifier.fillMaxWidth(),
                             softWrap = true,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.labelLargeEmphasized
                         )
                     }
                     item {
@@ -380,7 +383,8 @@ fun BottomSheetContentBookMarked(news: SavedArticle?, listState: LazyListState){
                         text = "No description available",
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.labelLargeEmphasized
                     )
                 }
             }

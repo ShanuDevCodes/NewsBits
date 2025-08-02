@@ -65,7 +65,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,10 +80,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -92,7 +89,6 @@ import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.ConnectivityObserver
 import com.shanudevcodes.newsbits.data.HomeDestination
-import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.getTimeAgo
@@ -147,9 +143,7 @@ fun HomeScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyColumnSate = rememberLazyListState()
     val visible = remember { mutableStateOf(false) }
-    val lastViewedIndex = rememberSaveable { mutableStateOf<Int?>(null) }
-    val lastViewedType = rememberSaveable { mutableStateOf<String?>(null) }
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentLink by viewModel.currentLink.collectAsState()
     var loadError by remember { mutableStateOf(true) }
     val isTopNewsLoaded by viewModel.isTopNewsLoaded.collectAsState()
     val sheetState = rememberModalBottomSheetState()
@@ -195,13 +189,6 @@ fun HomeScreen(
             loadError = true
         }else{
             loadError = false
-        }
-    }
-
-    LaunchedEffect(currentBackStackEntry?.destination) {
-        if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
-            lastViewedIndex.value = null
-            lastViewedType.value = null
         }
     }
     if (showBottomSheet) {
@@ -312,9 +299,7 @@ fun HomeScreen(
                                             .clip(MaterialTheme.shapes.extraLarge)
                                             .clickable(
                                                 onClick = {
-                                                    if (lastViewedIndex.value != page || lastViewedType.value != News.NEWS_TOP.name) {
-                                                        lastViewedIndex.value = page
-                                                        lastViewedType.value = News.NEWS_TOP.name
+                                                    if (currentLink != currentItem.link) {
                                                         navController.navigate(
                                                             HomeDestination.SEARCHRESULTDETAILSCREEN(
                                                                 currentItem.link,
@@ -323,6 +308,7 @@ fun HomeScreen(
                                                             popUpTo(navController.graph.findStartDestination().id)
                                                             launchSingleTop = true
                                                         }
+                                                        viewModel.setCurrentLink(currentItem.link)
                                                     }
                                                 }
                                             )
@@ -513,9 +499,8 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    if (lastViewedIndex.value != index || lastViewedType.value != News.NEWS_ALL.name) {
-                                        lastViewedIndex.value = index
-                                        lastViewedType.value = News.NEWS_ALL.name
+                                    if (currentLink != news.link) {
+                                        viewModel.setCurrentLink(news.link)
                                         navController.navigate(
                                             HomeDestination.SEARCHRESULTDETAILSCREEN(
                                                 news.link,
@@ -683,7 +668,7 @@ fun NewsListItem(news: NewsArticle) {
                 maxLines = 2
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Writer row
             Row(
@@ -703,7 +688,7 @@ fun NewsListItem(news: NewsArticle) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Bottom row (tag + time)
             Row(

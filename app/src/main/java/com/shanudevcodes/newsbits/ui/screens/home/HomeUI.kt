@@ -52,7 +52,12 @@ fun HomeUI(
     val isHome = currentBackStackEntry?.destination
         ?.hierarchy
         ?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true
-
+    val navControllerBackStackEntry by navController.currentBackStackEntryAsState()
+    LaunchedEffect(navControllerBackStackEntry?.destination?.hierarchy) {
+        if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
+            newsViewModel.resetCurrentLink()
+        }
+    }
     BackHandler(enabled = !isHome) {
         navController.popBackStack()
     }
@@ -84,7 +89,7 @@ fun HomeUI(
                         navController = navController,
                         newsViewModel = newsViewModel,
                         aiViewModel = aiViewModel,
-                        viewModel = appListUIViewModel
+                        viewModel = appListUIViewModel,
                     )
                 }
             }
@@ -148,7 +153,7 @@ fun HomeUI(
                                 navController = navController,
                                 newsViewModel = newsViewModel,
                                 aiViewModel = aiViewModel,
-                                viewModel = appListUIViewModel
+                                viewModel = appListUIViewModel,
                             )
                         } else {
                             EmptyScreen()

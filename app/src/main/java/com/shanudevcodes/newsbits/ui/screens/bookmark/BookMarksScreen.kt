@@ -33,11 +33,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,10 +45,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberAsyncImagePainter
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
@@ -63,12 +58,14 @@ import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEv
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shortenName
+import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BookMarksScreen(
     bottomAppBarScrollBehavior: BottomAppBarScrollBehavior,
-    navController: NavHostController
+    navController: NavHostController,
+    newsViewModel: NewsViewModel
 ) {
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
@@ -79,6 +76,7 @@ fun BookMarksScreen(
     roomViewModel.onEvent(RoomEvents.GetArticles)
     val viewModelState = roomViewModel.state.collectAsState()
     val newsList = viewModelState.value.savedArticles
+    val currentLink by newsViewModel.currentLink.collectAsState()
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceDim,
         contentWindowInsets = WindowInsets(0),
@@ -107,14 +105,6 @@ fun BookMarksScreen(
                 .padding(innerPadding)
                 .padding(start = 12.dp, end = 12.dp)
         ) {
-            val lastViewedId = rememberSaveable { mutableStateOf<String?>(null) }
-            val currentBackStackEntry by navController.currentBackStackEntryAsState()
-
-            LaunchedEffect(currentBackStackEntry?.destination) {
-                if (currentBackStackEntry?.destination?.hierarchy?.any { it.route == HomeDestination.HOMESCREEN::class.qualifiedName } == true) {
-                    lastViewedId.value = null
-                }
-            }
             LazyColumn(
                 modifier = Modifier.nestedScroll(bottomAppBarScrollBehavior.nestedScrollConnection)
             ) {
@@ -155,15 +145,16 @@ fun BookMarksScreen(
                                 .fillMaxWidth()
                                 .clickable (
                                     onClick = {
-                                        if (lastViewedId.value != news.article_id) {
-                                            lastViewedId.value = news.article_id
-                                            navController.navigate(HomeDestination.BOOKMARKDETAILSCREEN(news.article_id)) {
-                                                popUpTo(navController.graph.findStartDestination().id) {
-                                                    saveState = true
-                                                }
+                                        if (currentLink != news.link) {
+                                            navController.navigate(
+                                                HomeDestination.BOOKMARKDETAILSCREEN(
+                                                    news.article_id,
+                                                )
+                                            ) {
+                                                popUpTo(navController.graph.findStartDestination().id)
                                                 launchSingleTop = true
-                                                restoreState = false // because it's a different article
                                             }
+                                            newsViewModel.setCurrentLink(news.link)
                                         }
                                     }
                                 )
@@ -213,7 +204,7 @@ fun BookMarkedNewsListItem(news: SavedArticle) {
                 maxLines = 2
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Writer row
             Row(
@@ -233,7 +224,7 @@ fun BookMarkedNewsListItem(news: SavedArticle) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Bottom row (tag + time)
             Row(

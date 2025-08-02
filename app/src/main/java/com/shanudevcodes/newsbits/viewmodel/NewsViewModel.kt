@@ -28,6 +28,9 @@ import kotlinx.serialization.json.decodeFromJsonElement
 @OptIn(ExperimentalCoroutinesApi::class)
 class NewsViewModel : ViewModel() {
 
+    private val _currentLink = MutableStateFlow("")
+    val currentLink: StateFlow<String> = _currentLink
+
     private val _searchResults = MutableStateFlow<List<NewsArticleSearch>>(emptyList())
     val searchResults: StateFlow<List<NewsArticleSearch>> = _searchResults
 
@@ -42,6 +45,14 @@ class NewsViewModel : ViewModel() {
 
     private var _paginationFailed = MutableStateFlow(false)
     val paginationFailed: StateFlow<Boolean> = _paginationFailed
+
+    fun resetCurrentLink(){
+        _currentLink.value = ""
+    }
+
+    fun setCurrentLink(link: String){
+        _currentLink.value = link
+    }
 
     fun resetSearchResultsLoaded(){
         _isSearchResultsLoaded.value = false
