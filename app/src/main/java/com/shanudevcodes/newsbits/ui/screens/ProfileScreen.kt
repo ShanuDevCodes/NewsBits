@@ -1,5 +1,6 @@
 package com.shanudevcodes.newsbits.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +56,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -62,6 +65,7 @@ fun ProfileScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel
 ){
+    val context = LocalContext.current
     val profileScreenItemList = listOf(
         ProfileScreenData(
             name = "Settings",
@@ -92,7 +96,13 @@ fun ProfileScreen(
             icon = Icons.Outlined.IosShare,
             description = "Share the app",
             onClick = {
-
+                val sendIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, "https://github.com/ShanuDevCodes/NewsBits/releases")
+                    type = "text/plain"
+                }
+                val shareIntent = Intent.createChooser(sendIntent, "Share NewsBits")
+                context.startActivity(shareIntent)
             }
         ),
         ProfileScreenData(
@@ -108,7 +118,7 @@ fun ProfileScreen(
             icon = Icons.Outlined.Info,
             description = "About the app",
             onClick = {
-
+                openUrlInBrowser(context,"https://github.com/ShanuDevCodes/NewsBits")
             }
         ),
         ProfileScreenData(
@@ -116,7 +126,7 @@ fun ProfileScreen(
             iconId = R.drawable.github,
             description = "Github profile",
             onClick = {
-
+                openUrlInBrowser(context,"https://github.com/ShanuDevCodes")
             }
         )
     )
