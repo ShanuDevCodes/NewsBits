@@ -40,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,16 +73,49 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     showGuestSignup: Boolean = false,
     dataStore: DataStoreManager,
-    onSignupClick: () -> Unit
+    onSignupClick: () -> Unit,
+    onEmailVerification: () -> Unit
 ) {
     val firebaseViewModel: FirebaseViewModel = viewModel()
     val firebaseState by firebaseViewModel.state.collectAsState()
+    val currentUser by firebaseViewModel.currentUser.collectAsState()
     val onEvent: (FirebaseEvent) -> Unit = firebaseViewModel::onEvent
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var isGuestLoading by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(firebaseState.isError, firebaseState.error) {
+        if (firebaseState.isError && firebaseState.error.isNotBlank()) {
+            Toast.makeText(context, firebaseState.error, Toast.LENGTH_LONG).show()
+            isLoading = false
+            firebaseViewModel.onEvent(FirebaseEvent.ResetError)
+        }
+    }
+    LaunchedEffect(firebaseState.isLoggedIn) {
+        if(firebaseState.isLoggedIn){
+            if (currentUser?.isEmailVerified == true) {
+                scope.launch {
+                    if (dataStore.firstLaunch.first()) {
+                        delay(500L)
+                        dataStore.setFirstLaunch(false)
+                        context.startActivity(
+                            Intent(
+                                context,
+                                MainActivity::class.java
+                            )
+                        )
+                        (context as? AuthenticationActivity)?.finish()
+                    } else {
+                        delay(500L)
+                        (context as? AuthenticationActivity)?.finish()
+                    }
+                }
+            }else{
+                onEmailVerification()
+            }
+        }
+    }
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         containerColor = MaterialTheme.colorScheme.surfaceDim
@@ -191,24 +225,7 @@ fun LoginScreen(
                     onClick = {
                         if (firebaseState.password.isNotBlank() && firebaseState.email.isNotBlank()) {
                             onEvent(FirebaseEvent.LoginUser)
-                            scope.launch {
-                                if (dataStore.firstLaunch.first()) {
-                                    isLoading = true
-                                    delay(500L)
-                                    dataStore.setFirstLaunch(false)
-                                    context.startActivity(
-                                        Intent(
-                                            context,
-                                            MainActivity::class.java
-                                        )
-                                    )
-                                    (context as? AuthenticationActivity)?.finish()
-                                } else {
-                                    isLoading = true
-                                    delay(500L)
-                                    (context as? AuthenticationActivity)?.finish()
-                                }
-                            }
+                            isLoading = true
                         }else{
                             Toast.makeText(
                                 context,

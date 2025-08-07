@@ -25,6 +25,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.firebase.auth.FirebaseAuth
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.ui.screens.home.HomeUI
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
@@ -35,6 +36,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
 class MainActivity : ComponentActivity() {
+
+    override fun onResume() {
+        super.onResume()
+
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.reload()?.addOnSuccessListener {
+            if (!user.isEmailVerified) {
+                FirebaseAuth.getInstance().signOut()
+            }
+        }
+    }
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
         ExperimentalMaterial3AdaptiveApi::class

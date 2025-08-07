@@ -74,9 +74,11 @@ fun SignupScreen(
     showGuestSignup: Boolean = false,
     dataStore: DataStoreManager,
     onLoginClick: () -> Unit,
+    onEmailVerification: () -> Unit
 ){
     val firebaseViewModel: FirebaseViewModel = viewModel()
     val firebaseState by firebaseViewModel.state.collectAsState()
+    val currentUser by firebaseViewModel.currentUser.collectAsState()
     val onEvent: (FirebaseEvent) -> Unit = firebaseViewModel::onEvent
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -90,7 +92,32 @@ fun SignupScreen(
     LaunchedEffect(firebaseState.isError, firebaseState.error) {
         if (firebaseState.isError && firebaseState.error.isNotBlank()) {
             Toast.makeText(context, firebaseState.error, Toast.LENGTH_LONG).show()
+            isLoading = false
             firebaseViewModel.onEvent(FirebaseEvent.ResetError)
+        }
+    }
+    LaunchedEffect(firebaseState.isLoggedIn) {
+        if(firebaseState.isLoggedIn){
+            if (currentUser?.isEmailVerified == true) {
+                scope.launch {
+                    if (dataStore.firstLaunch.first()) {
+                        delay(500L)
+                        dataStore.setFirstLaunch(false)
+                        context.startActivity(
+                            Intent(
+                                context,
+                                MainActivity::class.java
+                            )
+                        )
+                        (context as? AuthenticationActivity)?.finish()
+                    } else {
+                        delay(500L)
+                        (context as? AuthenticationActivity)?.finish()
+                    }
+                }
+            }else{
+                onEmailVerification()
+            }
         }
     }
     Scaffold(
@@ -277,24 +304,7 @@ fun SignupScreen(
                         if (firebaseState.password.isNotBlank() && confirmPassword.isNotBlank() && firebaseState.name.isNotBlank() && firebaseState.email.isNotBlank()) {
                             if (firebaseState.password == confirmPassword) {
                                 onEvent(FirebaseEvent.RegisterUser)
-                                scope.launch {
-                                    if (dataStore.firstLaunch.first()) {
-                                        isLoading = true
-                                        delay(500L)
-                                        dataStore.setFirstLaunch(false)
-                                        context.startActivity(
-                                            Intent(
-                                                context,
-                                                MainActivity::class.java
-                                            )
-                                        )
-                                        (context as? AuthenticationActivity)?.finish()
-                                    }else{
-                                        isLoading = true
-                                        delay(500L)
-                                        (context as? AuthenticationActivity)?.finish()
-                                    }
-                                }
+                                isLoading = true
                             } else {
                                 Toast.makeText(
                                     context,

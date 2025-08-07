@@ -47,4 +47,6 @@ sealed class AuthenticationDestination{
     object LOGINDESTINATION : AuthenticationDestination()
     @Serializable
     object SIGNUPDESTINATION : AuthenticationDestination()
+    @Serializable
+    object EMAILVERIFICATIONDESTINATION : AuthenticationDestination()
 }

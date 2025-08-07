@@ -25,7 +25,8 @@
 -keep class com.shanudevcodes.newsbits.data.Destination$* { *; }
 -keep class com.shanudevcodes.newsbits.data.HomeDestination { *; }
 -keep class com.shanudevcodes.newsbits.data.HomeDestination$* { *; }
--keep class com.shanudevcodes.newsbits.data.BookmarkDestination { *; }
+-keep class com.shanudevcodes.newsbits.data.AuthenticationDestination { *; }
+-keep class com.shanudevcodes.newsbits.data.AuthenticationDestination$* { *; }
 -keep class com.shanudevcodes.newsbits.data.BookmarkDestination$* { *; }
 -keep class com.shanudevcodes.newsbits.data.SearchDestination { *; }
 -keep class com.shanudevcodes.newsbits.data.SearchDestination$* { *; }

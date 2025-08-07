@@ -9,6 +9,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
@@ -16,9 +18,12 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.shanudevcodes.newsbits.data.AuthenticationDestination
 import com.shanudevcodes.newsbits.data.DataStoreManager
+import com.shanudevcodes.newsbits.ui.animation.ExpressiveEasing
+import com.shanudevcodes.newsbits.ui.screens.authentication.EmailVerificationScreen
 import com.shanudevcodes.newsbits.ui.screens.authentication.LoginScreen
 import com.shanudevcodes.newsbits.ui.screens.authentication.SignupScreen
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
@@ -31,6 +36,7 @@ class AuthenticationActivity : ComponentActivity() {
         setContent {
             val showGuestSignup = intent.getBooleanExtra("showGuestSignup", true)
             val navController = rememberNavController()
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
             val dataStore = DataStoreManager(applicationContext)
             val themeOption by dataStore.themeFlow.collectAsState(initial = ThemeOptions.SYSTEM_DEFAULT)
             val dynamicColor by dataStore.dynamicColorFlow.collectAsState(initial = false)
@@ -45,28 +51,72 @@ class AuthenticationActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = AuthenticationDestination.SIGNUPDESTINATION,
                         enterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(400, easing = FastOutSlowInEasing)
-                            ) + fadeIn(initialAlpha = 0.8f)
+                            val to = targetState.destination.route
+                            if (to?.contains(AuthenticationDestination.EMAILVERIFICATIONDESTINATION::class.qualifiedName?:"") == true) {
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(
+                                        durationMillis = 600,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            } else {
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(initialAlpha = 0.8f)
+                            }
                         },
                         exitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(400, easing = FastOutSlowInEasing)
-                            ) + fadeOut(targetAlpha = 0.9f)
+                            val to = targetState.destination.route
+                            if (to?.contains(AuthenticationDestination.EMAILVERIFICATIONDESTINATION::class.qualifiedName?:"") == true) {
+                                slideOutHorizontally(
+                                    targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                                    animationSpec = tween(
+                                        durationMillis = 600,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            }else{
+                                slideOutOfContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(targetAlpha = 0.9f)
+                            }
                         },
                         popEnterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(400, easing = FastOutSlowInEasing)
-                            ) + fadeIn(initialAlpha = 0.8f)
+                            val to = targetState.destination.route
+                            if (to?.contains(AuthenticationDestination.EMAILVERIFICATIONDESTINATION::class.qualifiedName?:"") == true) {
+                                slideInHorizontally(
+                                    initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            }else{
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeIn(initialAlpha = 0.8f)
+                            }
                         },
                         popExitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(400, easing = FastOutSlowInEasing)
-                            ) + fadeOut(targetAlpha = 0.9f)
+                            val to = targetState.destination.route
+                            if (to?.contains(AuthenticationDestination.EMAILVERIFICATIONDESTINATION::class.qualifiedName?:"") == true) {
+                                slideOutOfContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            }else{
+                                slideOutOfContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                ) + fadeOut(targetAlpha = 0.9f)
+                            }
                         }
                     ) {
                         composable<AuthenticationDestination.SIGNUPDESTINATION> {
@@ -81,6 +131,11 @@ class AuthenticationActivity : ComponentActivity() {
                                         launchSingleTop = true
                                         restoreState = true
                                     }
+                                },
+                                onEmailVerification = {
+                                    navController.navigate(AuthenticationDestination.EMAILVERIFICATIONDESTINATION) {
+                                        popUpTo(0) { inclusive = true }
+                                    }
                                 }
                             )
                         }
@@ -90,7 +145,55 @@ class AuthenticationActivity : ComponentActivity() {
                                 dataStore = dataStore,
                                 onSignupClick = {
                                     navController.popBackStack()
+                                },
+                                onEmailVerification = {
+                                    navController.navigate(AuthenticationDestination.EMAILVERIFICATIONDESTINATION) {
+                                        popUpTo(0) { inclusive = true }
+                                    }
                                 }
+                            )
+                        }
+                        composable<AuthenticationDestination.EMAILVERIFICATIONDESTINATION>(
+                            enterTransition = {
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(
+                                        durationMillis = 600,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            },
+                            exitTransition = {
+                                slideOutHorizontally(
+                                    targetOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                                    animationSpec = tween(
+                                        durationMillis = 600,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+
+                            },
+                            popEnterTransition = {
+                                slideInHorizontally(
+                                    initialOffsetX = { fullWidth -> -(fullWidth * 0.3f).toInt() },
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            },
+                            popExitTransition = {
+                                slideOutOfContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = ExpressiveEasing.Emphasized
+                                    )
+                                )
+                            }
+                        ){
+                            EmailVerificationScreen(
+                                dataStore = dataStore
                             )
                         }
                     }

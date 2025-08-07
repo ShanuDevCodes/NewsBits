@@ -133,7 +133,7 @@ fun ProfileScreen(
         ProfileScreenData(
             name = "Github",
             iconId = R.drawable.github,
-            description = "Github profile",
+            description = "Developer's github profile",
             onClick = {
                 openUrlInBrowser(context,"https://github.com/ShanuDevCodes")
             }
