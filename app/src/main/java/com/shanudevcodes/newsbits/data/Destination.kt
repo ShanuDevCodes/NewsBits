@@ -40,3 +40,11 @@ sealed class SearchDestination{
     @Serializable
     data class SEARCHRESULTSCREEN(val query: String) : SearchDestination()
 }
+
+@Serializable
+sealed class AuthenticationDestination{
+    @Serializable
+    object LOGINDESTINATION : AuthenticationDestination()
+    @Serializable
+    object SIGNUPDESTINATION : AuthenticationDestination()
+}

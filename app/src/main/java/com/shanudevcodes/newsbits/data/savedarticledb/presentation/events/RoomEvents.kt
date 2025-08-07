@@ -10,6 +10,7 @@ sealed interface RoomEvents {
     data class DeleteArticle(val article: NewsArticle?): RoomEvents
     data object GetArticles: RoomEvents
     data class CheckArticleSaved(val articleId: String): RoomEvents
+    data class CheckEachArticleSaved(val articleId: String, val onResult: (Boolean) -> Unit): RoomEvents
     data class GetArticleById(val articleId: String): RoomEvents
     data class DeleteArticleById(val articleId: String): RoomEvents
     data class SetHistoryQuery(val query: String): RoomEvents

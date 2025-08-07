@@ -108,7 +108,7 @@ fun HomeUI(
                 NavHost(
                     startDestination = HomeDestination.HOMESCREEN,
                     navController = navController,
-                     enterTransition = {
+                    enterTransition = {
                         slideIntoContainer(
                             towards = AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(
@@ -165,10 +165,10 @@ fun HomeUI(
                             link = it.arguments?.getString("link") ?: ""
                         )
                     }
-                    composable<HomeDestination.BOOKMARKDETAILSCREEN>{
+                    composable<HomeDestination.BOOKMARKDETAILSCREEN> {
                         val arg = it.arguments
                         BookmarkDetailScreen(
-                            newsId = arg?.getString("newsId")?: "",
+                            newsId = arg?.getString("newsId") ?: "",
                             navController = navController
                         )
                     }

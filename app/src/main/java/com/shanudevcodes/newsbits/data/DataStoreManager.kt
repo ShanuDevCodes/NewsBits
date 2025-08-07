@@ -17,6 +17,7 @@ class DataStoreManager(private val context: Context) {
         val DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color_scheme")
         val FirstLaunchKey = booleanPreferencesKey("first_launch")
         val GeminiSummaryTypeKey = stringPreferencesKey("gemini_summary_type")
+        val OnboardingCompleteKey = booleanPreferencesKey("onboarding_complete")
     }
 
     val firstLaunch:Flow<Boolean> = context.dataStore.data.map { preferences->
@@ -25,6 +26,15 @@ class DataStoreManager(private val context: Context) {
     suspend fun setFirstLaunch(firstLaunch:Boolean){
         context.dataStore.edit { preferences->
             preferences[FirstLaunchKey] = firstLaunch
+        }
+    }
+
+    val onboardingComplete:Flow<Boolean> = context.dataStore.data.map { preferences->
+        preferences[OnboardingCompleteKey] ?: false
+    }
+    suspend fun setOnboardingComplete(onboardingComplete:Boolean){
+        context.dataStore.edit { preferences->
+            preferences[OnboardingCompleteKey] = onboardingComplete
         }
     }
 

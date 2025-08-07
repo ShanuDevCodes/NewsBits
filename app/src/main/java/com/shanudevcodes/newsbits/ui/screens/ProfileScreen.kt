@@ -41,6 +41,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,10 +55,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.shanudevcodes.newsbits.AuthenticationActivity
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.HomeDestination
+import com.shanudevcodes.newsbits.data.firebase.FirebaseEvent
+import com.shanudevcodes.newsbits.data.firebase.FirebaseViewModel
 import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 
@@ -65,6 +72,9 @@ fun ProfileScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel
 ){
+    val firebaseViewModel: FirebaseViewModel = viewModel()
+    val firebaseState by firebaseViewModel.state.collectAsState()
+    val user by firebaseViewModel.currentUser.collectAsState()
     val context = LocalContext.current
     val profileScreenItemList = listOf(
         ProfileScreenData(
@@ -130,6 +140,9 @@ fun ProfileScreen(
             }
         )
     )
+    LaunchedEffect(Unit) {
+        firebaseViewModel.onEvent(FirebaseEvent.ReloadUser)
+    }
     Surface {
         Scaffold(
             contentWindowInsets = WindowInsets(0),
@@ -199,14 +212,14 @@ fun ProfileScreen(
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
-                                        text = "Shanu",
+                                        text = user?.displayName?:"Guest",
                                         style = MaterialTheme.typography.titleLargeEmphasized,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "ShanuDevCodes@gmail.com",
+                                        text = user?.email?:"Anonymous",
                                         style = MaterialTheme.typography.bodySmallEmphasized,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
@@ -352,7 +365,13 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .clickable(
                                         onClick = {
-
+                                            if (user != null) {
+                                                firebaseViewModel.onEvent(FirebaseEvent.LogoutUser)
+                                            }else{
+                                                context.startActivity(Intent(context, AuthenticationActivity::class.java)
+                                                    .putExtra("showGuestSignup",false)
+                                                )
+                                            }
                                         }
                                     )
                                     .padding(16.dp)
@@ -371,20 +390,35 @@ fun ProfileScreen(
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
-                                        text = "Logout",
+                                        text = if (user != null){
+                                            "Logout"
+                                        }else{
+                                            "Login"
+                                        },
                                         style = MaterialTheme.typography.titleMediumEmphasized,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFFB32727)
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "Logout from the app",
+                                        text = if (user != null){
+                                            "Logout from the app"
+                                        }else{
+                                            "Login to the app"
+                                        },
                                         style = MaterialTheme.typography.bodySmallEmphasized,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                 }
                                 IconButton(
                                     onClick = {
+                                        if (user != null){
+                                        firebaseViewModel.onEvent(FirebaseEvent.LogoutUser)
+                                        }else{
+                                            context.startActivity(Intent(context, AuthenticationActivity::class.java)
+                                                .putExtra("showGuestSignup",false)
+                                            )
+                                        }
                                     },
                                     modifier = Modifier.size(28.dp)
                                 ) {

@@ -122,8 +122,8 @@ fun HomeListUi(
             @Composable {
                 SearchBarDefaults.InputField(
                     colors = SearchBarDefaults.inputFieldColors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
                     modifier = Modifier
                         .width(
@@ -460,7 +460,7 @@ fun HomeListUi(
                                 state = searchBarState,
                                 inputField = inputField,
                                 colors = SearchBarDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                                 ),
                                 windowInsets = { WindowInsets.statusBars },
                             ) {

@@ -11,6 +11,7 @@ interface ArticleRepository {
     fun getArticles(): Flow<List<Article>>
     fun getArticleById(id: String): Flow<Article?>
     suspend fun isArticleSaved(id: String): Boolean
+    suspend fun isArticleSavedCheck(id: String): Boolean
 
     fun getHistory(): Flow<List<SearchHistory>>
     suspend fun saveHistory(query: String)

@@ -52,6 +52,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -453,7 +454,11 @@ fun HomeScreen(
                                 selectedIndex = index
                                 val selectedCategory = options[index]
                                 viewModel.setCategory(if (selectedCategory == "All") null else selectedCategory.lowercase())
-                            }
+                            },
+                            colors = ToggleButtonDefaults.toggleButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                checkedContainerColor = MaterialTheme.colorScheme.primary,
+                            )
                         ) {
                             Text(label)
                         }

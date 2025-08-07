@@ -20,34 +20,101 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Yellow,
-    secondary = Blue,
-    tertiary = Red,
-    surface = Black90,
-    surfaceContainerLow = Black80,
-    surfaceContainerHigh = Black80,
-    secondaryContainer = Color(0xFFFFD18A).copy(alpha = 0.5f),
-    onSecondaryContainer = Color(0xFF3A2600),
-    primaryContainer = Color(0xFFFCB76F),
-    onPrimaryContainer = Color(0xFF212734),
-    surfaceContainer = Black70,
-    surfaceContainerHighest = Black60
+val customLightColorScheme = lightColorScheme(
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    primaryContainer = LightPrimaryContainer,
+    onPrimaryContainer = BlueDark,
+
+    secondary = LightSecondary,
+    onSecondary = Color.White,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightPrimaryContainer,
+
+    tertiary = BlueGray600,
+    onTertiary = Color.White,
+    tertiaryContainer = BlueGray200,
+    onTertiaryContainer = BlueDark,
+
+    background = SurfaceContainerLowestLightBlue,
+    onBackground = BlueDark,
+
+    surface = SurfaceContainerLightBlue,
+    onSurface = BlueDark,
+    surfaceVariant = SurfaceContainerHighLightBlue,
+    onSurfaceVariant = BlueDark,
+    surfaceTint = BluePrimary,
+
+    error = Red,
+    onError = Color.White,
+    errorContainer = LightRed,
+    onErrorContainer = BlueDark,
+
+    outline = BlueGray600,
+    outlineVariant = BlueGray400,
+
+    inverseSurface = BlueDark,
+    inverseOnSurface = Color.White,
+    inversePrimary = BlueSecondary,
+
+    scrim = ScrimColor,
+    surfaceDim = SurfaceDimLightBlue,
+    surfaceBright = SurfaceBrightLightBlue,
+    surfaceContainerLowest = SurfaceContainerLowestLightBlue,
+    surfaceContainerLow = SurfaceContainerLowLightBlue,
+    surfaceContainer = SurfaceContainerLightBlue,
+    surfaceContainerHigh = SurfaceContainerHighLightBlue,
+    surfaceContainerHighest = SurfaceContainerHighestLightBlue
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Yellow,
-    secondary = Blue,
-    tertiary = Red,
-    surface = White100,
-    surfaceContainerLow = White80,
-    surfaceContainerHigh = White80,
-    secondaryContainer = Color(0xFFFFD18A).copy(alpha = 0.5f),
-    onSecondaryContainer = Color(0xFF3A2600),
-    primaryContainer = Color(0xFFFAAB5B),
-    onPrimaryContainer = Color(0xFFDAE4FF),
-    surfaceContainer = White70,
-    surfaceContainerHighest = White60
+val customDarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimaryContainer,
+    onPrimaryContainer = Color.White,
+
+    secondary = DarkSecondary,
+    onSecondary = Color.White,
+    secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = Color(0xFFB3C9FF),
+
+    tertiary = BlueGray400,
+    onTertiary = BlueDark,
+    tertiaryContainer = BlueGray600,
+    onTertiaryContainer = Color.White,
+
+    background = SurfaceContainerLowestDarkBlue,
+    onBackground = Color.White,
+
+    surface = SurfaceContainerDarkBlue,
+    onSurface = Color(0xFFB7C2DE),
+
+    surfaceVariant = SurfaceContainerHighDarkBlue,
+    onSurfaceVariant = Color.White,
+
+    surfaceTint = BluePrimary,
+
+    error = LightRed,
+    onError = BlueDark,
+    errorContainer = Red,
+    onErrorContainer = Color.White,
+
+    outline = BlueGray400,
+    outlineVariant = BlueGray600,
+
+    inverseSurface = BlueGray100,
+    inverseOnSurface = BlueDark,
+    inversePrimary = BluePrimary,
+
+    scrim = ScrimColor,
+
+    surfaceDim = SurfaceDimDarkBlue,
+    surfaceBright = SurfaceBrightDarkBlue,
+    surfaceContainerLowest = SurfaceContainerLowestDarkBlue,
+    surfaceContainerLow = SurfaceContainerLowDarkBlue,
+    surfaceContainer = SurfaceContainerDarkBlue,
+    surfaceContainerHigh = SurfaceContainerHighDarkBlue,
+    surfaceContainerHighest = SurfaceContainerHighestDarkBlue
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -70,8 +137,8 @@ fun NewsBitsTheme(
             if (isDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        isDarkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        isDarkTheme -> customDarkColorScheme
+        else -> customLightColorScheme
     }
     val view = LocalView.current
     if (!view.isInEditMode) {

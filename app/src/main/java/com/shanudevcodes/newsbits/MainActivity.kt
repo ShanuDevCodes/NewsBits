@@ -83,12 +83,22 @@ class MainActivity : ComponentActivity() {
 //                dataStore.setFirstLaunch(false)
 //            }
             LaunchedEffect(Unit) {
+                val onBoardingComplete = dataStore.onboardingComplete.first()
                 val isFirstLaunch = dataStore.firstLaunch.first()
-                if (isFirstLaunch) {
+                if (!onBoardingComplete){
                     startActivity(Intent(this@MainActivity, OnboardingActivity::class.java)
-//                        .apply {
-//                            addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-//                        }
+                        .putExtra("showGuestSignup",true)
+                        .apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                        }
+                    )
+                    finish()
+                    keepOnScreenCondition = false
+                }else if (isFirstLaunch) {
+                    startActivity(Intent(this@MainActivity, AuthenticationActivity::class.java)
+                        .apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                        }
                     )
                     finish()
                     keepOnScreenCondition = false
@@ -133,6 +143,7 @@ class MainActivity : ComponentActivity() {
                     aiViewModel = aiViewModel,
                     navController = navController,
                 )
+//                SignupScreen()
             }
         }
     }

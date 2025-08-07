@@ -132,6 +132,13 @@ class RoomViewModel(
                     }
                 }
             }
+
+            is RoomEvents.CheckEachArticleSaved -> {
+                viewModelScope.launch {
+                    val exists = checkArticleSavedUseCase(event.articleId)
+                    event.onResult(exists)
+                }
+            }
         }
     }
 }

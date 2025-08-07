@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shanudevcodes.newsbits.AuthenticationActivity
 import com.shanudevcodes.newsbits.MainActivity
 import com.shanudevcodes.newsbits.OnboardingActivity
 import com.shanudevcodes.newsbits.data.DataStoreManager
@@ -80,36 +81,40 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
     var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(pagerState.currentPage) {
-        if (pagerState.currentPage == 0) {
-            pageOneScale.animateTo(
-                targetValue = 1f,
-            )
-            pageTwoScale.animateTo(
-                targetValue = 0f
-            )
-            pageThreeScale.animateTo(
-                targetValue = 0f,
-            )
-        }else if( pagerState.currentPage == 1){
-            pageOneScale.animateTo(
-                targetValue = 0f,
-            )
-            pageTwoScale.animateTo(
-                targetValue = 1f,
-            )
-            pageThreeScale.animateTo(
-                targetValue = 0f,
-            )
-        }else{
-            pageOneScale.animateTo(
-                targetValue = 0f,
-            )
-            pageTwoScale.animateTo(
-                targetValue = 0f,
-            )
-            pageThreeScale.animateTo(
-                targetValue = 1f,
-            )
+        when (pagerState.currentPage) {
+            0 -> {
+                pageOneScale.animateTo(
+                    targetValue = 1f,
+                )
+                pageTwoScale.animateTo(
+                    targetValue = 0f
+                )
+                pageThreeScale.animateTo(
+                    targetValue = 0f,
+                )
+            }
+            1 -> {
+                pageOneScale.animateTo(
+                    targetValue = 0f,
+                )
+                pageTwoScale.animateTo(
+                    targetValue = 1f,
+                )
+                pageThreeScale.animateTo(
+                    targetValue = 0f,
+                )
+            }
+            else -> {
+                pageOneScale.animateTo(
+                    targetValue = 0f,
+                )
+                pageTwoScale.animateTo(
+                    targetValue = 0f,
+                )
+                pageThreeScale.animateTo(
+                    targetValue = 1f,
+                )
+            }
         }
     }
     Scaffold(
@@ -287,8 +292,8 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
                                 scope.launch {
                                     isLoading = true
                                     delay(500L)
-                                    dataStore.setFirstLaunch(false)
-                                    context.startActivity(Intent(context, MainActivity::class.java))
+                                    dataStore.setOnboardingComplete(true)
+                                    context.startActivity(Intent(context, AuthenticationActivity::class.java))
                                     (context as? OnboardingActivity)?.finish()
                                 }
                             }

@@ -49,4 +49,8 @@ class ArticleRepositoryImpl(
     override suspend fun deleteHistory(history: SearchHistory) {
         dao.deleteHistory(history.toEntity())
     }
+
+    override suspend fun isArticleSavedCheck(id: String): Boolean {
+        return dao.checkArticleSaved(id)
+    }
 }
