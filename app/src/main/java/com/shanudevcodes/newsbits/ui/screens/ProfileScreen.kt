@@ -73,7 +73,6 @@ fun ProfileScreen(
     newsViewModel: NewsViewModel
 ){
     val firebaseViewModel: FirebaseViewModel = viewModel()
-    val firebaseState by firebaseViewModel.state.collectAsState()
     val user by firebaseViewModel.currentUser.collectAsState()
     val context = LocalContext.current
     val profileScreenItemList = listOf(
