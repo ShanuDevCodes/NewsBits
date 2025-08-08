@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -71,6 +72,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
+import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
@@ -92,7 +94,7 @@ fun ForYouPage(
     onRefresh: () -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
-    val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
+    val newsList = newsViewModel.forYouNewsPagingFlow.collectAsLazyPagingItems()
     val currentLink by newsViewModel.currentLink.collectAsState()
     var isLoading by remember { mutableStateOf(true) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -103,6 +105,13 @@ fun ForYouPage(
     val roomViewModel: RoomViewModel = viewModel(
         factory = RoomViewModelFactory(dao)
     )
+    val dataStore = DataStoreManager(context)
+    LaunchedEffect(Unit) {
+        dataStore.categoryPreferenceFlow.collect {
+            Log.d("Category Preference", it?: "null")
+            newsViewModel.setPreference(it)
+        }
+    }
 
     LaunchedEffect(onRefreshCall) {
         if (onRefreshCall){

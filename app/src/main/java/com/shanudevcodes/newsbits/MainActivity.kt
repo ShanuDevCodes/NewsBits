@@ -97,6 +97,7 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(Unit) {
                 val onBoardingComplete = dataStore.onboardingComplete.first()
                 val isFirstLaunch = dataStore.firstLaunch.first()
+                val categoryOnboarding = dataStore.categorySelectionOnboardingCompleteFlow.first()
                 if (!onBoardingComplete){
                     startActivity(Intent(this@MainActivity, OnboardingActivity::class.java)
                         .putExtra("showGuestSignup",true)
@@ -114,6 +115,13 @@ class MainActivity : ComponentActivity() {
                     )
                     finish()
                     keepOnScreenCondition = false
+                }else if(!categoryOnboarding){
+                    startActivity(Intent(this@MainActivity, CategorySelectionActivity::class.java)
+                        .apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                        }
+                    )
+                    finish()
                 }else{
                     keepOnScreenCondition = false
                 }

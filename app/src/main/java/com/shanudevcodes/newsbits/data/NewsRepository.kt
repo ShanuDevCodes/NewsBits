@@ -81,7 +81,10 @@ class FirestorePagingSource(
             // ✅ Apply category filter
             if (!categoryFilter.isNullOrEmpty()) {
                 Log.d("FirestorePagingSource", "Applying category filter: $categoryFilter")
-                baseQuery = baseQuery.whereArrayContains("category", categoryFilter)
+                val categoryList = categoryFilter
+                    .split(" ")
+                    .map { it.trim().lowercase() }
+                baseQuery = baseQuery.whereArrayContainsAny("category", categoryList)
             }
 
             // ✅ Apply country filter

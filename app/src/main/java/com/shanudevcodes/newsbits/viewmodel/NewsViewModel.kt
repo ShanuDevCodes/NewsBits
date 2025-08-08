@@ -264,15 +264,28 @@ class NewsViewModel : ViewModel() {
     private val _isTopNewsLoaded = MutableStateFlow(false)
     val isTopNewsLoaded: StateFlow<Boolean> = _isTopNewsLoaded
 
+    private val _preference = MutableStateFlow<String?>(null)
+    val preference: StateFlow<String?> = _preference
+
     private val _selectedCategory = MutableStateFlow<String?>(null)
 
     val selectedCategory = _selectedCategory.asStateFlow()
 
-    val allNewsPagingFlow = selectedCategory
+    val allNewsPagingFlow = _selectedCategory
         .flatMapLatest { category ->
             getNewsPagingFlow(category)
         }
         .cachedIn(viewModelScope)
+
+    val forYouNewsPagingFlow = _preference
+        .flatMapLatest { category ->
+            getNewsPagingFlow(category)
+        }
+        .cachedIn(viewModelScope)
+
+    fun setPreference(preference: String?) {
+        _preference.value = preference
+    }
 
     fun setCategory(category: String?) {
         _selectedCategory.value = category

@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.shanudevcodes.newsbits.AuthenticationActivity
-import com.shanudevcodes.newsbits.MainActivity
+import com.shanudevcodes.newsbits.CategorySelectionActivity
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.firebase.FirebaseEvent
 import com.shanudevcodes.newsbits.data.firebase.FirebaseViewModel
@@ -48,7 +48,6 @@ fun EmailVerificationScreen(
     dataStore: DataStoreManager,
 ){
     val firebaseViewModel: FirebaseViewModel = viewModel()
-    val firebaseState by firebaseViewModel.state.collectAsState()
     val currentUser by firebaseViewModel.currentUser.collectAsState()
     val context = LocalContext.current
     var emailVerificationTimer by rememberSaveable { mutableStateOf(90) }
@@ -79,7 +78,7 @@ fun EmailVerificationScreen(
         }
         if (isFirstLaunch) {
             dataStore.setFirstLaunch(false)
-            context.startActivity(Intent(context, MainActivity::class.java))
+            context.startActivity(Intent(context, CategorySelectionActivity::class.java))
         }
         (context as? AuthenticationActivity)?.finish()
     }

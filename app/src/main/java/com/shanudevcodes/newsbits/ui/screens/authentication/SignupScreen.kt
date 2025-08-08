@@ -59,7 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.shanudevcodes.newsbits.AuthenticationActivity
-import com.shanudevcodes.newsbits.MainActivity
+import com.shanudevcodes.newsbits.CategorySelectionActivity
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.firebase.FirebaseEvent
@@ -106,7 +106,7 @@ fun SignupScreen(
                         context.startActivity(
                             Intent(
                                 context,
-                                MainActivity::class.java
+                                CategorySelectionActivity::class.java
                             )
                         )
                         (context as? AuthenticationActivity)?.finish()
@@ -390,7 +390,7 @@ fun SignupScreen(
                                         context.startActivity(
                                             Intent(
                                                 context,
-                                                MainActivity::class.java
+                                                CategorySelectionActivity::class.java
                                             )
                                         )
                                         (context as? AuthenticationActivity)?.finish()

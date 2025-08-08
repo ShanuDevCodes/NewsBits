@@ -18,6 +18,39 @@ class DataStoreManager(private val context: Context) {
         val FirstLaunchKey = booleanPreferencesKey("first_launch")
         val GeminiSummaryTypeKey = stringPreferencesKey("gemini_summary_type")
         val OnboardingCompleteKey = booleanPreferencesKey("onboarding_complete")
+        val CategorySelectionOnboardingCompleteKey = booleanPreferencesKey("category_selection_onboarding_complete")
+        val CategoryPreferenceKey = stringPreferencesKey("category_preference")
+        val CountryPreferenceKey = stringPreferencesKey("country_preference")
+    }
+
+    val categorySelectionOnboardingCompleteFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[CategorySelectionOnboardingCompleteKey] ?: false
+    }
+
+    suspend fun setCategorySelectionOnboardingComplete(onboardingComplete:Boolean){
+        context.dataStore.edit { preferences->
+            preferences[CategorySelectionOnboardingCompleteKey] = onboardingComplete
+        }
+    }
+
+    val categoryPreferenceFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CategoryPreferenceKey]
+    }
+
+    suspend fun setCategoryPreference(category: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CategoryPreferenceKey] = category
+        }
+    }
+
+    val countryPreferenceFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CountryPreferenceKey]
+    }
+
+    suspend fun setCountryPreference(country: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CountryPreferenceKey] = country
+        }
     }
 
     val firstLaunch:Flow<Boolean> = context.dataStore.data.map { preferences->
