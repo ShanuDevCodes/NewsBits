@@ -95,8 +95,7 @@
 
 ## 🖼 UI Showcase
 
-(Screenshots section to be added manually with image URLs)
-
+-
 ---
 
 ## 🔥 Firebase Setup
