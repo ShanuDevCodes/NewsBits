@@ -57,7 +57,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.CustomCredential
@@ -82,7 +82,7 @@ fun SignupScreen(
     onLoginClick: () -> Unit,
     onEmailVerification: () -> Unit
 ){
-    val firebaseViewModel: FirebaseViewModel = viewModel()
+    val firebaseViewModel: FirebaseViewModel = hiltViewModel()
     val firebaseState by firebaseViewModel.state.collectAsState()
     val currentUser by firebaseViewModel.currentUser.collectAsState()
     val onEvent: (FirebaseEvent) -> Unit = firebaseViewModel::onEvent

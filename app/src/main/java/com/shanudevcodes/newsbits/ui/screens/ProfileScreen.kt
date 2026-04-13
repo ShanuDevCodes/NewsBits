@@ -61,6 +61,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -78,7 +79,7 @@ fun ProfileScreen(
     navController: NavHostController,
     newsViewModel: NewsViewModel
 ){
-    val firebaseViewModel: FirebaseViewModel = viewModel()
+    val firebaseViewModel: FirebaseViewModel = hiltViewModel()
     val user by firebaseViewModel.currentUser.collectAsState()
     val context = LocalContext.current
     var showEditNameDialog by remember(user) { mutableStateOf(false) }

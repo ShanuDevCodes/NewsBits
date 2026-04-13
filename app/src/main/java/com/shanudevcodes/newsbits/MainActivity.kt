@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -35,6 +36,9 @@ import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onResume() {
@@ -68,10 +72,10 @@ class MainActivity : ComponentActivity() {
             val dynamicColor by dataStore.dynamicColorFlow.collectAsState(initial = false)
             var themeLoaded by remember { mutableStateOf(false) }
             val rootNavController = rememberNavController()
-            val newsViewModel: NewsViewModel = viewModel()
+            val newsViewModel: NewsViewModel = hiltViewModel()
             val newsList = newsViewModel.allNewsPagingFlow.collectAsLazyPagingItems()
             val isNewsLoaded = newsViewModel.isNewsLoaded.collectAsState()
-            val aiViewModel: AiViewModel = viewModel()
+            val aiViewModel: AiViewModel = hiltViewModel()
             val navController = rememberNavController()
             var keepOnScreenCondition by remember { mutableStateOf(true) }
 //            LaunchedEffect(Unit) {

@@ -49,6 +49,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.DataStoreManager
@@ -64,13 +65,13 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AiBottomSheetContent(
-    aiViewModel: AiViewModel = viewModel()
+    aiViewModel: AiViewModel = hiltViewModel()
 ){
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val dataStore = DataStoreManager(context)
     var isDropdownExpanded by remember { mutableStateOf(false) }
-    val newsViewModel: NewsViewModel = viewModel()
+    val newsViewModel: NewsViewModel = hiltViewModel()
     val topNews by newsViewModel.topNews.collectAsState()
     val isFetched by aiViewModel.isResponseFetched.collectAsState()
     newsViewModel.loadTopNews()

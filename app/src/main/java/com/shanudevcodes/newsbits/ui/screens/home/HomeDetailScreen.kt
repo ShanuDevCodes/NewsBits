@@ -71,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -80,10 +81,8 @@ import com.shanudevcodes.newsbits.data.News
 import com.shanudevcodes.newsbits.data.NewsArticle
 import com.shanudevcodes.newsbits.data.fetchNewsByLink
 import com.shanudevcodes.newsbits.data.formatDateString
-import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import java.util.TimeZone
 
@@ -92,11 +91,7 @@ import java.util.TimeZone
 @Composable
 fun HomeDetailScreen(newsIndex: Int, navController: NavHostController, viewModel: NewsViewModel, news: String) {
     val context = LocalContext.current
-    val db = AppDatabase.getInstance(context)
-    val dao = db.RoomDao()
-    val roomViewModel: RoomViewModel = viewModel(
-        factory = RoomViewModelFactory(dao)
-    )
+    val roomViewModel: RoomViewModel = hiltViewModel()
     val viewModelState by roomViewModel.state.collectAsState()
     val allNews = viewModel.allNewsPagingFlow.collectAsLazyPagingItems()
     val topNews by viewModel.topNews.collectAsState()

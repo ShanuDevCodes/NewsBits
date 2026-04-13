@@ -29,6 +29,9 @@ import com.shanudevcodes.newsbits.ui.screens.authentication.SignupScreen
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class AuthenticationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

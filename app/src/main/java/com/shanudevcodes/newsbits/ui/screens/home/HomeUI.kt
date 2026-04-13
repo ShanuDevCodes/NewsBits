@@ -21,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -47,7 +47,7 @@ fun HomeUI(
     newsViewModel: NewsViewModel,
     aiViewModel: AiViewModel
 ){
-    val appListUIViewModel: AppListUIViewModel = viewModel()
+    val appListUIViewModel: AppListUIViewModel = hiltViewModel()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isHome = currentBackStackEntry?.destination
         ?.hierarchy

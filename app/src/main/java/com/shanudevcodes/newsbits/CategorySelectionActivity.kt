@@ -11,6 +11,9 @@ import com.shanudevcodes.newsbits.ui.screens.onboarding.PreferenceSelectionScree
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class CategorySelectionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

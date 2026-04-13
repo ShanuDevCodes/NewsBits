@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.shanudevcodes.newsbits.BuildConfig
 import com.shanudevcodes.newsbits.data.GeminiSummaryType
 import com.shanudevcodes.newsbits.data.NewsArticle
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,13 +17,15 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import javax.inject.Inject
 
 data class GeminiResponse(
     val responseType: GeminiSummaryType? = null,
     val Responses: List<String> = emptyList()
 )
 
-class AiViewModel: ViewModel(){
+@HiltViewModel
+class AiViewModel @Inject constructor(): ViewModel(){
 
     private val _geminiResponse = MutableStateFlow(
         GeminiResponse()

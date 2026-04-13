@@ -4,21 +4,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.UserProfileChangeRequest.*
+import com.shanudevcodes.newsbits.feature.auth.domain.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class FirebaseViewModel: ViewModel() {
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+@HiltViewModel
+class FirebaseViewModel @Inject constructor(
+    private val repository: AuthRepository
+) : ViewModel() {
+
     private val _state = MutableStateFlow(FirebaseState())
     val state: StateFlow<FirebaseState> = _state
-    private val _currentUser = MutableStateFlow(FirebaseAuth.getInstance().currentUser)
+
+    private val _currentUser = MutableStateFlow<FirebaseUser?>(FirebaseAuth.getInstance().currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser
 
     init {
@@ -26,6 +30,7 @@ class FirebaseViewModel: ViewModel() {
             _currentUser.value = auth.currentUser
         }
     }
+
     fun onEvent(event: FirebaseEvent) {
         when (event) {
 
@@ -33,24 +38,15 @@ class FirebaseViewModel: ViewModel() {
                 _state.update { it.copy(isLoading = true) }
                 viewModelScope.launch {
                     try {
-                        auth.currentUser?.updateProfile(
-                            Builder().setDisplayName(_state.value.name)
-                                .build()
-                        )?.await()
-                        auth.currentUser?.reload()?.await()
+                        repository.updateDisplayName(_state.value.name)
                         withContext(Dispatchers.Main) {
                             checkLoggedInState()
-                            val updatedUser = auth.currentUser
+                            val updated = repository.currentUser
                             _currentUser.value = null
-                            _currentUser.value = updatedUser
+                            _currentUser.value = updated
                         }
-                    }catch (e: Exception){
-                        _state.update {
-                            it.copy(
-                                isError = true,
-                                error = e.message.toString()
-                            )
-                        }
+                    } catch (e: Exception) {
+                        _state.update { it.copy(isError = true, error = e.message.toString()) }
                     } finally {
                         _state.update { it.copy(isLoading = false) }
                     }
@@ -61,18 +57,11 @@ class FirebaseViewModel: ViewModel() {
                 _state.update { it.copy(isLoading = true) }
                 viewModelScope.launch {
                     try {
-                        auth.signInAnonymously().await()
-                        withContext(Dispatchers.Main) {
-                            checkLoggedInState()
-                        }
+                        repository.signInAnonymously()
+                        withContext(Dispatchers.Main) { checkLoggedInState() }
                     } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                isError = true,
-                                error = e.message.toString()
-                            )
-                        }
-                    }finally {
+                        _state.update { it.copy(isError = true, error = e.message.toString()) }
+                    } finally {
                         _state.update { it.copy(isLoading = false) }
                     }
                 }
@@ -83,21 +72,14 @@ class FirebaseViewModel: ViewModel() {
                     _state.update { it.copy(isLoading = true) }
                     viewModelScope.launch {
                         try {
-                            auth.signInWithEmailAndPassword(
+                            repository.loginWithEmailAndPassword(
                                 _state.value.email,
                                 _state.value.password
-                            ).await()
-                            withContext(Dispatchers.Main) {
-                                checkLoggedInState()
-                            }
-                            auth.currentUser?.reload()
+                            )
+                            withContext(Dispatchers.Main) { checkLoggedInState() }
+                            repository.reloadUser()
                         } catch (e: Exception) {
-                            _state.update {
-                                it.copy(
-                                    isError = true,
-                                    error = e.message.toString()
-                                )
-                            }
+                            _state.update { it.copy(isError = true, error = e.message.toString()) }
                         } finally {
                             _state.update { it.copy(isLoading = false) }
                         }
@@ -106,22 +88,14 @@ class FirebaseViewModel: ViewModel() {
             }
 
             FirebaseEvent.LogoutUser -> {
-                if (auth.currentUser != null){
-                    auth.signOut()
-                    checkLoggedInState()
-                    _state.update {
-                        it.copy(
-                            isError = true,
-                            error = "Logged out successfully"
-                        )
+                if (repository.currentUser != null) {
+                    viewModelScope.launch {
+                        repository.logout()
+                        checkLoggedInState()
+                        _state.update { it.copy(isError = true, error = "Logged out successfully") }
                     }
-                }else{
-                    _state.update {
-                        it.copy(
-                            isError = true,
-                            error = "You are not logged in"
-                        )
-                    }
+                } else {
+                    _state.update { it.copy(isError = true, error = "You are not logged in") }
                 }
             }
 
@@ -130,26 +104,15 @@ class FirebaseViewModel: ViewModel() {
                     _state.update { it.copy(isLoading = true) }
                     viewModelScope.launch {
                         try {
-                            auth.createUserWithEmailAndPassword(
+                            repository.registerWithEmailAndPassword(
                                 _state.value.email,
-                                _state.value.password
-                            ).await()
-                            auth.currentUser?.updateProfile(
-                                Builder().setDisplayName(_state.value.name)
-                                    .build()
-                            )?.await()
-                            withContext(Dispatchers.Main){
-                                checkLoggedInState()
-                            }
-                            auth.currentUser?.reload()
-//                            auth.currentUser?.sendEmailVerification()
+                                _state.value.password,
+                                _state.value.name
+                            )
+                            withContext(Dispatchers.Main) { checkLoggedInState() }
+                            repository.reloadUser()
                         } catch (e: Exception) {
-                            _state.update {
-                                it.copy(
-                                    isError = true,
-                                    error = e.message.toString()
-                                )
-                            }
+                            _state.update { it.copy(isError = true, error = e.message.toString()) }
                         } finally {
                             _state.update { it.copy(isLoading = false) }
                         }
@@ -161,78 +124,46 @@ class FirebaseViewModel: ViewModel() {
                 _state.update { it.copy(isLoading = true) }
                 viewModelScope.launch {
                     try {
-                        val credential = GoogleAuthProvider.getCredential(event.idToken, null)
-                        auth.signInWithCredential(credential).await()
-                        withContext(Dispatchers.Main) {
-                            checkLoggedInState()
-                        }
+                        repository.loginWithGoogle(event.idToken)
+                        withContext(Dispatchers.Main) { checkLoggedInState() }
                     } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                isError = true,
-                                error = e.message.toString()
-                            )
-                        }
+                        _state.update { it.copy(isError = true, error = e.message.toString()) }
                     } finally {
                         _state.update { it.copy(isLoading = false) }
                     }
                 }
             }
 
-
-
             is FirebaseEvent.SetUserName -> {
-                _state.update {
-                    it.copy(
-                        name = event.userName
-                    )
-                }
+                _state.update { it.copy(name = event.userName) }
             }
 
             is FirebaseEvent.SetUserEmail -> {
-                _state.update {
-                    it.copy(
-                        email = event.userEmail
-                    )
-                }
+                _state.update { it.copy(email = event.userEmail) }
             }
 
             is FirebaseEvent.SetUserPassword -> {
-                _state.update {
-                    it.copy(
-                        password = event.userPassword
-                    )
-                }
+                _state.update { it.copy(password = event.userPassword) }
             }
 
             FirebaseEvent.ResetError -> {
-                _state.update {
-                    it.copy(
-                        isError = false,
-                        error = ""
-                    )
-                }
+                _state.update { it.copy(isError = false, error = "") }
             }
 
             FirebaseEvent.ResetState -> {
-                _state.update {
-                    FirebaseState()
-                }
+                _state.update { FirebaseState() }
             }
 
             FirebaseEvent.ResetPassword -> {
                 viewModelScope.launch {
                     if (_state.value.email.isBlank()) {
                         _state.update {
-                            it.copy(
-                                isError = true,
-                                error = "Please provide a valid email address."
-                            )
+                            it.copy(isError = true, error = "Please provide a valid email address.")
                         }
                         return@launch
                     }
                     try {
-                        auth.sendPasswordResetEmail(_state.value.email).await()
+                        repository.sendPasswordResetEmail(_state.value.email)
                         _state.update {
                             it.copy(
                                 isError = true,
@@ -240,12 +171,7 @@ class FirebaseViewModel: ViewModel() {
                             )
                         }
                     } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                isError = true,
-                                error = e.message.toString()
-                            )
-                        }
+                        _state.update { it.copy(isError = true, error = e.message.toString()) }
                     }
                 }
             }
@@ -253,57 +179,34 @@ class FirebaseViewModel: ViewModel() {
             FirebaseEvent.DeleteUser -> {
                 viewModelScope.launch {
                     try {
-                        auth.currentUser?.delete()?.await()
-                        withContext(Dispatchers.Main) {
-                            checkLoggedInState()
-                        }
+                        repository.deleteUser()
+                        withContext(Dispatchers.Main) { checkLoggedInState() }
                     } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                isError = true,
-                                error = e.message.toString()
-                            )
-                        }
+                        _state.update { it.copy(isError = true, error = e.message.toString()) }
                     }
                 }
             }
 
             FirebaseEvent.SendEmailVerification -> {
-                auth.currentUser?.sendEmailVerification()
+                viewModelScope.launch {
+                    try { repository.sendEmailVerification() } catch (_: Exception) {}
+                }
             }
 
             FirebaseEvent.ReloadUser -> {
                 viewModelScope.launch {
                     try {
-                        auth.currentUser?.reload()?.await()
-                        withContext(Dispatchers.Main){
-                            checkLoggedInState()
-                        }
-                    }catch (e: Exception){
-                        _state.update {
-                            it.copy(
-                                isError = true,
-                                error = e.message.toString()
-                            )
-                        }
+                        repository.reloadUser()
+                        withContext(Dispatchers.Main) { checkLoggedInState() }
+                    } catch (e: Exception) {
+                        _state.update { it.copy(isError = true, error = e.message.toString()) }
                     }
                 }
             }
         }
     }
-    fun checkLoggedInState(){
-        if(auth.currentUser == null) {
-            _state.update {
-                it.copy(
-                    isLoggedIn = false
-                )
-            }
-        }else{
-            _state.update {
-                it.copy(
-                    isLoggedIn = true
-                )
-            }
-        }
+
+    fun checkLoggedInState() {
+        _state.update { it.copy(isLoggedIn = repository.currentUser != null) }
     }
 }

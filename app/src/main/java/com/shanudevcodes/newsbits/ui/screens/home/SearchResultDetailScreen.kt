@@ -54,16 +54,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
-import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.viewmodel.SearchResultDetailScreenViewModel
 import java.util.TimeZone
@@ -75,7 +74,7 @@ fun SearchResultDetailScreen(
     navController: NavHostController,
     link: String
 ){
-    val viewModel: SearchResultDetailScreenViewModel = viewModel()
+    val viewModel: SearchResultDetailScreenViewModel = hiltViewModel()
     val news by viewModel.news.collectAsState()
     val isNewsFetched by viewModel.isNewsFetched.collectAsState()
     viewModel.fetchNews(link)
@@ -89,11 +88,7 @@ fun SearchResultDetailScreen(
     val screenWidthDp = configuration.screenWidthDp.dp
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val timeZoneAbbreviation = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-    val db = AppDatabase.getInstance(context)
-    val dao = db.RoomDao()
-    val roomViewModel: RoomViewModel = viewModel(
-        factory = RoomViewModelFactory(dao)
-    )
+    val roomViewModel: RoomViewModel = hiltViewModel()
     val viewModelState by roomViewModel.state.collectAsState()
     val isBookMarked = viewModelState.isArticleSaved
     LaunchedEffect(news?.article_id) {

@@ -65,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -75,10 +76,8 @@ import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.DataStoreManager
 import com.shanudevcodes.newsbits.data.HomeDestination
 import com.shanudevcodes.newsbits.data.NewsArticle
-import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.data.shimmerEffect
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
@@ -100,11 +99,7 @@ fun ForYouPage(
     var isRefreshing by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(pageCount = { newsList.itemCount })
     val context = LocalContext.current
-    val db = AppDatabase.getInstance(context)
-    val dao = db.RoomDao()
-    val roomViewModel: RoomViewModel = viewModel(
-        factory = RoomViewModelFactory(dao)
-    )
+    val roomViewModel: RoomViewModel = hiltViewModel()
     val dataStore = DataStoreManager(context)
     LaunchedEffect(Unit) {
         dataStore.categoryPreferenceFlow.collect {

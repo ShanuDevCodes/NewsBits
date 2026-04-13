@@ -61,7 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.shanudevcodes.newsbits.AuthenticationActivity
@@ -82,7 +82,7 @@ fun LoginScreen(
     onSignupClick: () -> Unit,
     onEmailVerification: () -> Unit
 ) {
-    val firebaseViewModel: FirebaseViewModel = viewModel()
+    val firebaseViewModel: FirebaseViewModel = hiltViewModel()
     val firebaseState by firebaseViewModel.state.collectAsState()
     val currentUser by firebaseViewModel.currentUser.collectAsState()
     val onEvent: (FirebaseEvent) -> Unit = firebaseViewModel::onEvent

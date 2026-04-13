@@ -73,6 +73,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -81,10 +82,8 @@ import com.shanudevcodes.newsbits.R
 import com.shanudevcodes.newsbits.data.formatDateString
 import com.shanudevcodes.newsbits.data.savedarticledb.data.entity.SavedArticle
 import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
-import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.ui.screens.home.openUrlInBrowser
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -100,11 +99,7 @@ fun BookmarkDetailScreen(
     val scope = rememberCoroutineScope()
     val isDialogVisible = rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
-    val db = AppDatabase.getInstance(context)
-    val dao = db.RoomDao()
-    val roomViewModel: RoomViewModel = viewModel(
-        factory = RoomViewModelFactory(dao)
-    )
+    val roomViewModel: RoomViewModel = hiltViewModel()
     val viewModelState = roomViewModel.state.collectAsState()
     val newsArticle = viewModelState.value.article
     val isBookMarked = viewModelState.value.isArticleSaved

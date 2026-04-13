@@ -64,6 +64,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -77,7 +78,6 @@ import com.shanudevcodes.newsbits.data.savedarticledb.data.mapper.toEntity
 import com.shanudevcodes.newsbits.data.savedarticledb.data.roomdatabase.AppDatabase
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.events.RoomEvents
 import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModel
-import com.shanudevcodes.newsbits.data.savedarticledb.presentation.viewmodal.RoomViewModelFactory
 import com.shanudevcodes.newsbits.viewmodel.AiViewModel
 import com.shanudevcodes.newsbits.viewmodel.NewsViewModel
 import kotlinx.coroutines.FlowPreview
@@ -99,12 +99,7 @@ fun HomeListUi(
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
     saveableStateHolder.SaveableStateProvider(key = "explore") {
-        val context = LocalContext.current
-        val db = AppDatabase.getInstance(context)
-        val dao = db.RoomDao()
-        val roomViewModel: RoomViewModel = viewModel(
-            factory = RoomViewModelFactory(dao)
-        )
+        val roomViewModel: RoomViewModel = hiltViewModel()
         val roomState by roomViewModel.state.collectAsState()
         val history = roomState.historyList
         val configuration = LocalConfiguration.current

@@ -11,6 +11,9 @@ import com.shanudevcodes.newsbits.ui.screens.onboarding.OnBoardingScreen
 import com.shanudevcodes.newsbits.ui.theme.NewsBitsTheme
 import com.shanudevcodes.newsbits.ui.theme.ThemeOptions
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class OnboardingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

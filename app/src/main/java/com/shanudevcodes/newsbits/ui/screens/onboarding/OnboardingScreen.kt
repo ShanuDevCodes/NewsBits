@@ -329,8 +329,8 @@ fun OnBoardingScreen(dataStore: DataStoreManager) {
             TextButton(
                 onClick = {
                     scope.launch {
-                        dataStore.setFirstLaunch(false)
-                        context.startActivity(Intent(context, MainActivity::class.java))
+                        dataStore.setOnboardingComplete(true)
+                        context.startActivity(Intent(context, AuthenticationActivity::class.java))
                         (context as? OnboardingActivity)?.finish()
                     }
                 },

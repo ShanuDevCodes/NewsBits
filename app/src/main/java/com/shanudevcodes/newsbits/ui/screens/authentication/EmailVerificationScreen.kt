@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.shanudevcodes.newsbits.AuthenticationActivity
 import com.shanudevcodes.newsbits.CategorySelectionActivity
 import com.shanudevcodes.newsbits.data.DataStoreManager
@@ -47,7 +47,7 @@ import kotlinx.coroutines.isActive
 fun EmailVerificationScreen(
     dataStore: DataStoreManager,
 ){
-    val firebaseViewModel: FirebaseViewModel = viewModel()
+    val firebaseViewModel: FirebaseViewModel = hiltViewModel()
     val currentUser by firebaseViewModel.currentUser.collectAsState()
     val context = LocalContext.current
     var emailVerificationTimer by rememberSaveable { mutableStateOf(90) }
