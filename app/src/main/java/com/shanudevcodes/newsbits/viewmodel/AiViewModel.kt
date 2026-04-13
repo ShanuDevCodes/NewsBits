@@ -52,7 +52,7 @@ class AiViewModel @Inject constructor(): ViewModel(){
                         Log.d("Gemini","run")
                         val apiKey = BuildConfig.Gemini_API_Key
                         val url =
-                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
+                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=$apiKey"
 
 
                         val client = OkHttpClient.Builder()
@@ -102,9 +102,13 @@ class AiViewModel @Inject constructor(): ViewModel(){
                             .post(jsonBody.toRequestBody("application/json".toMediaType()))
                             .build()
 
+                        Log.d("Gemini", "Sending Request URL: $url")
+                        Log.d("Gemini", "Sending Request Body: $jsonBody")
+
                         val response = client.newCall(request).execute()
                         if (response.isSuccessful) {
                             val responseBody = response.body?.string()
+                            Log.d("Gemini", "Response Successful: $responseBody")
                             val summaryText = JSONObject(responseBody)
                                 .getJSONArray("candidates")
                                 .getJSONObject(0)
@@ -121,6 +125,7 @@ class AiViewModel @Inject constructor(): ViewModel(){
                                         trimmed.removePrefix("*").trim()
                                     } else null
                                 }
+                            Log.d("Gemini", "Parsed Bullets: $bulletPoints")
                             when(responseType){
                                 GeminiSummaryType.CONCISE -> _geminiResponse.value = GeminiResponse(
                                     responseType = GeminiSummaryType.CONCISE,
