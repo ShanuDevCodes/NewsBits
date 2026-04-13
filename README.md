@@ -1,10 +1,10 @@
 # 📰 NewsBits – Modern Intelligent News App
 
-![NewsBits Banner](https://img.shields.io/badge/Status-Active-success) ![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple) ![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-blue) ![Firebase](https://img.shields.io/badge/Firebase-Full%20Stack-orange)
+![NewsBits Banner](https://img.shields.io/badge/Status-Active-success) ![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple) ![Compose](https://img.shields.io/badge/Jetpack_Compose-Material3-blue) ![Firebase](https://img.shields.io/badge/Firebase-Full_Stack-orange) ![Hilt](https://img.shields.io/badge/Dagger_Hilt-DI-green)
 
-**NewsBits** is a high-performance, intelligent news reader application built with **Modern Android Architecture**. It leverages the power of **Jetpack Compose** for UI, **Firebase** for backend services (Auth, Firestore, Cloud Functions), **Algolia** for lightning-fast search, and **Gemini AI** for smart news summarization.
+**NewsBits** is a high-performance, intelligent news reader application built with **Modern Android Architecture**. It leverages the power of **Jetpack Compose** for UI, **Firebase** for backend services (Auth, Firestore, Cloud Functions), **Algolia** for lightning-fast search, **Gemini AI** for smart news summarization, and **Dagger Hilt** for robust Dependency Injection.
 
-Key focus areas: **Offline-First**, **Real-Time Sync**, **Clean Architecture**, and **Premium UX**.
+Key focus areas: **Offline-First**, **Real-Time Sync**, **Strict Feature-Driven Architecture**, and **Premium UX**.
 
 ---
 
@@ -21,7 +21,7 @@ Key focus areas: **Offline-First**, **Real-Time Sync**, **Clean Architecture**, 
 9. [⚙️ Local Properties Setup](#-local-properties-setup)
 10. [🚀 Getting Started](#-getting-started)
 11. [🔮 Roadmap](#-roadmap)
-12. [🤝 Contributing & License](#-contributing--license)
+12. [⚖️ License](#️-license)
 
 ---
 
@@ -44,13 +44,14 @@ Key focus areas: **Offline-First**, **Real-Time Sync**, **Clean Architecture**, 
 
 ## 🛠 Tech Stack
 
-The project uses the latest Android technologies (as of late 2025/2026).
+The project utilizes a state-of-the-art modern Android tech stack.
 
 | Category | Libraries / Tools |
 |----------|-------------------|
 | **Language** | [Kotlin](https://kotlinlang.org/) (v2.0.21) |
 | **UI Toolkit** | [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3, Animation, Adaptive) |
-| **Architecture** | MVVM, Clean Architecture, Repository Pattern |
+| **Architecture** | MVVM, Clean Architecture, Vertical Slice / Feature Modules |
+| **DI / Mgmt** | **[Dagger Hilt](https://dagger.dev/hilt/)** (Dependency Injection) |
 | **Backend** | Firebase (Auth, Firestore, Cloud Functions, Analytics) |
 | **Search** | [Algolia Search](https://www.algolia.com/) (Client Kotlin v3.x) |
 | **AI / ML** | [Gemini API](https://ai.google.dev/) (via Ktor Client) |
@@ -59,55 +60,45 @@ The project uses the latest Android technologies (as of late 2025/2026).
 | **Image Loading** | [Coil Compose](https://coil-kt.github.io/coil/) |
 | **Navigation** | [Navigation Compose](https://developer.android.com/guide/navigation) (Type-safe navigation) |
 | **Async** | Kotlin Coroutines, Flow |
-| **DI / Mgmt** | Manual Dependency Injection (ViewModelFactory pattern) |
 | **Build** | Gradle Kotlin DSL (KTS), Version Catalogs (`libs.versions.toml`) |
 
 ---
 
 ## 🧱 Architecture & Design
 
-The app follows **Clean Architecture** principles enforced with **MVVM (Model-View-ViewModel)**.
+The app follows **Clean Architecture** principles enforced with **MVVM (Model-View-ViewModel)** and built on a **Feature-by-Feature (Vertical Slice)** package structure. **Dagger Hilt** is utilized throughout the app to inject ViewModels, Repositories, Database DAOs, and Network Clients automatically, decoupling creation logic from usage.
 
 ### Layers
-1. **UI Layer (`ui/`)**:
-   - **Activities**: `MainActivity`, `AuthenticationActivity`, `OnboardingActivity`.
-   - **Screens**: Composable functions (e.g., `HomeScreen`, `ExploreScreen`, `BookmarksScreen`) located in `ui/screens`.
-   - **Theme**: Material 3 implementation (`Theme.kt`, `Color.kt`, `Type.kt`).
-2. **ViewModel Layer (`viewmodel/`)**:
-   - Manages UI state using `@Stable` data classes and `StateFlow`.
-   - Communicates with Repositories.
-3. **Data Layer (`data/`)**:
-   - **Repositories**: `NewsRepository` (Single source of truth).
-   - **Data Sources**:
-     - **Remote**: Firebase Firestore, Algolia, Gemini API (Ktor).
-     - **Local**: Room Database (`savedarticledb`), DataStore (`DataStoreManager`).
-   - **Models**: Data classes (`NewsArticle`, `News`, `GeminiSummaryType`).
+1. **App Level (`NewsBitsApplication`)**: Annotated with `@HiltAndroidApp` to initialize DI components.
+2. **UI Layer (`ui/` & `feature/.../ui/`)**:
+   - Uses Hilt injected view models (`@HiltViewModel`).
+   - Composable screens react to state (`StateFlow`).
+   - Material 3 theming implementation.
+3. **Data & Domain Layers (`feature/.../data/`, `feature/.../domain/`)**:
+   - **Repositories**: Injected cleanly into ViewModels without manual factories.
+   - **Data Sources**: Room DAOs and network clients provided by Hilt Modules.
 
 ---
 
 ## 📂 Project Structure
 
-A high-level overview of the key packages in `app/src/main/java/com/shanudevcodes/newsbits/`:
+The project has been scaled into strict feature-specific packages for high maintainability:
 
 ```
 com.shanudevcodes.newsbits
-├── data
-│   ├── firebase             # Firestore & Auth Helpers
-│   ├── savedarticledb       # Room Entities & DAO
-│   ├── DataStoreManager.kt  # User preferences (Theme, Onboarding status)
-│   ├── NewsRepository.kt    # Main data coordinator
-│   ├── NewsArticle.kt       # Core data model
-│   └── NetworkConnectivityObserver.kt
-├── ui
-│   ├── screens              # All Composable Screens (Home, Profile, Login...)
-│   ├── authentication       # Login/Signup specific UI
-│   ├── animation            # Lottie & Custom animations
-│   ├── theme                # App styling
-│   └── NavigationItems.kt   # Nav routes
-├── viewmodel                # ViewModels for screens
-├── MainActivity.kt          # Entry point for App flow
-├── AuthenticationActivity.kt# Entry point for Auth flow
-└── OnboardingActivity.kt    # Entry point for Onboarding
+├── core                 # Core utilities, theme, navigation setup
+├── data                 # Shared data elements like Repositories and Room DB
+├── feature              # Vertical Slices (Currently migrating to this architecture)
+│   ├── auth             # Auth specific UI and Domain
+│   └── news             # News feature module
+├── ui                   # Traditional UI package (Screens, Animation, Theme)
+│   ├── animation
+│   ├── screens
+│   └── theme
+├── viewmodel            # ViewModels mapping to screens
+├── AuthenticationActivity.kt
+├── MainActivity.kt
+└── NewsBitsApplication.kt
 ```
 
 ---
@@ -119,8 +110,7 @@ com.shanudevcodes.newsbits
 3. **Indexing**: An `onCreate` Firestore trigger automatically pushes new articles to an **Algolia Index** for search capability.
 4. **Consumption**:
    - The Android app listens to Firestore for real-time feed updates.
-   - Search queries are sent directly to Algolia for sub-millisecond responses.
-   - User bookmarks are stored in the local **Room Database**.
+   - Hilt injects the relevant DAOs, and bookmarks are seamlessly saved in Room.
 
 ---
 
@@ -133,7 +123,6 @@ com.shanudevcodes.newsbits
 3. **Enable Services**:
    - **Authentication**: Email/Password, Google Sign-In. (Add SHA-1 & SHA-256 fingerprints for Google Auth).
    - **Firestore**: Create a database (Production mode).
-   - **Storage** (Optional): If profile pillars are implemented.
 4. **Deploy Cloud Functions**:
    ```bash
    cd functions
@@ -141,7 +130,6 @@ com.shanudevcodes.newsbits
    firebase login
    firebase deploy --only functions
    ```
-   *Note: Requires the "Blaze" (Pay as you go) plan for external API calls.*
 
 ---
 
@@ -149,8 +137,7 @@ com.shanudevcodes.newsbits
 
 1. Sign up at [Algolia](https://www.algolia.com/).
 2. Create an Index named **`newsbits_articles`**.
-3. In your Algolia Dashboard, set **Searchable Attributes**:
-   - `title`, `description`, `content`, `category`, `source_id`
+3. Set **Searchable Attributes**: `title`, `description`, `content`, `category`, `source_id`.
 4. Copy your **App ID** and **Search API Key**.
 
 ---
@@ -158,7 +145,7 @@ com.shanudevcodes.newsbits
 ## 🧠 Gemini AI Setup
 
 1. Get an API Key from [Google AI Studio](https://aistudio.google.com/).
-2. This key is used by the `NewsRepository` to send article content to Gemini-1.5-flash model for summarization.
+2. This key is used securely through `.properties` injection to ping the Gemini flash model.
 
 ---
 
@@ -198,10 +185,7 @@ These are automatically injected into `BuildConfig` by Gradle.
    ```
 2. **Add Secrets**: Create your `local.properties` file with the keys.
 3. **Add Firebase Config**: Place `google-services.json` in `app/`.
-4. **Sync & Build**:
-   - Open in Android Studio.
-   - File -> Sync Project with Gradle Files.
-   - Run on an Emulator or Physical Device (API 30+ recommended).
+4. **Sync & Build**: Open in Android Studio, sync Gradle, and run.
 
 ---
 
@@ -210,15 +194,15 @@ These are automatically injected into `BuildConfig` by Gradle.
 - [x] **MVP Release**: Core news feed, Auth, Search.
 - [x] **AI Integration**: Gemini Summaries.
 - [x] **Offline Mode**: Room DB Caching.
+- [x] **Dependency Injection**: Integrated Dagger Hilt.
+- [x] **Vertical Slicing**: Refactored to feature-based architecture.
 - [ ] **Bit Digest**: Daily AI-curated audio briefings.
-- [ ] **Social Features**: Commenting and sharing threads.
 - [ ] **Wear OS Support**: Quick headlines on browsing watch face.
 
 ---
 
-## 🤝 Contributing & License
+## ⚖️ License
 
-Contributions are welcome! Please fork the repo and submit a PR.
+**Copyright (c) 2026 ShanuDevCodes/NewsBits. All Rights Reserved.**
 
-**Author**: [ShanuDevCodes](https://github.com/ShanuDevCodes)
-**License**: MIT License. See [LICENSE](LICENSE) for details.
+This software is proprietary. You may **NOT** copy, modify, distribute, publish, transmit, reverse engineer, or otherwise use the Software, in whole or in part, without the express written permission of the owner. See the [LICENSE](LICENSE) file for complete details.
