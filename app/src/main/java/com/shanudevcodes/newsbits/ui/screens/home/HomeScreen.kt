@@ -245,12 +245,18 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Top News",
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.titleLargeEmphasized
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Top News",
+                            color = MaterialTheme.colorScheme.secondary,
+                            style = MaterialTheme.typography.titleLargeEmphasized
+                        )
+                        Text(
+                            text = "Portfolio Project of Shanu - Not for Commercial Release",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                     IconButton(
                         onClick = {
                             scope.launch {

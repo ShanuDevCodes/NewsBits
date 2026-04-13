@@ -1,6 +1,7 @@
 package com.shanudevcodes.newsbits.ui.screens.authentication
 
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,7 +58,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.shanudevcodes.newsbits.AuthenticationActivity
 import com.shanudevcodes.newsbits.CategorySelectionActivity
 import com.shanudevcodes.newsbits.R
@@ -82,13 +88,16 @@ fun LoginScreen(
     val onEvent: (FirebaseEvent) -> Unit = firebaseViewModel::onEvent
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val credentialManager = remember { CredentialManager.create(context) }
     var isGuestLoading by remember { mutableStateOf(false) }
+    var isGoogleLoading by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     LaunchedEffect(firebaseState.isError, firebaseState.error) {
         if (firebaseState.isError && firebaseState.error.isNotBlank()) {
             Toast.makeText(context, firebaseState.error, Toast.LENGTH_LONG).show()
             isLoading = false
+            isGoogleLoading = false
             firebaseViewModel.onEvent(FirebaseEvent.ResetError)
         }
     }
@@ -347,21 +356,62 @@ fun LoginScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                     Button(
-                        enabled = !isLoading && !isGuestLoading,
-                        onClick = {},
+                        enabled = !isLoading && !isGuestLoading && !isGoogleLoading,
+                        onClick = {
+                            isGoogleLoading = true
+                            scope.launch {
+                                try {
+                                    val googleIdOption = GetSignInWithGoogleOption.Builder(
+                                        serverClientId = context.getString(R.string.default_web_client_id)
+                                    ).build()
+                                    val request = GetCredentialRequest.Builder()
+                                        .addCredentialOption(googleIdOption)
+                                        .build()
+                                    val result = credentialManager.getCredential(context, request)
+                                    val credential = result.credential
+                                    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                        onEvent(FirebaseEvent.LoginWithGoogle(googleIdTokenCredential.idToken))
+                                    } else {
+                                        isGoogleLoading = false
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("GoogleSignIn", "Failed", e)
+                                    Toast.makeText(context, "Google Sign-In canceled or failed.", Toast.LENGTH_SHORT).show()
+                                    isGoogleLoading = false
+                                }
+                            }
+                        },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.google),
-                            contentDescription = "Google",
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Google",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        if (!isGoogleLoading) {
+                            Icon(
+                                painter = painterResource(R.drawable.google),
+                                contentDescription = "Google",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Google",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                LoadingIndicator(
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Loading...",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
                 }
             }

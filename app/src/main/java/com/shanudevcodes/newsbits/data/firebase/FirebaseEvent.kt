@@ -15,4 +15,5 @@ sealed interface FirebaseEvent {
     object DeleteUser : FirebaseEvent
     object SendEmailVerification : FirebaseEvent
     object ReloadUser : FirebaseEvent
+    data class LoginWithGoogle(val idToken: String) : FirebaseEvent
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,12 +30,20 @@ class FirebaseViewModel: ViewModel() {
         when (event) {
 
             FirebaseEvent.UpdateUserName -> {
+                _state.update { it.copy(isLoading = true) }
                 viewModelScope.launch {
                     try {
                         auth.currentUser?.updateProfile(
                             Builder().setDisplayName(_state.value.name)
                                 .build()
                         )?.await()
+                        auth.currentUser?.reload()?.await()
+                        withContext(Dispatchers.Main) {
+                            checkLoggedInState()
+                            val updatedUser = auth.currentUser
+                            _currentUser.value = null
+                            _currentUser.value = updatedUser
+                        }
                     }catch (e: Exception){
                         _state.update {
                             it.copy(
@@ -42,6 +51,8 @@ class FirebaseViewModel: ViewModel() {
                                 error = e.message.toString()
                             )
                         }
+                    } finally {
+                        _state.update { it.copy(isLoading = false) }
                     }
                 }
             }
@@ -145,6 +156,30 @@ class FirebaseViewModel: ViewModel() {
                     }
                 }
             }
+
+            is FirebaseEvent.LoginWithGoogle -> {
+                _state.update { it.copy(isLoading = true) }
+                viewModelScope.launch {
+                    try {
+                        val credential = GoogleAuthProvider.getCredential(event.idToken, null)
+                        auth.signInWithCredential(credential).await()
+                        withContext(Dispatchers.Main) {
+                            checkLoggedInState()
+                        }
+                    } catch (e: Exception) {
+                        _state.update {
+                            it.copy(
+                                isError = true,
+                                error = e.message.toString()
+                            )
+                        }
+                    } finally {
+                        _state.update { it.copy(isLoading = false) }
+                    }
+                }
+            }
+
+
 
             is FirebaseEvent.SetUserName -> {
                 _state.update {

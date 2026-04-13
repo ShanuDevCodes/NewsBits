@@ -44,6 +44,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,6 +81,10 @@ fun ProfileScreen(
     val firebaseViewModel: FirebaseViewModel = viewModel()
     val user by firebaseViewModel.currentUser.collectAsState()
     val context = LocalContext.current
+    var showEditNameDialog by remember(user) { mutableStateOf(false) }
+    var newUserName by remember(user) { mutableStateOf(user?.displayName ?: "") }
+    var currentDisplayName by remember(user) { mutableStateOf(user?.displayName ?: "Guest") }
+
     val profileScreenItemList = listOf(
         ProfileScreenData(
             name = "Settings",
@@ -142,6 +152,42 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         firebaseViewModel.onEvent(FirebaseEvent.ReloadUser)
     }
+    
+    if (showEditNameDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditNameDialog = false },
+            title = { Text("Change Username") },
+            text = {
+                OutlinedTextField(
+                    value = newUserName,
+                    onValueChange = { newUserName = it },
+                    label = { Text("Username") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (newUserName.isNotBlank()) {
+                            firebaseViewModel.onEvent(FirebaseEvent.SetUserName(newUserName))
+                            firebaseViewModel.onEvent(FirebaseEvent.UpdateUserName)
+                            currentDisplayName = newUserName
+                            showEditNameDialog = false
+                        }
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditNameDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    
     Surface {
         Scaffold(
             contentWindowInsets = WindowInsets(0),
@@ -186,7 +232,8 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .clickable(
                                         onClick = {
-
+                                            newUserName = user?.displayName ?: ""
+                                            showEditNameDialog = true
                                         }
                                     )
                                     .padding(16.dp)
@@ -211,7 +258,7 @@ fun ProfileScreen(
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
-                                        text = user?.displayName?:"Guest",
+                                        text = currentDisplayName,
                                         style = MaterialTheme.typography.titleLargeEmphasized,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -224,7 +271,10 @@ fun ProfileScreen(
                                     )
                                 }
                                 IconButton(
-                                    onClick = {},
+                                    onClick = {
+                                        newUserName = user?.displayName ?: ""
+                                        showEditNameDialog = true
+                                    },
                                     modifier = Modifier.size(28.dp)
                                 ) {
                                     Icon(
